@@ -23,7 +23,6 @@
 """
 import os
 os.chdir(os.path.dirname(__file__))
-print(os.getcwd())
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
@@ -33,7 +32,10 @@ from qgis.PyQt.QtWidgets import QAction
 from .resources import *
 # Import the code for the dialog
 from .generate_topography_dialog import GeneratingTopographyDialog
+from .generate_topography_dialog import HelpKernelsDialog
 import os.path
+
+
 
 
 class GeneratingTopography:
@@ -72,14 +74,23 @@ class GeneratingTopography:
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
 
-        # ##################
-        self.dlg.checkBox_Resampling.clicked.connect(self.show_resampling)
+        # Slope のダイアログ設定
+        self.dlg.checkBox_Resampling.stateChanged.connect(self.dlg.make_slope_dlg)
+        # TPI のダイアログ設定
+        self.dlg._erase_dlg_gaussian_param()
+        self.dlg.radioBtn_OrgKernel.toggled.connect(self.dlg.make_tpi_dlg_original)
+        self.dlg.radioBtn_DoughnutKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
+        self.dlg.radioBtn_MeanKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
+        self.dlg.radioBtn_GaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
+        self.dlg.radioBtn_InvGaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
+        self.dlg.radioBtn_4DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
+        self.dlg.radioBtn_8DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
+        # TRI のダイアログ設定
+        self.dlg.checkBox_TriOutTreatment.stateChanged.connect(self.dlg.make_tri_dlg)
+        # マップスタイルのプレビューを表示
+        self.dlg.btn_ShowStyles.clicked.connect(self.dlg.show_map_styles)
+
     
-    def show_resampling(self):
-        if self.dlg.checkBox_Resampling.isChecked():
-            self.dlg.spinBoxF_ResampleResol.setVisible(True)
-        else:
-            self.dlg.spinBoxF_ResampleResol.setVisible(False)
 
 
     # noinspection PyMethodMayBeStatic
@@ -175,7 +186,7 @@ class GeneratingTopography:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/generate_topography/icon.png'
+        icon_path = ':/plugins/generate_topography/views/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'地形図の生成'),
@@ -185,12 +196,26 @@ class GeneratingTopography:
         # will be set False in run()
         self.first_start = True
         # 
-        self.dlg.btn_TpiHint.clicked.connect(self.test_show)
+        self.dlg.btn_ShowTpiHint.clicked.connect(self.dlg.show_help_kernels)
+        self.dlg.btn_ShowStyles.clicked.connect(self.test_show)
     
     def test_show(self):
         print('####### test start #######')
-        print(self.dlg.gpBox_Slope.isChecked())
+        slope_options = self.dlg.get_slope_options()
+        slope_options.cmap = [['CMAP test']]
+        print(slope_options)
+        tpi_options = self.dlg.get_tpi_options()
+        tpi_options.cmap = [['CMAP test']]
+        print(tpi_options)
+        tri_options = self.dlg.get_tri_options()
+        tri_options.cmap = [['CMAP test']]
+        print(tri_options)
+        hillshade_options = self.dlg.get_hillshade_options()
+        hillshade_options.cmap = [['CMAP test']]
+        print(hillshade_options)
         print('####### test end #######')
+        
+
         
 
 

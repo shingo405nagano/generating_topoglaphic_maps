@@ -21,15 +21,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-
 import os
 from typing import Union
 
+from matplotlib import pyplot as plt
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
 from .apps.colors import Blue2RedColorMaps
 from .apps.colors import VintageColorMaps
+from .apps.kernels import Kernels
+from .apps.kernels import KernelTypes
 from .apps.mapper import SlopeOptions
 from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
@@ -37,8 +39,30 @@ from .apps.mapper import HillshadeOptions
 
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'generate_topography_dialog_base.ui'))
+FORM_CLASS, _ = (
+    uic
+    .loadUiType(
+        os.path.join(
+            os.path.dirname(__file__), 
+            'views\generate_topography_dialog_base.ui'
+        )
+    )
+)
+
+HELP_KERNELS, _ = (
+    uic
+    .loadUiType(
+        os.path.join(
+            os.path.dirname(__file__),
+            'views\help_kernels.ui'
+        ),
+    )
+)
+
+
+global CS_MAP_IMG
+CS_MAP_IMG = plt.imread('./views/CS_Map__Img.jpg')
+
 
 
 class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -52,12 +76,26 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
+    def show_map_styles(self) -> None:
+        """マップスタイルを適用した場合のプレビューを表示"""
+        plt.title('CS-Map Style  R0.5m', fontsize=15, fontweight='bold')
+        if self.mapSelectRadioBtn_BR.isChecked():
+            plt.imshow(CS_MAP_IMG)    
+        elif self.mapSelectRadioBtn_Vintage.isChecked():
+            plt.imshow(CS_MAP_IMG)
+        else:
+            plt.imshow(CS_MAP_IMG)
+        plt.yticks([])
+        plt.xticks([])
+        plt.show()
+
     @property
     def select_map_style(self) -> Union[Blue2RedColorMaps, VintageColorMaps]:
         """
         Radio buttonで選択されたカラーマップを返す
+        Returns:
+            Union[Blue2RedColorMaps, VintageColorMaps]
         """
-        print('Selecting map style')
         if self.mapSelectRadioBtn_BR.isChecked():
             return Blue2RedColorMaps()
         elif self.mapSelectRadioBtn_Vintage.isChecked():
@@ -86,12 +124,139 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         return options
     
-    def get_tpi_options(self) -> TpiOptions:
+    def get_tpi_options(self, resolution: float) -> TpiOptions:
+        # Kernel typeを取得
+        if self.radioBtn_OrgKernel.isChecked():
+            kernel_type = KernelTypes.original
+        elif self.radioBtn_DoughnutKernel.isChecked():
+            kernel_type = KernelTypes.doughnut
+        elif self.radioBtn_MeanKernel.isChecked():
+            kernel_type = KernelTypes.mean
+        elif self.radioBtn_GaussKernel.isChecked():
+            kernel_type = KernelTypes.gaussian
+        elif self.radioBtn_InvGaussKernel.isChecked():
+            kernel_type = KernelTypes.inverse_gaussian
+        elif self.radioBtn_4DirecKernel.isChecked():
+            kernel_type = KernelTypes.four_directions
+        elif self.radioBtn_8DirecKernel.isChecked():
+            kernel_type = KernelTypes.eight_directions
+        else:
+            kernel_type = KernelTypes.original
+        
+        # TPI に関するオプションを取得
         options = TpiOptions(
             checked=self.gpBox_Tpi.isChecked(),
-
+            kernel_size_type=self.cmbBox_Kernel.currentText(),
+            one_side_distance=self.spinBoxF_KernelSize.value(),
+            kernel_type=kernel_type,
+            sigma=self.spinBoxF_GaussSigma.value(),
+            outlier_treatment=self.checkBox_TpiOutTreatment.isChecked(),
+            threshold=self.spinBoxF_TpiThres.value(),
+            cmap=self.select_map_style.tpi().colors_255
         )
         return options
-        
+
+    def get_tri_options(self) -> TriOptions:
+        """TRI に関するオプションを取得"""
+        options = TriOptions(
+            checked=self.gpBox_Tri.isChecked(),
+            outlier_treatment=self.checkBox_TriOutTreatment.isChecked(),
+            threshold=self.spinBoxF_TriThres.value(),
+            cmap=self.select_map_style.tri().colors_255
+        )
+        return options
+
+    def get_hillshade_options(self) -> HillshadeOptions:
+        """Hillshade に関するオプションを取得"""
+        options = HillshadeOptions(
+            checked=self.gpBox_Hillshade.isChecked(),
+            hillshade_type=self.cmbBox_HillshadeType.currentText(),
+            azimuth=self.spinBoxInt_HillshadeAzimuth.value(),
+            altitude=self.spinBoxInt_HillshadeHight.value(),
+            z_factor=self.spinBoxF_HillshadeHighlight.value(),
+            combined=self.checkBox_CombinedSlope.isChecked(),
+            cmap=self.select_map_style.hillshade().colors_255
+        )
+        return options
 
 
+
+
+    def make_slope_dlg(self):
+        """SLOPE の設定で外れ値処理を選択した場合のダイアログ設定"""
+        if self.checkBox_Resampling.isChecked():
+            self.spinBoxF_ResampleResol.setVisible(True)
+        else:
+            self.spinBoxF_ResampleResol.setVisible(False)
+
+    def make_tpi_dlg_gaussian(self) -> None:
+        """TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示"""
+        self._make_dlg_gaussian_param()
+        self._make_dlg_kernel_param()
+    
+    def make_tpi_dlg_original(self) -> None:
+        """TPI の設定で隣接セルを使用した場合に、パラメータを非表示にする"""
+        self._erase_dlg_gaussian_param()
+        self._erase_dlg_kernel_param()
+    
+    def make_tpi_dlg_other(self):
+        """TPi の設定でガウシアンカーネル以外を選択した場合、パラメータを表示する"""
+        self._erase_dlg_gaussian_param()
+        self._make_dlg_kernel_param()
+    
+    def make_tpi_dlg_outlier(self):
+        """TPI の設定で外れ値処理を選択した場合のダイアログ設定"""
+        if self.checkBox_TpiOutTreatment.isChecked():
+            self.l_9.setVisible(True)
+            self.spinBoxF_TpiThres.setVisible(True)
+        else:
+            self.l_9.setVisible(False)
+            self.spinBoxF_TpiThres.setVisible(False)
+    
+    def make_tri_dlg(self):
+        if self.checkBox_TriOutTreatment.isChecked():
+            self.l_10.setVisible(True)
+            self.spinBoxF_TriThres.setVisible(True)
+        else:
+            self.l_10.setVisible(False)
+            self.spinBoxF_TriThres.setVisible(False)
+
+    def _make_dlg_gaussian_param(self):
+        # TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示
+        self.l_4.setVisible(True)
+        self.spinBoxF_GaussSigma.setVisible(True)
+    
+    def _erase_dlg_gaussian_param(self):
+        # TPI の設定でガウシアンカーネル以外を選択した場合、ガウシアンカーネルのパラメータを非表示
+        self.l_4.setVisible(False)
+        self.spinBoxF_GaussSigma.setVisible(False)
+
+    def _make_dlg_kernel_param(self):
+        # TPI の設定でカーネルサイズを選択した場合、カーネルサイズのパラメータを表示
+        self.l_7.setVisible(True)
+        self.l_15.setVisible(True)
+        self.cmbBox_Kernel.setVisible(True)
+        self.spinBoxF_KernelSize.setVisible(True)
+    
+    def _erase_dlg_kernel_param(self):
+        # TPI の設定でカーネルサイズ以外を選択した場合、カーネルサイズのパラメータを非表示
+        self.l_7.setVisible(False)
+        self.l_15.setVisible(False)
+        self.cmbBox_Kernel.setVisible(False)
+        self.spinBoxF_KernelSize.setVisible(False)
+
+    def show_help_kernels(self):
+        """カーネルのヘルプを表示"""
+        self.help_kernels_dialog = HelpKernelsDialog(self)
+        self.help_kernels_dialog.show()
+
+
+
+class HelpKernelsDialog(QtWidgets.QDialog, HELP_KERNELS):
+
+    def __init__(self, parent=None):
+        """Constructor."""
+        super(HelpKernelsDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.btn_Close.clicked.connect(self.close)
+        self.show()

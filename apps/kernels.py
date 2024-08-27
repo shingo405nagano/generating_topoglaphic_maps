@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 from typing import Callable
-from typing import NamedTuple
 
 import numpy as np
 
@@ -33,6 +33,16 @@ def distance_to_kernel_size(one_side_distance: float, cell_size: float) -> int:
     if 0 < remainder:
         divd += 1
     return int(divd * 2)
+
+def cells_to_kernel_size(one_side_distance: int) -> int:
+    """
+    カーネルのサイズを計算する。
+    Args:
+        one_side_distance(int): 中心からの距離
+    Returns:
+        cells(int): カーネルのサイズ
+    """
+    return one_side_distance * 2
 
 
 @_adjust_distance
@@ -193,11 +203,37 @@ def eight_directions_kernel(distance: int) -> np.ndarray:
 
 
 
+@dataclass
+class KernelTypes:
+    original: str = 'Original'
+    doughnut: str = 'Doughnut'
+    mean: str = 'Mean'
+    gaussian: str = 'Gaussian'
+    inverse_gaussian: str = 'InverseGaussian'
+    four_direction: str = '4-Direction'
+    eight_direction: str = '8-Direction'
+
+    
+
 class Kernels(object):
     distance_to_kernel_size: Callable[[float, float], int] = distance_to_kernel_size
+    cells_to_kernel_size: Callable[[int], int] = cells_to_kernel_size
     simple: Callable[[int], np.ndarray] = simple_kernel
     doughnut: Callable[[int], np.ndarray] = doughnut_kernel
     gaussian: Callable[[int, float], np.ndarray] = gaussian_kernel
     inverse_gaussian: Callable[[int, float], np.ndarray] = inverse_gaussian_kernel
     four_directions: Callable[[int], np.ndarray] = four_directions_kernel
     eight_directions: Callable[[int], np.ndarray] = eight_directions_kernel
+
+
+
+if __name__ == '__main__':
+    # kernel_type = 'カーネルサイズを距離で指定'
+    kernel_type = 'カーネルサイズをセル数で指定'
+    one_side_distance = 5
+    sigma = 2
+    if kernel_type == 'カーネルサイズを距離で指定':
+        print(Kernels.distance_to_kernel_size(one_side_distance, 0.5))
+    elif kernel_type == 'カーネルサイズをセル数で指定':
+        print(Kernels.cells_to_kernel_size(one_side_distance))
+    

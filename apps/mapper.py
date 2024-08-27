@@ -1,8 +1,8 @@
+from dataclasses import dataclass
 import json
 from pathlib import Path
 from typing import Callable
 from typing import List
-from typing import NamedTuple
 
 import numpy as np
 from osgeo import gdal
@@ -10,12 +10,14 @@ import scipy.ndimage
 
 from .colors import Coloring
 from .kernels import Kernels
+from .kernels import KernelTypes
 from .parts import process
 colorling = Coloring()
 
 
 
-class SlopeOptions(NamedTuple):
+@dataclass
+class SlopeOptions:
     checked: bool
     resampling: bool
     resolution: float
@@ -79,9 +81,10 @@ class SlopeOptions(NamedTuple):
         return clsd_ary
 
 
-
-class TpiOptions(NamedTuple):
+@dataclass
+class TpiOptions:
     checked: bool
+    kernel_size_type: str
     one_side_distance: float
     kernel_type: str 
     sigma: float
@@ -139,26 +142,25 @@ class TpiOptions(NamedTuple):
         """
         x_resol = org_dst.GetGeoTransform()[1]
         funcs = {
-            'Normal': Kernels.simple,
-            'Doughnut': Kernels.doughnut,
-            'Mean': Kernels.simple,
-            'Gaussian': Kernels.gaussian,
-            'InverseGaussian': Kernels.inverse_gaussian,
-            '4-Direction': Kernels.four_directions,
-            '8-Direction': Kernels.eight_directions,
+            KernelTypes.doughnut: Kernels.doughnut,
+            KernelTypes.mean: Kernels.simple,
+            KernelTypes.gaussian: Kernels.gaussian,
+            KernelTypes.inverse_gaussian: Kernels.inverse_gaussian,
+            KernelTypes.four_direction: Kernels.four_directions,
+            KernelTypes.eight_direction: Kernels.eight_directions,
         }
         func = funcs.get(self.kernel_type)
         kernel_size = Kernels.distance_to_kernel_size(
             one_side_distance=self.one_side_distance,
             cell_size=x_resol
         )
-        if 'Gaussian' in self.kernel_type:
+        if KernelTypes.gaussian in self.kernel_type:
             return func(kernel_size, self.sigma)
         return func(kernel_size)
 
 
-
-class TriOptions(NamedTuple):
+@dataclass
+class TriOptions:
     checked: bool
     outlier_treatment: bool
     threshold: float
@@ -189,8 +191,8 @@ class TriOptions(NamedTuple):
         return ary
     
 
-
-class HillshadeOptions(NamedTuple):
+@dataclass
+class HillshadeOptions:
     checked: bool
     hillshade_type: int
     azimuth: float
