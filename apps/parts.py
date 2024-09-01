@@ -17,11 +17,9 @@ process.convolution
 process.resampling
     ラスターデータの解像度を変更する
 """
-from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 from typing import Callable
-from typing import NamedTuple
+from typing import Tuple
 from typing import Union
 
 import numpy as np
@@ -63,7 +61,6 @@ class Process(object):
         band.SetNoDataValue(nodata)
         return new_dst
 
-
     def get_ary(self,
         data: Union[gdal.Dataset, np.ndarray],
         band: int=1
@@ -83,7 +80,6 @@ class Process(object):
             ary = data
         return ary
 
-
     def nodata_to_nan(self,
         data: Union[gdal.Dataset, np.ndarray], 
         nodata: int=-9999,
@@ -101,7 +97,6 @@ class Process(object):
         ary = self.get_ary(data)
         return np.where(ary == nodata, np.nan, ary)
         
-
     def outlier_treatment(self,
         data: Union[gdal.Dataset, np.ndarray], 
         threshold: int=2,
@@ -127,7 +122,6 @@ class Process(object):
         )
         return processed
 
-
     def convolution(self,
         data: Union[gdal.Dataset, np.ndarray], 
         kernel: np.ndarray,
@@ -151,22 +145,22 @@ class Process(object):
         convd_ary = scipy.ndimage.convolve(ary, kernel, mode=mode, cval=np.nan)
         return convd_ary
 
-
-    def resampling(self, dst: gdal.Dataset, x_res: int, y_res: int) -> gdal.Dataset:
+    def resampling(self, dst: gdal.Dataset, resolution: float, alg: int) -> gdal.Dataset:
         """
         ラスターデータの解像度を変更する
         Args:
             dst(gdal.Dataset): ラスターデータ
-            x_res(int): X方向の解像度
-            y_res(int): Y方向の解像度
+            resolution(int): 解像度
         Returns:
             gdal.Dataset
         """
-        dst = gdal.Warp('', dst, xRes=x_res, yRes=y_res, format='MEM')
-        return dst
+        bounds = self.get_bounds(dst)
+        options = gdal.WarpOptions(
+            xRes=resolution, yRes=resolution, format='MEM', outputBounds=bounds, resampleAlg=alg
+        )
+        return gdal.Warp('', dst, options=options)
 
-    
-    def copy_dataset(dst: gdal.Dataset) -> gdal.Dataset:
+    def copy_dataset(self, dst: gdal.Dataset) -> gdal.Dataset:
         """
         ラスターデータをコピーする
         Args:
@@ -176,5 +170,20 @@ class Process(object):
         """
         return gdal.GetDriverByName('MEM').CreateCopy('', dst)
 
+    def get_bounds(self, dst: gdal.Dataset) -> Tuple[float]:
+        transform = dst.GetGeoTransform()
+        x_min = transform[0]
+        y_max = transform[3]
+        rows = dst.RasterYSize
+        cols = dst.RasterXSize
+        x_resol = transform[1]
+        y_resol = transform[-1]
+        x_max = x_min + cols * x_resol
+        y_min = y_max + rows * y_resol
+        return (x_min, y_min, x_max, y_max)
+
+
 
 process = Process()
+
+

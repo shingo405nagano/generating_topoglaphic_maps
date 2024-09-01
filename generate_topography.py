@@ -22,19 +22,25 @@
  ***************************************************************************/
 """
 import os
+import os.path
 os.chdir(os.path.dirname(__file__))
 
+import numpy as np
+from osgeo import gdal
+from PIL import Image
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
+from .apps.colors import Coloring
+from .apps.mapper import composite_images
+from .apps.mapper import save_image_rgba
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .generate_topography_dialog import GeneratingTopographyDialog
-from .generate_topography_dialog import HelpKernelsDialog
-import os.path
-
+from .generate_topography_dialog import KernelHelpDialog
+coloring = Coloring()
 
 
 
@@ -74,8 +80,15 @@ class GeneratingTopography:
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
 
-        # Slope のダイアログ設定
-        self.dlg.checkBox_Resampling.stateChanged.connect(self.dlg.make_slope_dlg)
+        # ファイルの読み書きを設定
+        self.dlg.fileWgt_InputFile.setFilter("*")
+        self.dlg.fileWgt_OutputFile.setFilter("*.tif")
+
+        self.dlg.textBrowser_Log.clear()
+        # Resampleのダイアログ設定
+        self.dlg.make_resample_dlg()
+        self.dlg.checkBox_StartResample.stateChanged.connect(self.dlg.make_resample_dlg)
+
         # TPI のダイアログ設定
         self.dlg._erase_dlg_gaussian_param()
         self.dlg.radioBtn_OrgKernel.toggled.connect(self.dlg.make_tpi_dlg_original)
@@ -85,14 +98,15 @@ class GeneratingTopography:
         self.dlg.radioBtn_InvGaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
         self.dlg.radioBtn_4DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
         self.dlg.radioBtn_8DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
-        # TRI のダイアログ設定
-        self.dlg.checkBox_TriOutTreatment.stateChanged.connect(self.dlg.make_tri_dlg)
         # マップスタイルのプレビューを表示
         self.dlg.btn_ShowStyles.clicked.connect(self.dlg.show_map_styles)
+        self.dlg.pushBtn_GaussHint.clicked.connect(self.dlg.show_gaussian_hint)\
+
+        self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
+        self.dlg.pushBtn_Cancel.clicked.connect(self.dlg.close)
+        self.dlg.pushBtn_Cancel.clicked.connect(self.dlg.exec_)
 
     
-
-
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -107,7 +121,6 @@ class GeneratingTopography:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('GeneratingTopography', message)
-
 
     def add_action(
         self,
@@ -196,30 +209,8 @@ class GeneratingTopography:
         # will be set False in run()
         self.first_start = True
         # 
-        self.dlg.btn_ShowTpiHint.clicked.connect(self.dlg.show_help_kernels)
-        self.dlg.btn_ShowStyles.clicked.connect(self.test_show)
+        self.dlg.btn_ShowTpiHint.clicked.connect(self.dlg.show_kernel_help)
     
-    def test_show(self):
-        print('####### test start #######')
-        slope_options = self.dlg.get_slope_options()
-        slope_options.cmap = [['CMAP test']]
-        print(slope_options)
-        tpi_options = self.dlg.get_tpi_options()
-        tpi_options.cmap = [['CMAP test']]
-        print(tpi_options)
-        tri_options = self.dlg.get_tri_options()
-        tri_options.cmap = [['CMAP test']]
-        print(tri_options)
-        hillshade_options = self.dlg.get_hillshade_options()
-        hillshade_options.cmap = [['CMAP test']]
-        print(hillshade_options)
-        print('####### test end #######')
-        
-
-        
-
-
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -227,7 +218,6 @@ class GeneratingTopography:
                 self.tr(u'&Generating Topographic map'),
                 action)
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Run method that performs all the real work"""
@@ -237,7 +227,6 @@ class GeneratingTopography:
         if self.first_start == True:
             self.first_start = False
             
-
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
@@ -247,3 +236,55 @@ class GeneratingTopography:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
+
+    def execute_algorithom(self):
+        self.dlg.write_options()
+        progress = self.dlg.progressBar
+        label_log = self.dlg.label_Log
+        label_log.setText('処理の開始 ... ')
+        progress.setValue(0)
+        label_log.setText('ファイルの読み込み')
+        org_dst = gdal.Open(self.dlg.get_input_file_path)
+        org_dst = self.dlg.first_perform_resample(org_dst)
+        progress.setValue(1)
+        self.dlg.show_input_data(org_dst)
+        
+        # 傾斜の計算とRGBA化
+        label_log.setText('傾斜の計算中')
+        slope_options = self.dlg.get_slope_options()
+        slope_img = slope_options.to_slope_img(org_dst, progress=progress)
+        
+        # TPI の計算とRGBA化
+        label_log.setText('TPIの計算中')
+        tpi_options = self.dlg.get_tpi_options()
+        tpi_img = tpi_options.to_tpi_img(org_dst, progress=progress)
+        
+        # TRI の計算とRGBA化
+        label_log.setText('TRIの計算中')
+        tri_options = self.dlg.get_tri_options()
+        tri_img = tri_options.to_tri_img(org_dst, progress=progress)
+
+        # Hillshade の計算とRGBA化
+        label_log.setText('Hillshadeの計算中')
+        hillshade_options = self.dlg.get_hillshade_options()
+        hillshade_img = hillshade_options.to_hillshade_img(org_dst, progress=progress)
+
+        # 画像の合成
+        label_log.setText('画像の合成中')
+        composited_img = composite_images(slope_img, tpi_img, 
+                                          tri_img, hillshade_img)
+        progress.setValue(97)
+
+        # Rasterの保存
+        label_log.setText('ファイルの保存を開始')
+        save_image_rgba(
+            out_file_path=self.dlg.get_output_file_path,
+            img=composited_img,
+            org_dst=org_dst
+        )
+        progress.setValue(100)
+        label_log.setText('処理が完了しました')
+
+
+class Exeptions(object):
+    pass

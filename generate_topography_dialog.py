@@ -22,13 +22,16 @@
  ***************************************************************************/
 """
 import os
-from typing import Union
+from typing import Any, Dict, NewType, Union
 
 from matplotlib import pyplot as plt
+import numpy as np
+from osgeo import gdal
+import pyproj
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
-from .apps.colors import Blue2RedColorMaps
+from .apps.colors import CsColorMaps
 from .apps.colors import VintageColorMaps
 from .apps.kernels import Kernels
 from .apps.kernels import KernelTypes
@@ -36,7 +39,9 @@ from .apps.mapper import SlopeOptions
 from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
 from .apps.mapper import HillshadeOptions
+from .apps.parts import process
 
+OptionsType = NewType('OptionsType', Union[SlopeOptions, TpiOptions, TriOptions, HillshadeOptions])
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = (
@@ -62,7 +67,8 @@ HELP_KERNELS, _ = (
 
 global CS_MAP_IMG
 CS_MAP_IMG = plt.imread('./views/CS_Map__Img.jpg')
-
+global VINTAGE_MAP_IMG
+VINTAGE_MAP_IMG = plt.imread('./views/Vintage_Map__Img.jpg')
 
 
 class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -78,53 +84,155 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
-        plt.title('CS-Map Style  R0.5m', fontsize=15, fontweight='bold')
+        title_kwargs = {'fontsize': 15, 'fontweight': 'bold'}
         if self.mapSelectRadioBtn_BR.isChecked():
+            plt.title('CS-Map Style  R0.5m', **title_kwargs)
             plt.imshow(CS_MAP_IMG)    
         elif self.mapSelectRadioBtn_Vintage.isChecked():
-            plt.imshow(CS_MAP_IMG)
+            plt.title('Vintage-Map Style  R0.5m', **title_kwargs)
+            plt.imshow(VINTAGE_MAP_IMG)
         else:
             plt.imshow(CS_MAP_IMG)
         plt.yticks([])
         plt.xticks([])
         plt.show()
 
+    def show_gaussian_hint(self) -> None:
+        one_side = 7
+        sigma_lst = [round(v, 2) for v in np.arange(1.0, 4.01, 0.01)]
+        distance_list = np.arange(0, one_side) + 1
+        distance_list = (distance_list[::-1] * -1).tolist() + [0] + distance_list.tolist()
+        cmap = plt.get_cmap('cool', len(sigma_lst))
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.set_title("Sigma values of Gaussian Kernel", fontsize=15, fontweight='bold')
+        for i, sigma in enumerate(sigma_lst):
+            kernel = Kernels.gaussian(one_side * 2, sigma)[:, one_side + 1]
+            ax.plot(distance_list, kernel, c=cmap(i))
+        plt.text(1.15, 0.45, 'sigma', rotation=270, transform=ax.transAxes, fontsize=13)
+        ax.vlines(0, 0.0, 0.1, ls='dashed', lw=3, color='black', label='Target Cell')
+        ax.legend()
+        ax.set_xlabel('Distance', fontsize=12)
+        ax.set_ylabel('Weight', fontsize=12)
+        sm = plt.cm.ScalarMappable(
+            norm=plt.Normalize(vmin=min(sigma_lst), vmax=max(sigma_lst)), 
+            cmap=cmap)
+        fig.colorbar(sm, ticks=np.arange(min(sigma_lst), max(sigma_lst) + 1, 1), ax=ax)
+        plt.show()
+
+    def show_kernel_help(self) -> None:
+        """カーネルのヘルプを表示"""
+        self.help_kernels_dialog = KernelHelpDialog(self)
+        self.help_kernels_dialog.show()
+
+    def write_options(self) -> None:
+        """設定をTextBrowserに書き込む"""
+        log_console = self.textBrowser_Log
+        log_console.clear()
+        self.__new_line
+        log_console.append("Set Options:\n")
+        log_console.append(f"Input File: {self.get_input_file_path}\n")
+        log_console.append(f"Output File: {self.get_output_file_path}\n")
+        log_console.append(f"Color: {CsColorMaps.__qualname__}\n")
+        log_console.append(f"Resampling: {self.checkBox_StartResample.isChecked()}\n")
+        if self.checkBox_StartResample.isChecked():
+            log_console.append(f"Resolution: {self.spinBoxF_StartResampleResol.value()}\n")
+            log_console.append(f"Algorithm: {self.comboBox_StartResampleAlg.currentText()}\n")
+        log_console.append(f"Slope: {self.__del_cmap(self.get_slope_options())}\n")
+        log_console.append(f"TPI: {self.__del_cmap(self.get_tpi_options())}\n")
+        log_console.append(f"TRI: {self.__del_cmap(self.get_tri_options())}\n")
+        log_console.append(f"Hillshade: {self.__del_cmap(self.get_hillshade_options())}\n")
+    
+    def __del_cmap(self, options: OptionsType) -> Dict[str, Any]:
+        """カラーマップを削除"""
+        options_dict = options.__dict__.copy()
+        options_dict.pop('cmap')
+        return options_dict
+    
     @property
-    def select_map_style(self) -> Union[Blue2RedColorMaps, VintageColorMaps]:
+    def __new_line(self) -> None:
+        self.textBrowser_Log.append('\n')
+        self.textBrowser_Log.append('------------------------------------\n')
+
+    def show_input_data(self, dst: gdal.Dataset) -> None:
+        transform = dst.GetGeoTransform()
+        x_min = transform[0]
+        y_max = transform[3]
+        x_max = x_min + transform[1] * dst.RasterXSize
+        y_min = y_max + transform[5] * dst.RasterYSize
+        self.__new_line
+        self.textBrowser_Log.append("Raster Size:\n")
+        self.textBrowser_Log.append(f"Scope X: x_min={x_min}, x_max{x_max}\n")
+        self.textBrowser_Log.append(f"Scope Y: y_min={y_min}, y_max={y_max}\n")
+        self.textBrowser_Log.append(f"Resolution: x={transform[1]}, y={transform[5]}\n")
+        self.textBrowser_Log.append(f"Width(Cells): {dst.RasterXSize}\n")
+        self.textBrowser_Log.append(f"Height(Cells): {dst.RasterYSize}\n")
+        proj = pyproj.Proj(dst.GetProjection())
+        self.textBrowser_Log.append(f"Projection: \n{proj.crs.to_wkt(pretty=True)}\n")
+
+    @property
+    def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
         """
         Radio buttonで選択されたカラーマップを返す
         Returns:
-            Union[Blue2RedColorMaps, VintageColorMaps]
+            Union[CsColorMaps, VintageColorMaps]
         """
         if self.mapSelectRadioBtn_BR.isChecked():
-            return Blue2RedColorMaps()
+            return CsColorMaps()
         elif self.mapSelectRadioBtn_Vintage.isChecked():
             return VintageColorMaps()
         else:
-            raise Blue2RedColorMaps()
+            raise CsColorMaps()
     
+    @property
     def get_input_file_path(self) -> str:
         """
         ファイルパスを取得
         """
         return self.fileWgt_InputFile.filePath()
     
+    @property
     def get_output_file_path(self) -> str:
         """
         ファイルパスを取得
         """
         return self.fileWgt_OutputFile.filePath()
     
+    def first_perform_resample(self, 
+        dst: gdal.Dataset, 
+    ) -> bool:
+        """
+        ラスターデータの解像度を変更する
+        Args:
+            dst(gdal.Dataset): ラスターデータ
+        Returns:
+            dst(gdal.Dataset): リサンプリング後のラスターデータ
+        """
+        algs = {
+            'Nearest Neighbour': gdal.GRA_NearestNeighbour,
+            'Bilinear': gdal.GRA_Bilinear,
+            'Cubic': gdal.GRA_Cubic,
+            'Cubic Spline': gdal.GRA_CubicSpline,
+        }
+        if self.checkBox_StartResample.isChecked():
+            resolution = self.spinBoxF_StartResampleResol.value()
+            alg = algs.get(self.comboBox_StartResampleAlg.currentText())
+            dst = process.resampling(dst, resolution, alg)
+            return dst
+        else:
+            return dst
+
     def get_slope_options(self) -> SlopeOptions:
         options = SlopeOptions(
             checked=self.gpBox_Slope.isChecked(),
-            resampling=self.checkBox_Resampling.isChecked(),
+            resampling=self.gpBox_SlopeResample.isChecked(),
             resolution=self.spinBoxF_ResampleResol.value(),
+            gaussian=self.gpBox_SlopeGauss.isChecked(),
+            gaussian_sigma=self.spinBoxF_SlopeGaussSigma.value(),
             cmap=self.select_map_style.slope().colors_255
         )
         return options
     
-    def get_tpi_options(self, resolution: float) -> TpiOptions:
+    def get_tpi_options(self) -> TpiOptions:
         # Kernel typeを取得
         if self.radioBtn_OrgKernel.isChecked():
             kernel_type = KernelTypes.original
@@ -150,7 +258,7 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
             one_side_distance=self.spinBoxF_KernelSize.value(),
             kernel_type=kernel_type,
             sigma=self.spinBoxF_GaussSigma.value(),
-            outlier_treatment=self.checkBox_TpiOutTreatment.isChecked(),
+            outlier_treatment=self.gpBox_TpiOutTreatment.isChecked(),
             threshold=self.spinBoxF_TpiThres.value(),
             cmap=self.select_map_style.tpi().colors_255
         )
@@ -179,15 +287,18 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         return options
 
-
-
-
-    def make_slope_dlg(self):
-        """SLOPE の設定で外れ値処理を選択した場合のダイアログ設定"""
-        if self.checkBox_Resampling.isChecked():
-            self.spinBoxF_ResampleResol.setVisible(True)
+    def make_resample_dlg(self) -> None:
+        """Resample の設定を表示"""
+        if self.checkBox_StartResample.isChecked():
+            self.l_19.setVisible(True)
+            self.l_20.setVisible(True)
+            self.spinBoxF_StartResampleResol.setVisible(True)
+            self.comboBox_StartResampleAlg.setVisible(True)
         else:
-            self.spinBoxF_ResampleResol.setVisible(False)
+            self.l_19.setVisible(False)
+            self.l_20.setVisible(False)
+            self.spinBoxF_StartResampleResol.setVisible(False)
+            self.comboBox_StartResampleAlg.setVisible(False)
 
     def make_tpi_dlg_gaussian(self) -> None:
         """TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示"""
@@ -199,64 +310,41 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         self._erase_dlg_gaussian_param()
         self._erase_dlg_kernel_param()
     
-    def make_tpi_dlg_other(self):
+    def make_tpi_dlg_other(self) -> None:
         """TPi の設定でガウシアンカーネル以外を選択した場合、パラメータを表示する"""
         self._erase_dlg_gaussian_param()
         self._make_dlg_kernel_param()
     
-    def make_tpi_dlg_outlier(self):
-        """TPI の設定で外れ値処理を選択した場合のダイアログ設定"""
-        if self.checkBox_TpiOutTreatment.isChecked():
-            self.l_9.setVisible(True)
-            self.spinBoxF_TpiThres.setVisible(True)
-        else:
-            self.l_9.setVisible(False)
-            self.spinBoxF_TpiThres.setVisible(False)
-    
-    def make_tri_dlg(self):
-        if self.checkBox_TriOutTreatment.isChecked():
-            self.l_10.setVisible(True)
-            self.spinBoxF_TriThres.setVisible(True)
-        else:
-            self.l_10.setVisible(False)
-            self.spinBoxF_TriThres.setVisible(False)
-
-    def _make_dlg_gaussian_param(self):
+    def _make_dlg_gaussian_param(self) -> None:
         # TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示
         self.l_4.setVisible(True)
         self.spinBoxF_GaussSigma.setVisible(True)
     
-    def _erase_dlg_gaussian_param(self):
+    def _erase_dlg_gaussian_param(self) -> None:
         # TPI の設定でガウシアンカーネル以外を選択した場合、ガウシアンカーネルのパラメータを非表示
         self.l_4.setVisible(False)
         self.spinBoxF_GaussSigma.setVisible(False)
 
-    def _make_dlg_kernel_param(self):
+    def _make_dlg_kernel_param(self) -> None:
         # TPI の設定でカーネルサイズを選択した場合、カーネルサイズのパラメータを表示
-        self.l_7.setVisible(True)
         self.l_15.setVisible(True)
         self.cmbBox_Kernel.setVisible(True)
         self.spinBoxF_KernelSize.setVisible(True)
     
-    def _erase_dlg_kernel_param(self):
+    def _erase_dlg_kernel_param(self) -> None:
         # TPI の設定でカーネルサイズ以外を選択した場合、カーネルサイズのパラメータを非表示
-        self.l_7.setVisible(False)
         self.l_15.setVisible(False)
         self.cmbBox_Kernel.setVisible(False)
         self.spinBoxF_KernelSize.setVisible(False)
 
-    def show_help_kernels(self):
-        """カーネルのヘルプを表示"""
-        self.help_kernels_dialog = HelpKernelsDialog(self)
-        self.help_kernels_dialog.show()
 
 
 
-class HelpKernelsDialog(QtWidgets.QDialog, HELP_KERNELS):
+class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):
 
     def __init__(self, parent=None):
         """Constructor."""
-        super(HelpKernelsDialog, self).__init__(parent)
+        super(KernelHelpDialog, self).__init__(parent)
         self.setupUi(self)
         self.btn_Close.clicked.connect(self.close)
         self.show()

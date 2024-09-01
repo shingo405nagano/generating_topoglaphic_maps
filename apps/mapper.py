@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Callable
+from typing import Any
+from typing import Dict
 from typing import List
+from typing import Tuple
 
 import numpy as np
 from osgeo import gdal
+from pathlib import Path
+from PIL import Image
 import scipy.ndimage
 
 from .colors import Coloring
@@ -21,9 +25,11 @@ class SlopeOptions:
     checked: bool
     resampling: bool
     resolution: float
+    gaussian: bool
+    gaussian_sigma: float
     cmap: List[List[int]]
 
-    def to_slope(self, org_dst: gdal.Dataset) -> np.ndarray:
+    def to_slope_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
         Slope は地形の傾斜（°）を示す指標
         Args:
@@ -31,36 +37,101 @@ class SlopeOptions:
         Returns:
             np.ndarray
         """
-        nodata = org_dst.GetRasterBand(1).GetNoDataValue()
+        # リサンプリングを行う（分解能が低い場合はリサンプリングを行うほうがよい）
+        x_resol = org_dst.GetGeoTransform()[1]
+        y_resol = org_dst.GetGeoTransform()[-1]
         if self.resampling:
-            dst = process.resampling(org_dst, self.resolution, self.resolution)
+            dst = self._resampling_alg(org_dst, self.resolution, self.resolution)
         else:
-            dst = org_dst
-        slope_dst = (
-            gdal
-            .DEMProcessing(
-                destName='',
-                srcDS=dst,
-                processing='slope',
-                computeEdges=True,
-                format='MEM',
-            )
-        )
+            dst = process.copy_dataset(org_dst)
+        # Slopeを計算する
+        _slope_dst = self._slope_alg(dst)
+        # 他の画像と合成するために分解能を元に戻す
         if self.resampling:
-            # リサンプリングして傾斜を計算した場合はもとに戻す。
-            slope_dst = (
-                process
-                .resampling(
-                    slope_dst, 
-                    org_dst.GetGeoTransform()[1], 
-                    org_dst.GetGeoTransform()[5]
-                )
+            slope_dst = self._resampling_alg(
+                dst=_slope_dst, 
+                x_resol=x_resol, 
+                y_resol=y_resol, 
+                width=org_dst.RasterXSize, 
+                height=org_dst.RasterYSize
             )
+        else:
+            slope_dst = _slope_dst
         ary = process.nodata_to_nan(slope_dst)
-        slope_dst = None
+        dst = _slope_dst = slope_dst = None
+        ary = self._gaussian_alg(ary, self.gaussian, self.gaussian_sigma)
         return ary
     
-    def classification_slope(self, 
+    def to_slope_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        progress = kwargs.get('progress')
+        ary = self.to_slope_ary(org_dst)
+        if progress:
+            progress.setValue(13)
+        img = colorling.styling(ary, self.cmap)
+        if progress:
+            progress.setValue(19)
+        return Image.fromarray(img)
+
+    def _resampling_alg(self, 
+        dst: gdal.Dataset, 
+        x_resol: float, 
+        y_resol: float,
+        width: int=None,
+        height: int=None
+    ) -> gdal.Dataset:
+        if (width is not None) & (height is not None):
+            options = self._option_template(dst, x_resol, y_resol, width, height)
+        else:
+            options = self._option_template(dst, x_resol, y_resol)
+        options = gdal.WarpOptions(**options)
+        return gdal.Warp('', dst, options=options)
+
+    def _slope_alg(self, dst: gdal.Dataset) -> gdal.Dataset:
+        return gdal.DEMProcessing(
+            destName='',
+            srcDS=dst,
+            processing='slope',
+            format='MEM'
+        )
+    
+    def _gaussian_alg(self, ary: np.ndarray, gaussian: bool, sigma: float) -> np.ndarray:
+        if gaussian:
+            return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
+        else:
+            return ary
+
+    def _get_bounds(self, dst: gdal.Dataset) -> Tuple[float]:
+        transform = dst.GetGeoTransform()
+        x_min = transform[0]
+        y_max = transform[3]
+        rows = dst.RasterYSize
+        cols = dst.RasterXSize
+        x_resol = transform[1]
+        y_resol = transform[-1]
+        x_max = x_min + cols * x_resol
+        y_min = y_max + rows * y_resol
+        return (x_min, y_min, x_max, y_max)
+    
+    def _option_template(self, 
+        dst: gdal.Dataset,
+        x_resol: float, 
+        y_resol: float, 
+        width: int=None,
+        height: int=None
+    ) -> dict:
+        template = dict(
+            format='MEM', 
+            xRes=x_resol, 
+            yRes=y_resol, 
+            resampleAlg=gdal.GRA_Bilinear, 
+            outputBounds=process.get_bounds(dst)
+        )
+        if (width is not None) & (height is not None):
+            template.update(dict(width=width, height=height))
+            return template
+        return template
+             
+    def _classification_slope(self, 
         ary: np.ndarray, 
         thresholds: List[int]=list(range(0, 60, 5)) + [100]
     ) -> np.ndarray:
@@ -81,6 +152,7 @@ class SlopeOptions:
         return clsd_ary
 
 
+
 @dataclass
 class TpiOptions:
     checked: bool
@@ -96,7 +168,7 @@ class TpiOptions:
         Kernel_type(str): カーネルの種類 ['Normal', 'Doughnut', 'Mean', 'Gaussian', 'InverseGaussian', '4-Direction', '8-Direction']
     """
 
-    def to_tpi(self, org_dst: gdal.Dataset,) -> np.ndarray:
+    def to_tpi_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
         Topographic Position Index (TPI) は地形の起伏を示す指標。山頂、谷底、斜面などの地形を示す。プラスなら尾根や峰であり、マイナスなら谷底や河床である。0付近は平坦地を示す。
         Args:
@@ -132,6 +204,16 @@ class TpiOptions:
        
         return ary
     
+    def to_tpi_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        progress = kwargs.get('progress')
+        ary = self.to_tpi_ary(org_dst)
+        if progress:
+            progress.setValue(57)
+        img = colorling.styling(ary, self.cmap)
+        if progress:
+            progress.setValue(63)
+        return Image.fromarray(img)
+
     def _select_kernel(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
         畳み込みに使用するカーネルを選択し、生成する。
@@ -142,6 +224,7 @@ class TpiOptions:
         """
         x_resol = org_dst.GetGeoTransform()[1]
         funcs = {
+            KernelTypes.original: Kernels.simple,
             KernelTypes.doughnut: Kernels.doughnut,
             KernelTypes.mean: Kernels.simple,
             KernelTypes.gaussian: Kernels.gaussian,
@@ -159,6 +242,7 @@ class TpiOptions:
         return func(kernel_size)
 
 
+
 @dataclass
 class TriOptions:
     checked: bool
@@ -166,7 +250,7 @@ class TriOptions:
     threshold: float
     cmap: List[List[int]]
 
-    def to_tri(self, org_dst: gdal.Dataset) -> np.ndarray:
+    def to_tri_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
         Terrain Ruggedness Index (TRI) は地形の凹凸の複雑さを示す指標
         Args:
@@ -189,7 +273,18 @@ class TriOptions:
             ary = process.outlier_treatment(ary, self.threshold)
         tri_dst = None
         return ary
-    
+
+    def to_tri_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        progress = kwargs.get('progress')
+        ary = self.to_tri_ary(org_dst)
+        if progress:
+            progress.setValue(72)
+        img = colorling.styling(ary, self.cmap)
+        if progress:
+            progress.setValue(78)
+        return Image.fromarray(img)
+
+
 
 @dataclass
 class HillshadeOptions:
@@ -201,10 +296,7 @@ class HillshadeOptions:
     combined: bool
     cmap: List[List[int]]
 
-    def to_hillshade(self, 
-        org_dst: gdal.Dataset, 
-        azimuth: float=None
-    ) -> np.ndarray:
+    def to_hillshade_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
         Hillshade は地形の陰影を示す指標
         Args:
@@ -212,15 +304,16 @@ class HillshadeOptions:
         Returns:
             np.ndarray
         """
+        params = self.parameters_template
+        if self.combined:
+            params['combined'] = True
         hillshade_dst = (
-            gdal
-            .DEMProcessing(
+            gdal.DEMProcessing(
                 destName='',
                 srcDS=org_dst,
                 processing='hillshade',
                 format='MEM',
-                computeEdges=True,
-                azimuth=azimuth,
+                azimuth=self.azimuth,
                 altitude=self.altitude,
                 zFactor=self.z_factor
             )
@@ -228,85 +321,63 @@ class HillshadeOptions:
         ary = process.nodata_to_nan(hillshade_dst)
         hillshade_dst = None
         return ary
-    
-    def combined_hillshade(self, 
-        org_dst: gdal.Dataset, 
-    ) -> np.ndarray:
-        """
-        複数のHillshadeを結合する
-        Args:
-            org_dst(gdal.Dataset): Raster data
-        Returns:
-            np.ndarray
-        """
-        azimuth_lst = []
-        for add in [0, 90, 180, 270]:
-            add_azimuth = self.azimuth + add
-            if 360 <= add_azimuth:
-                add_azimuth -= 360
-            azimuth_lst.append(add_azimuth)
-        hillshades = []
-        for azimuth in azimuth_lst:
-            hillshade = self.to_hillshade(org_dst, azimuth=azimuth)
-            hillshades.append(hillshade)
-        return self._ary_composite(hillshades)
-    
-    def _ary_composite(self, arys: List[np.ndarray]) -> np.ndarray:
-        """
-        Hillshadeを結合する
-        Args:
-            arys(List[np.ndarray]): Hillshadeの配列
-        Returns:
-            np.ndarray
-        """
-        result = np.zeros(arys[0].shape, dtype=np.float32)
-        for ary in arys:
-            result += ary
-        return (ary / len(arys)).astype(np.uint8)
 
+    def to_hillshade_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        progress = kwargs.get('progress')
+        ary = self.to_hillshade_ary(org_dst)
+        if progress:
+            progress.setValue(86)
+        img = colorling.styling(ary, self.cmap)
+        if progress:
+            progress.setValue(92)
+        return Image.fromarray(img)
 
-
-class Mapping(object):
-    def __init__(self, 
-        in_file: Path,
-        choiced_map: int,
-        out_file: Path,
-        slope_options: SlopeOptions, 
-        tpi_options: TpiOptions, 
-        tri_options: TriOptions, 
-        hillshade_options: HillshadeOptions
-    ) -> None:
-        self.slope_options = slope_options
-        self.tpi_options = tpi_options
-        self.tri_options = tri_options
-        self.hillshade_options = hillshade_options
-        self.dst = gdal.Open(in_file)
-    
-    def slope_map(self):
-        slope_ary = (
-            self.slope_options
-            .classification_slope(
-                self.slope_options.to_slope(self.dst)
-            )
+    @property
+    def parameters_template(self) -> Dict[str, Any]:
+        return dict(
+            process='hillshade',
+            format='MEM',
+            azimuth=self.azimuth,
+            altitude=self.altitude, 
+            zFactor=self.z_factor
         )
-        scaled_slope = colorling.scaling(slope_ary)
-        slope_img = colorling.get_color(scaled_slope, self.slope_options.cmap)
-        return slope_img
+
+
+
+def composite_images(
+    slope_img: Image.Image,
+    tpi_img: Image.Image,
+    tri_img: Image.Image,
+    hillshade_img: Image.Image
+) -> Image.Image:
+    composited_img = Image.alpha_composite(hillshade_img, tri_img)
+    composited_img = Image.alpha_composite(composited_img, tpi_img)
+    composited_img = Image.alpha_composite(composited_img, slope_img)
+    return composited_img
     
-    def tpi_map(self):
-        cell_size = self.dst.GetGeoTransform()[1]
-        kernel_size = (
-            Kernels
-            .distance_to_kernel_size(
-                one_side_distance=self.tpi_options.one_side_distance,
-                cell_size=cell_size
-            )
-        )
-    
 
-
-        
-
-        
-        
-        
+def save_image_rgba(out_file_path: Path, img: Image.Image, org_dst: gdal.Dataset) -> None:
+    img_ary = np.array(img)
+    driver = gdal.GetDriverByName('GTiff')
+    driver.Register()
+    new_dst = driver.Create(
+        out_file_path,
+        xsize=org_dst.RasterXSize,
+        ysize=org_dst.RasterYSize,
+        bands=img_ary.shape[-1],
+        eType=gdal.GDT_Byte
+    )
+    new_dst.SetGeoTransform(org_dst.GetGeoTransform())
+    new_dst.SetProjection(org_dst.GetProjection())
+    set_colors = [
+        gdal.GCI_RedBand,
+        gdal.GCI_GreenBand,
+        gdal.GCI_BlueBand,
+        gdal.GCI_AlphaBand
+    ]
+    for i, color in enumerate(set_colors):
+        band = new_dst.GetRasterBand(i + 1)
+        band.WriteArray(img_ary[:, :, i])
+        band.SetColorInterpretation(color)
+    new_dst.FlushCache()
+    new_dst = None

@@ -8,10 +8,10 @@ import numpy as np
 conf_path = r"./apps/config.json"
 with open(conf_path, mode='r') as file:
     config = json.load(file)
+    global CS_COLORS
+    CS_COLORS = config['CS-Map']
     global VINRAGE_COLORS
     VINRAGE_COLORS = config['VintageMap']
-    global B2R_COLORS
-    B2R_COLORS = config['BlueToRedMap']
 
 
 
@@ -38,80 +38,7 @@ class ColorMaps(object):
         colors = [cmap(i) for i in range(0, 256)]
         colors_255 = [tuple(int(255 * c) for c in color) for color in colors]
         return Cmap(cmap=cmap, colors=colors, colors_255=colors_255)
-
-
-    @property
-    def order_by_top_to(self) -> None:
-        return list(self.COLORS_DICT.keys())
-
-
-
-class VintageColorMaps(ColorMaps):
-    def __init__(self):
-        super().__init__(VINRAGE_COLORS)
-
-
-    def slope(self, name='SLOPE') -> Cmap:
-        """
-        傾斜角度のカラーマップ①を取得
-        Args:
-            name(str): app/config.jsonに記録しているカラーマップ名
-        Returns:
-            Cmap:
-                cmap(LinearSegmentedColormap): カラーマップ
-                colors(List[Tuple[float]]): 0-1のRGBA値のリスト
-                colors_255(List[Tuple[int]]): 0-255のRGBA値のリスト 
-        """
-        return self._get_cmap(name)
-
-    def tpi(self, name='TPI') -> Cmap:
-        """
-        Topographic Position Index（地形位置指数）のカラーマップを取得
-        Args:
-            name(str): app/config.jsonに記録しているカラーマップ名
-        Returns:
-            Cmap:
-                cmap(LinearSegmentedColormap): カラーマップ
-                colors(List[Tuple[float]]): 0-1のRGBA値のリスト
-                colors_255(List[Tuple[int]]): 0-255のRGBA値のリスト 
-        """
-        return self._get_cmap(name)
-
-
-    def tri(self, name='TRI') -> Cmap:
-        """
-        Terrain Ruggedness Index（地形凹凸指数）のカラーマップを取得
-        Args:
-            name(str): app/config.jsonに記録しているカラーマップ名
-        Returns:
-            Cmap:
-                cmap(LinearSegmentedColormap): カラーマップ
-                colors(List[Tuple[float]]): 0-1のRGBA値のリスト
-                colors_255(List[Tuple[int]]): 0-255のRGBA値のリスト 
-        """
-        return self._get_cmap(name)
-    
-
-    def hillshade(self, name='HILLSHADE') -> Cmap:
-        """
-        地形陰影のカラーマップを取得
-        Args:
-            name(str): app/config.jsonに記録しているカラーマップ名
-        Returns:
-            Cmap:
-                cmap(LinearSegmentedColormap): カラーマップ
-                colors(List[Tuple[float]]): 0-1のRGBA値のリスト
-                colors_255(List[Tuple[int]]): 0-255のRGBA値のリスト 
-        """
-        return self._get_cmap(name)
-
-
-
-class Blue2RedColorMaps(ColorMaps):
-    def __init__(self):
-        super().__init__(B2R_COLORS)
-
-    
+        
     def slope(self, name='SLOPE') -> Cmap:
         """
         傾斜角度のカラーマップ①を取得
@@ -169,6 +96,19 @@ class Blue2RedColorMaps(ColorMaps):
 
 
 
+
+class CsColorMaps(ColorMaps):
+    def __init__(self):
+        super().__init__(CS_COLORS)
+
+
+
+class VintageColorMaps(ColorMaps):
+    def __init__(self):
+        super().__init__(VINRAGE_COLORS)
+
+
+
 class Coloring(object):
     def scaling(self, 
         ary: np.ndarray, 
@@ -187,12 +127,12 @@ class Coloring(object):
         ary_min = np.nanmin(ary)
         ary_max = np.nanmax(ary)
         scaled = (ary - ary_min) / (ary_max - ary_min) * (maximum - minimum) + minimum
-        return scaled.astype('uint8')
+        scaled[np.isnan(scaled)] = 256
+        return scaled.astype('uint16')
     
     def get_color(self,
         idx_ary: np.ndarray, 
-        colors: List[List[int]], 
-        nodata: int=-9999
+        colors: List[List[int]],
     ) -> np.ndarray:
         """
         配列に カラーマップを適用し、RGBAの配列を取得
@@ -207,24 +147,20 @@ class Coloring(object):
         bands = 4
         colors += [(0, 0, 0, 0)]
         colors = np.array(colors)
-        idx_ary = np.where(idx_ary == nodata, 256, idx_ary)
         color_ary = colors[idx_ary]
         return (
             np
             .array(color_ary)
-            .astype('uint8')
+            .astype('uint16')
             .reshape(rows, cols, bands)
         )
     
     def styling(self, ary: np.ndarray, cmap: List[List[int]]) -> np.ndarray:
         scaled_ary = self.scaling(ary)
-        del ary
-        if 0 < scaled_ary[np.isnan(scaled_ary)].size:
-            scaled_ary[np.isnan(scaled_ary)] = -9999
-        img = self.get_color(scaled_ary, cmap, -9999)
-        return img
+        img = self.get_color(scaled_ary, cmap)
+        return img.astype('uint8')
+
 
 
 if __name__ == '__main__':
     vintage_cmaps = VintageColorMaps()
-    print(vintage_cmaps.order_by_top_to)
