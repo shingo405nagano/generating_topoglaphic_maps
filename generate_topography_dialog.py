@@ -128,8 +128,8 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         """設定をTextBrowserに書き込む"""
         log_console = self.textBrowser_Log
         log_console.clear()
-        self.__new_line
-        log_console.append("Set Options:\n")
+        self._new_line
+        log_console.append("<<< Set options >>>\n")
         log_console.append(f"Input File: {self.get_input_file_path}\n")
         log_console.append(f"Output File: {self.get_output_file_path}\n")
         log_console.append(f"Color: {CsColorMaps.__qualname__}\n")
@@ -149,25 +149,25 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         return options_dict
     
     @property
-    def __new_line(self) -> None:
+    def _new_line(self) -> None:
         self.textBrowser_Log.append('\n')
-        self.textBrowser_Log.append('------------------------------------\n')
+        self.textBrowser_Log.append('___________________________________________\n')
 
     def show_input_data(self, dst: gdal.Dataset) -> None:
+        crs = pyproj.CRS(dst.GetProjection())
+        proj = crs.to_json_dict()
+        self.textBrowser_Log.append(f"Name: {proj['name']}\n")
+        self.textBrowser_Log.append(f"EPSG: {proj['id']['code']}\n")
         transform = dst.GetGeoTransform()
         x_min = transform[0]
         y_max = transform[3]
         x_max = x_min + transform[1] * dst.RasterXSize
         y_min = y_max + transform[5] * dst.RasterYSize
-        self.__new_line
-        self.textBrowser_Log.append("Raster Size:\n")
         self.textBrowser_Log.append(f"Scope X: x_min={x_min}, x_max{x_max}\n")
         self.textBrowser_Log.append(f"Scope Y: y_min={y_min}, y_max={y_max}\n")
         self.textBrowser_Log.append(f"Resolution: x={transform[1]}, y={transform[5]}\n")
         self.textBrowser_Log.append(f"Width(Cells): {dst.RasterXSize}\n")
         self.textBrowser_Log.append(f"Height(Cells): {dst.RasterYSize}\n")
-        proj = pyproj.Proj(dst.GetProjection())
-        self.textBrowser_Log.append(f"Projection: \n{proj.crs.to_wkt(pretty=True)}\n")
 
     @property
     def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
@@ -197,9 +197,7 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         return self.fileWgt_OutputFile.filePath()
     
-    def first_perform_resample(self, 
-        dst: gdal.Dataset, 
-    ) -> bool:
+    def first_perform_resample(self, dst: gdal.Dataset) -> bool:
         """
         ラスターデータの解像度を変更する
         Args:

@@ -128,6 +128,7 @@ class SlopeOptions:
         )
         if (width is not None) & (height is not None):
             template.update(dict(width=width, height=height))
+            [template.pop(key) for key in ['xRes', 'yRes']]
             return template
         return template
              

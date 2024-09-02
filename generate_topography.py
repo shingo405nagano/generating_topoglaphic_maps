@@ -83,8 +83,10 @@ class GeneratingTopography:
         # ファイルの読み書きを設定
         self.dlg.fileWgt_InputFile.setFilter("*")
         self.dlg.fileWgt_OutputFile.setFilter("*.tif")
-
+        
+        # ログの初期化
         self.dlg.textBrowser_Log.clear()
+
         # Resampleのダイアログ設定
         self.dlg.make_resample_dlg()
         self.dlg.checkBox_StartResample.stateChanged.connect(self.dlg.make_resample_dlg)
@@ -244,47 +246,69 @@ class GeneratingTopography:
         label_log.setText('処理の開始 ... ')
         progress.setValue(0)
         label_log.setText('ファイルの読み込み')
+        log_board = self.dlg.textBrowser_Log
+        # Rasterの読み込み
         org_dst = gdal.Open(self.dlg.get_input_file_path)
-        org_dst = self.dlg.first_perform_resample(org_dst)
-        progress.setValue(1)
+        # RasterSizeをLogに書き込む
+        self.dlg._new_line
+        log_board.append("<<< Original raster size >>>\n")
         self.dlg.show_input_data(org_dst)
+        # リサンプルの実行
+        org_dst = self.dlg.first_perform_resample(org_dst)
+        if self.dlg.checkBox_StartResample.isChecked():
+            # リサンプルした場合はもう一度RasterSizeをLogに書き込む
+            self.dlg._new_line
+            log_board.append("<<< Resampled raster size >>>\n")
+            self.dlg.show_input_data(org_dst)
+        progress.setValue(1)
         
+        self.dlg._new_line
+        log_board.append("<<< Start to calculate topographic maps >>>\n")
         # 傾斜の計算とRGBA化
         label_log.setText('傾斜の計算中')
+        log_board.append("Start to calculate slope\n")
         slope_options = self.dlg.get_slope_options()
         slope_img = slope_options.to_slope_img(org_dst, progress=progress)
+        log_board.append("Slope calculation is completed\n\n")
         
         # TPI の計算とRGBA化
         label_log.setText('TPIの計算中')
+        log_board.append("Start to calculate TPI\n")
         tpi_options = self.dlg.get_tpi_options()
         tpi_img = tpi_options.to_tpi_img(org_dst, progress=progress)
+        log_board.append("TPI calculation is completed\n\n")
         
         # TRI の計算とRGBA化
         label_log.setText('TRIの計算中')
+        log_board.append("Start to calculate TRI\n")
         tri_options = self.dlg.get_tri_options()
         tri_img = tri_options.to_tri_img(org_dst, progress=progress)
+        log_board.append("TRI calculation is completed\n\n")
 
         # Hillshade の計算とRGBA化
         label_log.setText('Hillshadeの計算中')
+        log_board.append("Start to calculate Hillshade\n")
         hillshade_options = self.dlg.get_hillshade_options()
         hillshade_img = hillshade_options.to_hillshade_img(org_dst, progress=progress)
+        log_board.append("Hillshade calculation is completed\n\n")
 
         # 画像の合成
         label_log.setText('画像の合成中')
+        log_board.append("Start compositing images\n")
         composited_img = composite_images(slope_img, tpi_img, 
                                           tri_img, hillshade_img)
+        log_board.append("Composite images is completed\n\n")
         progress.setValue(97)
 
         # Rasterの保存
         label_log.setText('ファイルの保存を開始')
+        log_board.append("Start writing raster file\n")
         save_image_rgba(
             out_file_path=self.dlg.get_output_file_path,
             img=composited_img,
             org_dst=org_dst
         )
         progress.setValue(100)
+        log_board.append("Writing raster file is completed\n\n")
+        log_board.append("<<< Finish >>>")
         label_log.setText('処理が完了しました')
-
-
-class Exeptions(object):
-    pass
