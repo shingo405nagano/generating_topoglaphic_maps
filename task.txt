@@ -1,2 +1,2 @@
-・RGB-Mapの色を考える。
-・Vintage-Mapの色を再考する。SlopeとHillshadeを調整。
+・Vintage-Mapの名前を変更したい
+・今のVintage-Mapから沢の色を抜いたものを新たなVintage-Mapにしたい
