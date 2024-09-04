@@ -11,7 +11,9 @@ with open(conf_path, mode='r') as file:
     global CS_COLORS
     CS_COLORS = config['CS-Map']
     global VINRAGE_COLORS
-    VINRAGE_COLORS = config['VintageMap']
+    VINRAGE_COLORS = config['Vintage-Map']
+    global RGB_COLORS
+    RGB_COLORS = config['RGB-Map']
 
 
 
@@ -109,6 +111,12 @@ class VintageColorMaps(ColorMaps):
 
 
 
+class RgbColorMaps(ColorMaps):
+    def __init__(self):
+        super().__init__(RGB_COLORS)
+
+
+
 class Coloring(object):
     def scaling(self, 
         ary: np.ndarray, 
@@ -164,3 +172,4 @@ class Coloring(object):
 
 if __name__ == '__main__':
     vintage_cmaps = VintageColorMaps()
+    rgb_cmaps = RgbColorMaps()

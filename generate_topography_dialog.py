@@ -32,6 +32,7 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
 from .apps.colors import CsColorMaps
+from .apps.colors import RgbColorMaps
 from .apps.colors import VintageColorMaps
 from .apps.kernels import Kernels
 from .apps.kernels import KernelTypes
@@ -66,9 +67,11 @@ HELP_KERNELS, _ = (
 
 
 global CS_MAP_IMG
-CS_MAP_IMG = plt.imread('./views/CS_Map__Img.jpg')
+CS_MAP_IMG = plt.imread('./views/CS-Map__Img.jpg')
 global VINTAGE_MAP_IMG
-VINTAGE_MAP_IMG = plt.imread('./views/Vintage_Map__Img.jpg')
+VINTAGE_MAP_IMG = plt.imread('./views/Vintage-Map__Img.jpg')
+global RGB_MAP_IMG
+RGB_MAP_IMG = plt.imread('./views/RGB-Map__Img.jpg')
 
 
 class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -84,17 +87,30 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
-        title_kwargs = {'fontsize': 15, 'fontweight': 'bold'}
-        if self.mapSelectRadioBtn_BR.isChecked():
-            plt.title('CS-Map Style  R0.5m', **title_kwargs)
-            plt.imshow(CS_MAP_IMG)    
-        elif self.mapSelectRadioBtn_Vintage.isChecked():
-            plt.title('Vintage-Map Style  R0.5m', **title_kwargs)
-            plt.imshow(VINTAGE_MAP_IMG)
-        else:
-            plt.imshow(CS_MAP_IMG)
-        plt.yticks([])
-        plt.xticks([])
+        # title_kwargs = {'fontsize': 15, 'fontweight': 'bold'}
+        # if self.mapSelectRadioBtn_BR.isChecked():
+        #     plt.title('CS-Map Styled  R0.5m', **title_kwargs)
+        #     plt.imshow(CS_MAP_IMG)    
+        # elif self.mapSelectRadioBtn_Vintage.isChecked():
+        #     plt.title('Vintage-Map Styled  R0.5m', **title_kwargs)
+        #     plt.imshow(VINTAGE_MAP_IMG)
+        # else:
+        #     plt.title('RGB-Map Styled  R0.5m', **title_kwargs)
+        #     plt.imshow(RGB_MAP_IMG)
+        # plt.yticks([])
+        # plt.xticks([])
+        # plt.show()
+        imgs = [CS_MAP_IMG, VINTAGE_MAP_IMG, RGB_MAP_IMG]
+        titles = ['CS-Map Styled', 'Vintage-Map Styled', 'RGB-Map Styled']
+        _ax = None
+        fig = plt.figure(figsize=(8, 8))
+        for i, (img, title) in enumerate(zip(imgs, titles), start=1):
+            ax = fig.add_subplot(2, 2, i, sharex=_ax, sharey=_ax)
+            ax.set_title(title, fontsize=15, fontweight='bold')
+            ax.imshow(img)
+            ax.axis('off')
+            _ax = ax
+        plt.subplots_adjust(wspace=0.05, hspace=0.15)
         plt.show()
 
     def show_gaussian_hint(self) -> None:
@@ -181,7 +197,7 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         elif self.mapSelectRadioBtn_Vintage.isChecked():
             return VintageColorMaps()
         else:
-            raise CsColorMaps()
+            raise RgbColorMaps()
     
     @property
     def get_input_file_path(self) -> str:
