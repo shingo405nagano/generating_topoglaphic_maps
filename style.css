@@ -1,0 +1,53 @@
+h1 {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem 0;
+  border-bottom: 0.3rem solid #383c3c;
+  border-top: 0.3rem solid #383c3c;
+  font-weight: bold;
+}
+
+h2 {
+  margin: 4rem 1rem 1rem 1rem;
+  border-left: solid 1rem #595857; 
+  border-bottom: solid 0.2rem #595857;
+  text-indent: 0.5rem;
+  font-weight: bold;
+}
+
+h3 {
+  padding: 0rem 1.5rem;
+  font-weight: bold;
+}
+
+ul {
+  padding: 0rem 5rem;
+  line-height: 2rem;
+}
+
+dl {
+  padding: 0rem 2rem;
+}
+
+dt {
+  padding: 0.5rem;
+  font-size: 1.2rem;
+}
+dt::before {
+  content: "・ ";
+}
+dd {
+  padding: 0rem 0rem 1rem;
+  text-indent: 1rem;
+}
+
+p {
+  padding: 0rem 1.5rem;
+  line-height: 1.5rem;
+  text-indent: 1rem
+}
+
+img {
+  width: 65%;
+  text-align: center;
+}
