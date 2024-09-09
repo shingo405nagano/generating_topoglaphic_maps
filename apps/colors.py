@@ -173,3 +173,4 @@ class Coloring(object):
 if __name__ == '__main__':
     vintage_cmaps = VintageColorMaps()
     rgb_cmaps = RgbColorMaps()
+    brown_cmaps = BrownColorMaps()

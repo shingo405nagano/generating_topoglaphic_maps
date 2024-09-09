@@ -23,6 +23,7 @@
 """
 import os
 from typing import Any, Dict, NewType, Union
+from PIL import Image
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -240,7 +241,7 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
             checked=self.gpBox_Slope.isChecked(),
             resampling=self.gpBox_SlopeResample.isChecked(),
             resolution=self.spinBoxF_ResampleResol.value(),
-            gaussian=self.gpBox_SlopeGauss.isChecked(),
+            filtering=self.gpBox_SlopeGauss.isChecked(),
             gaussian_sigma=self.spinBoxF_SlopeGaussSigma.value(),
             cmap=self.select_map_style.slope().colors_255
         )
@@ -284,7 +285,9 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
             checked=self.gpBox_Tri.isChecked(),
             outlier_treatment=self.checkBox_TriOutTreatment.isChecked(),
             threshold=self.spinBoxF_TriThres.value(),
-            cmap=self.select_map_style.tri().colors_255
+            cmap=self.select_map_style.tri().colors_255,
+            filtering=self.gpBox_HillshadeGauss.isChecked(),
+            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
         )
         return options
 
@@ -297,7 +300,9 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
             altitude=self.spinBoxInt_HillshadeHight.value(),
             z_factor=self.spinBoxF_HillshadeHighlight.value(),
             combined=self.checkBox_CombinedSlope.isChecked(),
-            cmap=self.select_map_style.hillshade().colors_255
+            cmap=self.select_map_style.hillshade().colors_255,
+            filtering=self.gpBox_HillshadeGauss.isChecked(),
+            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
         )
         return options
 
@@ -351,7 +356,30 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         self.cmbBox_Kernel.setVisible(False)
         self.spinBoxF_KernelSize.setVisible(False)
 
+    def change_slope_alpha_param_from_slider(self) -> None:
+        alpha = self.hSlider_SlopeAlpha.value()
+        self.spinBoxInt_SlopeAlpha.setValue(alpha)
+    
+    def change_slope_alpha_param_from_spinbox(self) -> None:
+        alpha = self.spinBoxInt_SlopeAlpha.value()
+        self.hSlider_SlopeAlpha.setValue(alpha)
 
+    def change_tpi_alpha_param_from_slider(self) -> None:
+        alpha = self.hSlider_TpiAlpha.value()
+        self.spinBoxInt_TpiAlpha.setValue(alpha)
+
+    def change_tpi_alpha_param_from_spinbox(self) -> None:
+        alpha = self.spinBoxInt_TpiAlpha.value()
+        self.hSlider_TpiAlpha.setValue(alpha)
+
+    def change_alpha(self, img: Image.Image, alpha: float) -> Image.Image:
+        ary = np.array(img)
+        alpha_band = ary[:, :, 3]
+        new_alpha_band = (alpha_band * alpha).astype('uint8')
+        ary[:,:,3] = new_alpha_band
+        new_img = Image.fromarray(ary)
+        return new_img
+    
 
 
 class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):

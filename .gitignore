@@ -1,1 +1,5 @@
-.__pychache__
+__pycache__
+.git
+.gitignore
+user-history.db
+symbology-style.db

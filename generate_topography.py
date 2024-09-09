@@ -100,14 +100,24 @@ class GeneratingTopography:
         self.dlg.radioBtn_InvGaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
         self.dlg.radioBtn_4DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
         self.dlg.radioBtn_8DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
+
+        # 透過率のダイアログ設定
+        self.dlg.hSlider_SlopeAlpha.valueChanged.connect(
+            self.dlg.change_slope_alpha_param_from_slider)
+        self.dlg.spinBoxInt_SlopeAlpha.valueChanged.connect(
+            self.dlg.change_slope_alpha_param_from_spinbox)
+        self.dlg.hSlider_TpiAlpha.valueChanged.connect(
+            self.dlg.change_tpi_alpha_param_from_slider)
+        self.dlg.spinBoxInt_TpiAlpha.valueChanged.connect(
+            self.dlg.change_tpi_alpha_param_from_spinbox)
+        
         # マップスタイルのプレビューを表示
         self.dlg.btn_ShowStyles.clicked.connect(self.dlg.show_map_styles)
-        self.dlg.pushBtn_GaussHint.clicked.connect(self.dlg.show_gaussian_hint)\
+        self.dlg.pushBtn_GaussHint.clicked.connect(self.dlg.show_gaussian_hint)
+        self.dlg.pushBtn_GaussHint_.clicked.connect(self.dlg.show_gaussian_hint)
 
         self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
         self.dlg.pushBtn_Cancel.clicked.connect(self.dlg.close)
-        self.dlg.pushBtn_Cancel.clicked.connect(self.dlg.exec_)
-
     
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -228,7 +238,7 @@ class GeneratingTopography:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            
+        
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
@@ -291,6 +301,15 @@ class GeneratingTopography:
         hillshade_options = self.dlg.get_hillshade_options()
         hillshade_img = hillshade_options.to_hillshade_img(org_dst, progress=progress)
         log_board.append("Hillshade calculation is completed\n\n")
+
+        # 透過率の変更
+        defalut_alpha = 100
+        if self.dlg.spinBoxInt_SlopeAlpha.value() != defalut_alpha:
+            alpha = self.dlg.spinBoxInt_SlopeAlpha.value() * 0.01
+            slope_img = self.dlg.change_alpha(slope_img, alpha)
+        if self.dlg.spinBoxInt_TpiAlpha.value() != defalut_alpha:
+            alpha = self.dlg.spinBoxInt_TpiAlpha.value() * 0.01
+            tpi_img = self.dlg.change_alpha(tpi_img, alpha)
 
         # 画像の合成
         label_log.setText('画像の合成中')

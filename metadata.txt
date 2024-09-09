@@ -3,14 +3,14 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Generating Topographic map
+name=Topo Maps
 qgisMinimumVersion=3.0
 description=DTMから地形図を生成
-version=0.1
+version=1.0
 author=ShingoNagano
 email=shingosnaganon@gmail.com
 
-about=プラグインの説明
+about=DTM（DEM）から微地形図を作成する為のプラグインです。
 
 tracker=http://bugs
 repository=http://repo
@@ -23,7 +23,7 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=python, DEM, DTM, Topographic, CS, Visualize, GeoTiff, Tiff, Raster
 
 homepage=http://homepage
 category=Plugins

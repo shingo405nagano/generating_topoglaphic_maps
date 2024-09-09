@@ -25,7 +25,7 @@ class SlopeOptions:
     checked: bool
     resampling: bool
     resolution: float
-    gaussian: bool
+    filtering: bool
     gaussian_sigma: float
     cmap: List[List[int]]
 
@@ -59,7 +59,7 @@ class SlopeOptions:
             slope_dst = _slope_dst
         ary = process.nodata_to_nan(slope_dst)
         dst = _slope_dst = slope_dst = None
-        ary = self._gaussian_alg(ary, self.gaussian, self.gaussian_sigma)
+        ary = self._gaussian_alg(ary, self.filtering, self.gaussian_sigma)
         return ary
     
     def to_slope_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
@@ -94,8 +94,8 @@ class SlopeOptions:
             format='MEM'
         )
     
-    def _gaussian_alg(self, ary: np.ndarray, gaussian: bool, sigma: float) -> np.ndarray:
-        if gaussian:
+    def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        if filtering:
             return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
         else:
             return ary
@@ -250,6 +250,8 @@ class TriOptions:
     outlier_treatment: bool
     threshold: float
     cmap: List[List[int]]
+    filtering: bool
+    gaussian_sigma: float
 
     def to_tri_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
@@ -272,6 +274,7 @@ class TriOptions:
         ary = process.nodata_to_nan(tri_dst)
         if self.outlier_treatment:
             ary = process.outlier_treatment(ary, self.threshold)
+        ary = self._gaussian_alg(ary, self.filtering, self.gaussian_sigma)
         tri_dst = None
         return ary
 
@@ -284,6 +287,12 @@ class TriOptions:
         if progress:
             progress.setValue(78)
         return Image.fromarray(img)
+    
+    def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        if filtering:
+            return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
+        else:
+            return ary
 
 
 
@@ -296,6 +305,8 @@ class HillshadeOptions:
     z_factor: float
     combined: bool
     cmap: List[List[int]]
+    filtering: bool
+    gaussian_sigma: float
 
     def to_hillshade_ary(self, org_dst: gdal.Dataset) -> np.ndarray:
         """
@@ -320,8 +331,15 @@ class HillshadeOptions:
             )
         )
         ary = process.nodata_to_nan(hillshade_dst)
+        ary = self._gaussian_alg(ary, self.filtering, self.gaussian_sigma)
         hillshade_dst = None
         return ary
+    
+    def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        if filtering:
+            return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
+        else:
+            return ary
 
     def to_hillshade_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
         progress = kwargs.get('progress')
