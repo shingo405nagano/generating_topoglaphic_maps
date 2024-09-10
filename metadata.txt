@@ -5,7 +5,7 @@
 [general]
 name=Topo Maps
 qgisMinimumVersion=3.0
-description=DTMから地形図を生成
+description=微地形図の生成
 version=1.0
 author=ShingoNagano
 email=shingosnaganon@gmail.com
@@ -13,7 +13,7 @@ email=shingosnaganon@gmail.com
 about=DTM（DEM）から微地形図を作成する為のプラグインです。
 
 tracker=http://bugs
-repository=http://repo
+repository=https://github.com/shingo405nagano/generating_topoglaphic_maps
 # End of mandatory metadata
 
 # Recommended items:

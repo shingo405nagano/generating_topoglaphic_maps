@@ -17,7 +17,9 @@ process.convolution
 process.resampling
     ラスターデータの解像度を変更する
 """
+import math
 from typing import Any
+from typing import List
 from typing import Tuple
 from typing import Union
 
@@ -180,6 +182,74 @@ class Process(object):
         x_max = x_min + cols * x_resol
         y_min = y_max + rows * y_resol
         return (x_min, y_min, x_max, y_max)
+    
+    def get_sample_raster(self, org_dst: gdal.Dataset) -> gdal.Dataset:
+        def nodata_checker(ary: np.ndarray, nodata: Any) -> float:
+            if nodata is None:
+                data_size = ary[ary != nodata].size
+            elif math.isnan(nodata):
+                data_size = ary[~np.isnan(ary)].size
+            else:
+                data_size = ary[ary != nodata].size
+            total_size = ary.size
+            return data_size / total_size
+
+        def calc_center_xy(org_dst: gdal.Dataset) -> List[int]:
+            X_SIZE, Y_SIZE = org_dst.RasterXSize, org_dst.RasterYSize
+            x_center, y_center = int(X_SIZE / 2), int(Y_SIZE / 2)
+            return [x_center, y_center]
+    
+        band = org_dst.GetRasterBand(1)
+        nodata = band.GetNoDataValue()
+        ary = org_dst.ReadAsArray()
+        y_size, x_size = [int(size / 3) for size in ary.shape]
+        # サイズが大きすぎる場合は、2,000に制限する
+        if 2_000 < x_size:
+            x_size = 2_000
+        if 2_000 < y_size:
+            y_size = 2_000
+        # Nodataのセルが多い場合は、別な箇所をサンプリングする
+        arys = [
+            ary[: x_size, : y_size],
+            ary[: x_size, -y_size:],
+            ary[-x_size:, : y_size],
+            ary[-x_size:, -y_size:]
+        ]
+        new_ary = None
+        for _ary in arys:
+            if 0.8 < nodata_checker(_ary, nodata):
+                new_ary = _ary
+                del arys
+                break
+            else:
+                continue
+        if new_ary is None:
+            x_center, y_center = calc_center_xy(org_dst)
+            herf_x_size, herf_y_size = [int(size / 2) for size in [x_size, y_size]]
+            new_ary = ary[
+                x_center - herf_x_size: x_center + herf_x_size,
+                y_center - herf_y_size: y_center + herf_y_size
+            ]
+        print(new_ary.shape)
+        # データセットを作成
+        driver = gdal.GetDriverByName('MEM')
+        driver.Register()
+        new_dst = driver.Create(
+            '',
+            xsize=x_size, 
+            ysize=y_size, 
+            bands=1, 
+            eType=gdal.GDT_Float32
+        )
+        print(new_dst.RasterXSize, new_dst.RasterYSize)
+        print(new_ary.shape)
+        new_dst.SetGeoTransform(org_dst.GetGeoTransform())
+        new_dst.SetProjection(org_dst.GetProjection())
+        band = new_dst.GetRasterBand(1)
+        band.WriteArray(new_ary)
+        band.SetNoDataValue(org_dst.GetRasterBand(1).GetNoDataValue())
+        return new_dst
+        
 
 
 

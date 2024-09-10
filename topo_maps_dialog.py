@@ -75,10 +75,10 @@ global RGB_MAP_IMG
 RGB_MAP_IMG = plt.imread('./views/RGB-Map__Img.jpg')
 
 
-class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
+class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
-        super(GeneratingTopographyDialog, self).__init__(parent)
+        super(TopoMapsDialog, self).__init__(parent)
         # Set up the user interface from Designer through FORM_CLASS.
         # After self.setupUi() you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
@@ -247,9 +247,9 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         elif self.radioBtn_InvGaussKernel.isChecked():
             kernel_type = KernelTypes.inverse_gaussian
         elif self.radioBtn_4DirecKernel.isChecked():
-            kernel_type = KernelTypes.four_directions
+            kernel_type = KernelTypes.four_direction
         elif self.radioBtn_8DirecKernel.isChecked():
-            kernel_type = KernelTypes.eight_directions
+            kernel_type = KernelTypes.eight_direction
         else:
             kernel_type = KernelTypes.original
         
@@ -367,13 +367,17 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         new_img = Image.fromarray(ary)
         return new_img
     
+    def show_sample(self) -> None:
+        """カーネルのヘルプを表示"""
+        pass
+    
 
 
 class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):
-
     def __init__(self, parent=None):
         """Constructor."""
         super(KernelHelpDialog, self).__init__(parent)
         self.setupUi(self)
-        self.btn_Close.clicked.connect(self.close)
+        # self.btn_Close.clicked.connect(self.close)
         self.show()
+

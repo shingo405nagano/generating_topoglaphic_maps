@@ -42,7 +42,7 @@ def cells_to_kernel_size(one_side_distance: int) -> int:
     Returns:
         cells(int): カーネルのサイズ
     """
-    return one_side_distance * 2
+    return int(one_side_distance * 2)
 
 
 @_adjust_distance

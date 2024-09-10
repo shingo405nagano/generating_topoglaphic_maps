@@ -175,7 +175,7 @@ class TpiOptions:
         Returns:
             np.ndarray
         """
-        if self.checked:
+        if self.checked or self.kernel_type == KernelTypes.original:
             band = org_dst.GetRasterBand(1)
             nodata = band.GetNoDataValue()
             ary = band.ReadAsArray()
@@ -223,7 +223,6 @@ class TpiOptions:
         """
         x_resol = org_dst.GetGeoTransform()[1]
         funcs = {
-            KernelTypes.original: Kernels.simple,
             KernelTypes.doughnut: Kernels.doughnut,
             KernelTypes.mean: Kernels.simple,
             KernelTypes.gaussian: Kernels.gaussian,
@@ -232,10 +231,14 @@ class TpiOptions:
             KernelTypes.eight_direction: Kernels.eight_directions,
         }
         func = funcs.get(self.kernel_type)
-        kernel_size = Kernels.distance_to_kernel_size(
-            one_side_distance=self.one_side_distance,
-            cell_size=x_resol
-        )
+        if self.kernel_size_type == 'カーネルサイズを距離で指定':
+            kernel_size = Kernels.distance_to_kernel_size(
+                one_side_distance=self.one_side_distance,
+                cell_size=x_resol
+            )
+        else:
+            kernel_size = Kernels.cells_to_kernel_size(self.one_side_distance)
+        
         if KernelTypes.gaussian in self.kernel_type:
             return func(kernel_size, self.sigma)
         return func(kernel_size)

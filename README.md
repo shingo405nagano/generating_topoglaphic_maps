@@ -1,21 +1,12 @@
-<img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square">
-<img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square">
-<img src="https://img.shields.io/badge/-GDAL-006e54.svg?logo=OSGEO&style=flat-square">
-<img src="https://img.shields.io/badge/-pyproj-fdd35c.svg?logo=matplotlib&style=flat-square">
-<img src="https://img.shields.io/badge/-Numpy-3e62ad.svg?logo=NUMPY&style=flat-square">
-<img src="https://img.shields.io/badge/-Scipy-003f8e.svg?logo=scipy&style=flat-square">
-<img src="https://img.shields.io/badge/-Matplotlib-ed6d35.svg?logo=matplotlib&style=flat-square">
-
-
-
 ![](./views/Contour.png)
+<img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square"><img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square"><img src="https://img.shields.io/badge/-GDAL-006e54.svg?logo=OSGEO&style=flat-square"><img src="https://img.shields.io/badge/-pyproj-fdd35c.svg?logo=matplotlib&style=flat-square"><img src="https://img.shields.io/badge/-Numpy-3e62ad.svg?logo=NUMPY&style=flat-square"><img src="https://img.shields.io/badge/-Scipy-003f8e.svg?logo=scipy&style=flat-square"><img src="https://img.shields.io/badge/-Matplotlib-ed6d35.svg?logo=matplotlib&style=flat-square">
 
 ## **Overview**
 この QGIS プラグインは DTM（DEM）から微地形図の RGB 画像を作成する為のプラグインです。
 
 
 ## **Install**
-このレポジトリを Plugin ディレクトリーにクローンして下さい。
+このレポジトリを Plugin ディレクトリーにクローンして下さい。外部パッケージをインストールする必要はありません。QGIS のデフォルト環境で動作します。
 
 
 ## **Layers**
@@ -38,7 +29,7 @@
 基本的には初期設定のまま使用できますが、分解能に合わせて各計算の詳細を変更する事ができます。
 
 ### Slope Options
-傾斜は "gdal.DEMProcessing" で計算しています。
+傾斜は `gdal.DEMProcessing` で計算しています。
 <dl>
     <dt>リサンプリング</dt>
     <dd>傾斜を計算する前に DTM のリサンプリングを行います。このオプションは分解能が低い場合は有効な処理です（10m未満の場合は10mにリサンプリングする等）。</dd>
@@ -75,7 +66,23 @@ TPI ではオリジナルの DTM と畳み込み後の DTM の差分を計算し
 </dl>
 
 
+## **Preview composited image**
+このプラグインで高分解能の DTM から微地形図を作成する場合は時間が掛かります。サイズが大きな DTM の場合は`実行`ボタン左横の`サンプルの確認`にチェックを入れて実行する事で、全体ではなく一部の範囲で計算・確認を行う事ができます。
+
+
+
+## **Styled images by resolution**
+
+### Resolution = 0.5m
+![](./views/Sample__CS-Map__R0_5.jpg)
+
+### Resolution = 5.0m (resampled = 1.0m)
+![](./views/Sample__CS-Map__R5.jpg)
+
+### Resolution = 10.0m (resampled = 1.0m)
+![](./views/Sample__CS-Map__R10.jpg)
+
+
 
 ## **UI Image**
-<!-- ![](./views/UI.png) -->
-
+![](./views/UI.png)
