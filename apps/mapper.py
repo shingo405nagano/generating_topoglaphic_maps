@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-import json
 from pathlib import Path
+from PIL import Image
 from typing import Any
 from typing import Dict
 from typing import List
@@ -8,8 +8,6 @@ from typing import Tuple
 
 import numpy as np
 from osgeo import gdal
-from pathlib import Path
-from PIL import Image
 import scipy.ndimage
 
 from .colors import Coloring

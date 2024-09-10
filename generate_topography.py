@@ -22,12 +22,9 @@
  ***************************************************************************/
 """
 import os
-import os.path
 os.chdir(os.path.dirname(__file__))
 
-import numpy as np
 from osgeo import gdal
-from PIL import Image
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction

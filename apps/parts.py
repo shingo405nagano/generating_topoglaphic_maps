@@ -18,7 +18,6 @@ process.resampling
     ラスターデータの解像度を変更する
 """
 from typing import Any
-from typing import Callable
 from typing import Tuple
 from typing import Union
 

@@ -88,19 +88,6 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
-        # title_kwargs = {'fontsize': 15, 'fontweight': 'bold'}
-        # if self.mapSelectRadioBtn_BR.isChecked():
-        #     plt.title('CS-Map Styled  R0.5m', **title_kwargs)
-        #     plt.imshow(CS_MAP_IMG)    
-        # elif self.mapSelectRadioBtn_Vintage.isChecked():
-        #     plt.title('Vintage-Map Styled  R0.5m', **title_kwargs)
-        #     plt.imshow(VINTAGE_MAP_IMG)
-        # else:
-        #     plt.title('RGB-Map Styled  R0.5m', **title_kwargs)
-        #     plt.imshow(RGB_MAP_IMG)
-        # plt.yticks([])
-        # plt.xticks([])
-        # plt.show()
         imgs = [CS_MAP_IMG, VINTAGE_MAP_IMG, RGB_MAP_IMG]
         titles = ['CS-Map Styled', 'Vintage-Map Styled', 'RGB-Map Styled']
         _ax = None
@@ -198,7 +185,7 @@ class GeneratingTopographyDialog(QtWidgets.QDialog, FORM_CLASS):
         elif self.mapSelectRadioBtn_Vintage.isChecked():
             return VintageColorMaps()
         else:
-            raise RgbColorMaps()
+            return RgbColorMaps()
     
     @property
     def get_input_file_path(self) -> str:

@@ -1,8 +1,21 @@
-# **Topo Maps**
+<img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square">
+<img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square">
+<img src="https://img.shields.io/badge/-GDAL-006e54.svg?logo=OSGEO&style=flat-square">
+<img src="https://img.shields.io/badge/-pyproj-fdd35c.svg?logo=matplotlib&style=flat-square">
+<img src="https://img.shields.io/badge/-Numpy-3e62ad.svg?logo=NUMPY&style=flat-square">
+<img src="https://img.shields.io/badge/-Scipy-003f8e.svg?logo=scipy&style=flat-square">
+<img src="https://img.shields.io/badge/-Matplotlib-ed6d35.svg?logo=matplotlib&style=flat-square">
+
+
+
+![](./views/Contour.png)
 
 ## **Overview**
 この QGIS プラグインは DTM（DEM）から微地形図の RGB 画像を作成する為のプラグインです。
 
+
+## **Install**
+このレポジトリを Plugin ディレクトリーにクローンして下さい。
 
 
 ## **Layers**
@@ -16,24 +29,9 @@
 </ul>
 
 
+## **Styles**
+![](./views/Styles.png)
 
-## **Styled**
-### CS-Map Styled
-CS-立体図風の色を設定します。"風"と付けているのは、似た色見にしてはいますが、若干変えている部分がある為です。
-
-![](./views/CS-Map__Img.jpg)
-
-
-### Vintage-Map Styled
-茶色をベースに作成した Map です。
-
-![](./views/Vintage-Map__Img.jpg)
-
-
-### RGB-Map Styled
-尾根は赤、斜面を緑、谷部は青に設定した Map です。
-
-![](./views/RGB-Map__Img.jpg)
 
 
 ## **Options**
@@ -79,5 +77,5 @@ TPI ではオリジナルの DTM と畳み込み後の DTM の差分を計算し
 
 
 ## **UI Image**
-![](./views/UI.png)
+<!-- ![](./views/UI.png) -->
 
