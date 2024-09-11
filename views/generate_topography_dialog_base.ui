@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>638</width>
-    <height>703</height>
+    <width>641</width>
+    <height>611</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,20 +20,13 @@
 </string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="1" column="0">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QTabWidget" name="tW">
      <property name="styleSheet">
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="SlopeTab">
       <attribute name="title">
@@ -64,6 +57,15 @@
              <bool>false</bool>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout">
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
              <item>
               <layout class="QGridLayout" name="gl_5">
                <item row="0" column="1">
@@ -188,6 +190,15 @@
              <bool>false</bool>
             </property>
             <layout class="QGridLayout" name="gridLayout_6" columnstretch="3,1">
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
              <item row="0" column="0">
               <widget class="QSlider" name="hSlider_SlopeAlpha">
                <property name="maximum">
@@ -265,6 +276,19 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>※TPIの設定を行わない場合は、隣接セルを使用してTPIの計算を行います。
+</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0" colspan="2">
            <widget class="QGroupBox" name="gB_1">
             <property name="styleSheet">
@@ -277,25 +301,18 @@
              <bool>false</bool>
             </property>
             <layout class="QGridLayout" name="gridLayout">
-             <item row="1" column="0">
-              <widget class="QLabel" name="label">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>※畳み込みの結果とオリジナルデータを比べて TPI を計算します。</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="btn_ShowTpiHint">
-               <property name="text">
-                <string>Hint</string>
-               </property>
-              </widget>
-             </item>
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
              <item row="0" column="0">
               <layout class="QVBoxLayout" name="vL_2">
                <item>
@@ -322,6 +339,9 @@
                 <layout class="QGridLayout" name="gL_4">
                  <item row="0" column="5">
                   <widget class="QgsDoubleSpinBox" name="spinBoxF_GaussSigma">
+                   <property name="focusPolicy">
+                    <enum>Qt::StrongFocus</enum>
+                   </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
@@ -374,6 +394,9 @@
                  </item>
                  <item row="0" column="2">
                   <widget class="QgsDoubleSpinBox" name="spinBoxF_KernelSize">
+                   <property name="focusPolicy">
+                    <enum>Qt::StrongFocus</enum>
+                   </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
@@ -428,20 +451,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QRadioButton" name="radioBtn_OrgKernel">
-                 <property name="text">
-                  <string>隣接セルを使用</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QRadioButton" name="radioBtn_InvGaussKernel">
-                 <property name="text">
-                  <string>逆ガウシアン</string>
-                 </property>
-                </widget>
-               </item>
                <item row="3" column="0">
                 <widget class="QRadioButton" name="radioBtn_4DirecKernel">
                  <property name="text">
@@ -449,6 +458,13 @@
                  </property>
                  <property name="checked">
                   <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QRadioButton" name="radioBtn_InvGaussKernel">
+                 <property name="text">
+                  <string>逆ガウシアン</string>
                  </property>
                 </widget>
                </item>
@@ -462,46 +478,52 @@
                  </property>
                 </widget>
                </item>
+               <item row="1" column="2">
+                <widget class="QRadioButton" name="radioBtn_OrgKernel">
+                 <property name="text">
+                  <string>隣接セルを使用</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QPushButton" name="btn_ShowTpiHint">
+                 <property name="text">
+                  <string>Hint</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
             </layout>
            </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>※TPIの設定を行わない場合は、隣接セルを使用してTPIの計算を行います。
-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <spacer name="vS_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item row="2" column="0">
            <widget class="QGroupBox" name="gpBox_TpiOutTreatment">
             <property name="title">
              <string>外れ値処理</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
             <property name="checkable">
              <bool>true</bool>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMaximumSize</enum>
+             </property>
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="l_9">
                <property name="text">
@@ -514,6 +536,9 @@
              </item>
              <item>
               <widget class="QgsDoubleSpinBox" name="spinBoxF_TpiThres">
+               <property name="focusPolicy">
+                <enum>Qt::StrongFocus</enum>
+               </property>
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -558,20 +583,19 @@
             <property name="checked">
              <bool>false</bool>
             </property>
-            <layout class="QGridLayout" name="gridLayout_5" columnstretch="3,1">
-             <item row="0" column="0">
-              <widget class="QSlider" name="hSlider_TpiAlpha">
-               <property name="maximum">
-                <number>200</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-              </widget>
-             </item>
+            <layout class="QGridLayout" name="gridLayout_5" columnstretch="4,1">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
              <item row="0" column="1">
               <widget class="QgsSpinBox" name="spinBoxInt_TpiAlpha">
                <property name="suffix">
@@ -585,8 +609,37 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="0">
+              <widget class="QSlider" name="hSlider_TpiAlpha">
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>200</number>
+               </property>
+               <property name="value">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
+          </item>
+          <item row="5" column="0">
+           <spacer name="vS_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -624,49 +677,26 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
           <property name="leftMargin">
-           <number>18</number>
+           <number>9</number>
           </property>
           <property name="topMargin">
-           <number>18</number>
+           <number>9</number>
           </property>
           <property name="rightMargin">
-           <number>36</number>
+           <number>9</number>
           </property>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBox_TriOutTreatment">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>外れ値処理</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+          <item row="1" column="0" colspan="3">
+           <widget class="QTextBrowser" name="tB_2">
+            <property name="html">
+             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS UI Gothic'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:65536;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;※分解能が高い場合は TRI を使用した方が地形の変化がわかりやすくなります （1mなど）。分解能が低い場合は必要ありません。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QgsDoubleSpinBox" name="spinBoxF_TriThres">
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="minimum">
-             <double>1.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>5.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.500000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.500000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <spacer name="vS_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -679,45 +709,77 @@
             </property>
            </spacer>
           </item>
-          <item row="2" column="0" colspan="3">
-           <widget class="QTextBrowser" name="tB_2">
-            <property name="html">
-             <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS UI Gothic'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:65536;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;※分解能が高い場合は TRI を使用した方が地形の変化がわかりやすくなります （1mなど）。分解能が低い場合は必要ありません。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="l_10">
-            <property name="text">
-             <string>IQR ×</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <property name="indent">
-             <number>5</number>
-            </property>
-           </widget>
+          <item row="0" column="1">
+           <layout class="QGridLayout" name="gridLayout_9">
+            <item row="0" column="2">
+             <widget class="QgsDoubleSpinBox" name="spinBoxF_TriThres">
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="minimum">
+               <double>1.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>5.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.500000000000000</double>
+              </property>
+              <property name="value">
+               <double>1.500000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="l_10">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left:20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>IQR ×</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="indent">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="checkBox_TriOutTreatment">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>外れ値処理</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <spacer name="hS_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -739,13 +801,13 @@ p, li { white-space: pre-wrap; }
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="leftMargin">
-           <number>18</number>
+           <number>9</number>
           </property>
           <property name="topMargin">
-           <number>18</number>
+           <number>9</number>
           </property>
           <property name="rightMargin">
-           <number>36</number>
+           <number>9</number>
           </property>
           <item>
            <widget class="QGroupBox" name="gB">
@@ -990,189 +1052,7 @@ p, li { white-space: pre-wrap; }
      </widget>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="gB_2">
-     <property name="styleSheet">
-      <string notr="true">QGroupBox {
-	margin: 5% 0% 10% 0%;
-}</string>
-     </property>
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <property name="leftMargin">
-       <number>9</number>
-      </property>
-      <property name="topMargin">
-       <number>15</number>
-      </property>
-      <property name="bottomMargin">
-       <number>15</number>
-      </property>
-      <item>
-       <layout class="QGridLayout" name="gL">
-        <item row="0" column="1">
-         <widget class="QgsFileWidget" name="fileWgt_InputFile">
-          <property name="storageMode">
-           <enum>QgsFileWidget::GetFile</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QgsFileWidget" name="fileWgt_OutputFile">
-          <property name="storageMode">
-           <enum>QgsFileWidget::SaveFile</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="checkBox_StartResample">
-          <property name="text">
-           <string>最初にリサンプリングを行う</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="l_1">
-          <property name="text">
-           <string>DTM （DEM） ファイル</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="l_3">
-          <property name="text">
-           <string>出力ファイル</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <layout class="QGridLayout" name="gL_2">
-          <item row="1" column="4">
-           <widget class="QPushButton" name="btn_ShowStyles">
-            <property name="text">
-             <string>Show Styles</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
-            <property name="text">
-             <string>ヴィンテージ</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="mapSelectRadioBtn_BR">
-            <property name="text">
-             <string>CS立体図風</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QRadioButton" name="mapSelectRadioBtn_Dark">
-            <property name="text">
-             <string>RGB</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <spacer name="hS_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item row="4" column="1">
-         <layout class="QGridLayout" name="gL_7" columnstretch="1,1,1,2">
-          <item row="0" column="3">
-           <widget class="QComboBox" name="comboBox_StartResampleAlg">
-            <item>
-             <property name="text">
-              <string>Cubic Spline</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Cubic</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Bilinear</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Nearest Neighbour</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QgsDoubleSpinBox" name="spinBoxF_StartResampleResol">
-            <property name="minimum">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>5.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="l_19">
-            <property name="text">
-             <string>分解能</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="l_20">
-            <property name="text">
-             <string>アルゴリズム</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="l_2">
-          <property name="text">
-           <string>マップスタイルの選択</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="3" column="0">
+   <item row="5" column="0">
     <layout class="QGridLayout" name="gL_3" columnstretch="1,0,0" rowminimumheight="0,0,0">
      <item row="2" column="2">
       <widget class="QPushButton" name="pushBtn_Cancel">
@@ -1188,27 +1068,6 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <layout class="QGridLayout" name="gL_8" columnstretch="1,0">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_Log">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QCheckBox" name="checkBox_Sample">
-         <property name="text">
-          <string>サンプルの計算</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="0" column="0" colspan="3">
       <widget class="QProgressBar" name="progressBar">
        <property name="value">
@@ -1216,7 +1075,489 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_Log">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tW_1">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab_InputTab">
+      <attribute name="title">
+       <string>入力設定</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gL_2">
+            <item row="0" column="0">
+             <widget class="QRadioButton" name="radioBtn_InputIsFile">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="text">
+               <string>ファイルを読み込む</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="radioBtn_InputIsLayer">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="text">
+               <string>レイヤーを読み込む</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <spacer name="hS_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>365</width>
+                <height>17</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gL" columnstretch="1,3">
+            <item row="0" column="1">
+             <widget class="QgsFileWidget" name="fileWgt_InputFile">
+              <property name="storageMode">
+               <enum>QgsFileWidget::GetFile</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_InputFile">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>DTM （DEM） ファイル</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_InputLayer">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>DTM （DEM） レイヤー</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QgsMapLayerComboBox" name="lyrCombo_InputLyr"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_10">
+            <property name="horizontalSpacing">
+             <number>6</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>0</number>
+            </property>
+            <item row="0" column="1">
+             <widget class="QLabel" name="l_19">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>分解能</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="checkBox_StartResample">
+              <property name="text">
+               <string>最初にリサンプリングを行う</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QgsDoubleSpinBox" name="spinBoxF_StartResampleResol">
+              <property name="minimum">
+               <double>0.010000000000000</double>
+              </property>
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="l_20">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>アルゴリズム</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QComboBox" name="comboBox_StartResampleAlg">
+              <item>
+               <property name="text">
+                <string>Cubic Spline</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Cubic</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bilinear</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Nearest Neighbour</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <spacer name="hS_12">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_OutputTab">
+      <attribute name="title">
+       <string>出力設定</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QGroupBox" name="gB_2">
+         <property name="styleSheet">
+          <string notr="true">QRadioButton {
+	padding-right: 20px;
+}
+</string>
+         </property>
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_13">
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
+              <property name="text">
+               <string>ヴィンテージ</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QPushButton" name="btn_ShowStyles">
+              <property name="text">
+               <string>スタイルの確認</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <spacer name="hS_9">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="0">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_BR">
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="text">
+               <string>CS立体図風</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_Dark">
+              <property name="text">
+               <string>RGB</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gB_3">
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <property name="spacing">
+           <number>3</number>
+          </property>
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_14">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="checkBox_Sample">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>サンプルの計算</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="checkBox_AddProject">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>プロジェクトにレイヤーを追加</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <spacer name="hS_10">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_15">
+            <item row="1" column="1">
+             <widget class="QgsFileWidget" name="fileWgt_OutputFile">
+              <property name="fileWidgetButtonVisible">
+               <bool>true</bool>
+              </property>
+              <property name="useLink">
+               <bool>false</bool>
+              </property>
+              <property name="fullUrl">
+               <bool>false</bool>
+              </property>
+              <property name="storageMode">
+               <enum>QgsFileWidget::SaveFile</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_OutputFile">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>出力ファイル</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <spacer name="vS_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
+      <string>PushButton</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -1232,6 +1573,11 @@ p, li { white-space: pre-wrap; }
    <header>qgsfilewidget.h</header>
   </customwidget>
   <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+  <customwidget>
    <class>QgsSpinBox</class>
    <extends>QSpinBox</extends>
    <header>qgsspinbox.h</header>
@@ -1240,24 +1586,15 @@ p, li { white-space: pre-wrap; }
  <tabstops>
   <tabstop>gpBox_SlopeResample</tabstop>
   <tabstop>gpBox_Slope</tabstop>
-  <tabstop>btn_ShowStyles</tabstop>
-  <tabstop>mapSelectRadioBtn_Vintage</tabstop>
-  <tabstop>mapSelectRadioBtn_BR</tabstop>
-  <tabstop>mapSelectRadioBtn_Dark</tabstop>
-  <tabstop>comboBox_StartResampleAlg</tabstop>
-  <tabstop>spinBoxF_StartResampleResol</tabstop>
-  <tabstop>checkBox_StartResample</tabstop>
   <tabstop>tW</tabstop>
   <tabstop>spinBoxF_ResampleResol</tabstop>
   <tabstop>gpBox_SlopeGauss</tabstop>
   <tabstop>spinBoxF_SlopeGaussSigma</tabstop>
   <tabstop>pushBtn_GaussHint</tabstop>
   <tabstop>gpBox_Tpi</tabstop>
-  <tabstop>btn_ShowTpiHint</tabstop>
   <tabstop>radioBtn_MeanKernel</tabstop>
   <tabstop>radioBtn_DoughnutKernel</tabstop>
   <tabstop>radioBtn_GaussKernel</tabstop>
-  <tabstop>radioBtn_OrgKernel</tabstop>
   <tabstop>radioBtn_InvGaussKernel</tabstop>
   <tabstop>radioBtn_4DirecKernel</tabstop>
   <tabstop>radioBtn_8DirecKernel</tabstop>
@@ -1267,8 +1604,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>gpBox_TpiOutTreatment</tabstop>
   <tabstop>spinBoxF_TpiThres</tabstop>
   <tabstop>gpBox_Tri</tabstop>
-  <tabstop>checkBox_TriOutTreatment</tabstop>
-  <tabstop>spinBoxF_TriThres</tabstop>
   <tabstop>tB_2</tabstop>
   <tabstop>gpBox_Hillshade</tabstop>
   <tabstop>cmbBox_HillshadeType</tabstop>

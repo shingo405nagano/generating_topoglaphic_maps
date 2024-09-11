@@ -23,14 +23,19 @@
 """
 import os
 from typing import Any, Dict, NewType, Union
+from pathlib import Path
 from PIL import Image
 
 from matplotlib import pyplot as plt
 import numpy as np
 from osgeo import gdal
 import pyproj
+from qgis.core import QgsMapLayerProxyModel
+from qgis.core import QgsProject
+from qgis.core import QgsRasterLayer
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtWidgets import QMessageBox
 
 from .apps.colors import CsColorMaps
 from .apps.colors import RgbColorMaps
@@ -42,6 +47,7 @@ from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
 from .apps.mapper import HillshadeOptions
 from .apps.parts import process
+from .apps.exeptions import ExeptionMessage
 
 OptionsType = NewType('OptionsType', Union[SlopeOptions, TpiOptions, TriOptions, HillshadeOptions])
 
@@ -85,6 +91,59 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        self._error_font = "QLabel {color: red; font-weight: bold;}"
+        self._success_font = "QLabel {color: black;}"
+
+        # Set the help dialog to None
+        # ファイルの読み書きを設定
+        self.make_input_dlg()
+        self.radioBtn_InputIsFile.toggled.connect(self.make_input_dlg)
+        self.radioBtn_InputIsLayer.toggled.connect(self.make_input_dlg)
+        self.checkBox_Sample.stateChanged.connect(self.make_output_dlg)
+        
+        # ログの初期化
+        self.textBrowser_Log.clear()
+
+        # Resampleのダイアログ設定
+        self.make_resample_dlg()
+        self.checkBox_StartResample.stateChanged.connect(self.make_resample_dlg)
+
+        # TPI のダイアログ設定
+        self._erase_dlg_gaussian_param()
+        self.radioBtn_OrgKernel.toggled.connect(self.make_tpi_dlg_original)
+        self.radioBtn_DoughnutKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_MeanKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_GaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
+        self.radioBtn_InvGaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
+        self.radioBtn_4DirecKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_8DirecKernel.toggled.connect(self.make_tpi_dlg_other)
+
+        # 透過率のダイアログ設定
+        self.hSlider_SlopeAlpha.valueChanged.connect(
+            self.change_slope_alpha_param_from_slider)
+        self.spinBoxInt_SlopeAlpha.valueChanged.connect(
+            self.change_slope_alpha_param_from_spinbox)
+        self.hSlider_TpiAlpha.valueChanged.connect(
+            self.change_tpi_alpha_param_from_slider)
+        self.spinBoxInt_TpiAlpha.valueChanged.connect(
+            self.change_tpi_alpha_param_from_spinbox)
+        
+        # マップスタイルのプレビューを表示
+        self.btn_ShowStyles.clicked.connect(self.show_map_styles)
+        self.pushBtn_GaussHint.clicked.connect(self.show_gaussian_hint)
+        self.pushBtn_GaussHint_.clicked.connect(self.show_gaussian_hint)
+
+        # KernelHelpDialogの表示
+        self.btn_ShowTpiHint.clicked.connect(self.show_kernel_help)
+        self.pushBtn_Cancel.clicked.connect(self.close_dlg)
+
+        self.pushButton.clicked.connect(self.msg)
+
+    def msg(self):
+        QMessageBox.information(
+            None,
+            'Error',
+            'ファイルが存在しません')
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
@@ -192,7 +251,10 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         ファイルパスを取得
         """
-        return self.fileWgt_InputFile.filePath()
+        if self.radioBtn_InputIsFile.isChecked():
+            return self.fileWgt_InputFile.filePath()
+        else:
+            return self.lyrCombo_InputLyr.currentLayer().source()
     
     @property
     def get_output_file_path(self) -> str:
@@ -293,6 +355,34 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         return options
 
+    def make_input_dlg(self) -> None:
+        self.file_filter()
+        if self.radioBtn_InputIsFile.isChecked():
+            self.label_InputFile.setVisible(True)
+            self.fileWgt_InputFile.setVisible(True)
+            self.label_InputLayer.setVisible(False)
+            self.lyrCombo_InputLyr.setVisible(False)
+        else:
+            self.label_InputFile.setVisible(False)
+            self.fileWgt_InputFile.setVisible(False)
+            self.label_InputLayer.setVisible(True)
+            self.lyrCombo_InputLyr.setVisible(True)
+    
+    def file_filter(self) -> None:
+        self.fileWgt_InputFile.setFilter("GeoTiff (*.tif *.tiff *.TIF *.TIFF);;")
+        self.lyrCombo_InputLyr.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.fileWgt_OutputFile.setFilter("GeoTiff (*.tif);;")
+
+    def make_output_dlg(self) -> None:
+        if self.checkBox_Sample.isChecked():
+            self.checkBox_AddProject.setVisible(False)
+            self.label_OutputFile.setVisible(False)
+            self.fileWgt_OutputFile.setVisible(False)
+        else:
+            self.checkBox_AddProject.setVisible(True)
+            self.label_OutputFile.setVisible(True)
+            self.fileWgt_OutputFile.setVisible(True)
+        
     def make_resample_dlg(self) -> None:
         """Resample の設定を表示"""
         if self.checkBox_StartResample.isChecked():
@@ -367,10 +457,63 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         new_img = Image.fromarray(ary)
         return new_img
     
-    def show_sample(self) -> None:
-        """カーネルのヘルプを表示"""
-        pass
+    def add_lyr(self) -> None:
+        if self.checkBox_AddProject.isChecked():
+            self.textBrowser_Log.append("Add a raster layer to project\n")
+            file_path = self.get_output_file_path
+            lyr_name = os.path.basename(file_path).split('.')[0]
+            lyr = QgsRasterLayer(file_path, lyr_name, 'gdal')
+            QgsProject.instance().addMapLayer(lyr)
+
+    def check_file(self) -> bool:
+        checked_file_path = self._check_file_path
+        checked_bands = self._check_number_of_dimensions
     
+    @property
+    def _check_file_path(self) -> bool:
+        if not os.path.exists(self.get_input_file_path):
+            self.label_Log.setStyleSheet(self._error_font)
+            self.label_Log.setText("Error： 入力ファイルが見つかりません")
+            raise FileNotFoundError(f"File not found: {self.get_input_file_path}")
+        elif self.checkBox_Sample.isChecked():
+            self.label_Log.setStyleSheet(self._success_font)
+            return True
+        elif self.get_output_file_path == "":
+            self.label_Log.setStyleSheet(self._error_font)
+            self.label_Log.setText("Error： 出力ファイルのパスが設定されていません")
+            raise ValueError("Output file path is not set")
+        elif self._check_file_fmt:
+            self.label_Log.setStyleSheet(self._error_font)
+            self.label_Log.setText("Error： 出力ファイルのフォーマットが間違っています '.tif' を指定してください")
+            raise ValueError("Output file format is incorrect")
+        else:
+            self.label_Log.setStyleSheet(self._success_font)
+            return True
+    
+    @property
+    def _check_file_fmt(self):
+        file_path = self.get_output_file_path
+        fmt = os.path.basename(file_path).split('.')[-1]
+        if fmt != 'tif':
+            return True
+        else:
+            return False
+        
+    @property
+    def _check_number_of_dimensions(self) -> bool:
+        dst = gdal.Open(self.get_input_file_path)
+        bands = dst.RasterCount
+        if 1 < bands:
+            self.label_Log.setStyleSheet(self._error_font)
+            self.label_Log.setText("Error： ラスターのバンド数が多いです", )
+            return False
+        else:
+            self.label_Log.setStyleSheet(self._success_font)
+            return True
+    
+    def close_dlg(self) -> None:
+        self.close()
+
 
 
 class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):

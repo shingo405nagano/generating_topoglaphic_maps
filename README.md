@@ -1,5 +1,5 @@
-![](./views/Contour.png)
-<img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square"><img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square"><img src="https://img.shields.io/badge/-GDAL-006e54.svg?logo=OSGEO&style=flat-square"><img src="https://img.shields.io/badge/-pyproj-fdd35c.svg?logo=matplotlib&style=flat-square"><img src="https://img.shields.io/badge/-Numpy-3e62ad.svg?logo=NUMPY&style=flat-square"><img src="https://img.shields.io/badge/-Scipy-003f8e.svg?logo=scipy&style=flat-square"><img src="https://img.shields.io/badge/-Matplotlib-ed6d35.svg?logo=matplotlib&style=flat-square">
+![](./views/Contour.jpg)
+<img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square"><img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square">
 
 ## **Overview**
 この QGIS プラグインは DTM（DEM）から微地形図の RGB 画像を作成する為のプラグインです。
@@ -21,7 +21,7 @@
 
 
 ## **Styles**
-![](./views/Styles.png)
+![](./views/Styles.jpg)
 
 
 

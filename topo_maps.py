@@ -80,59 +80,9 @@ class TopoMaps:
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
 
-        # ファイルの読み書きを設定
-        self.dlg.fileWgt_InputFile.setFilter("*")
-        self.dlg.fileWgt_OutputFile.setFilter("*.tif")
-        
-        # ログの初期化
-        self.dlg.textBrowser_Log.clear()
-
-        # Resampleのダイアログ設定
-        self.dlg.make_resample_dlg()
-        self.dlg.checkBox_StartResample.stateChanged.connect(self.dlg.make_resample_dlg)
-
-        # TPI のダイアログ設定
-        self.dlg._erase_dlg_gaussian_param()
-        self.dlg.radioBtn_OrgKernel.toggled.connect(self.dlg.make_tpi_dlg_original)
-        self.dlg.radioBtn_DoughnutKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
-        self.dlg.radioBtn_MeanKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
-        self.dlg.radioBtn_GaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
-        self.dlg.radioBtn_InvGaussKernel.toggled.connect(self.dlg.make_tpi_dlg_gaussian)
-        self.dlg.radioBtn_4DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
-        self.dlg.radioBtn_8DirecKernel.toggled.connect(self.dlg.make_tpi_dlg_other)
-
-        # 透過率のダイアログ設定
-        self.dlg.hSlider_SlopeAlpha.valueChanged.connect(
-            self.dlg.change_slope_alpha_param_from_slider)
-        self.dlg.spinBoxInt_SlopeAlpha.valueChanged.connect(
-            self.dlg.change_slope_alpha_param_from_spinbox)
-        self.dlg.hSlider_TpiAlpha.valueChanged.connect(
-            self.dlg.change_tpi_alpha_param_from_slider)
-        self.dlg.spinBoxInt_TpiAlpha.valueChanged.connect(
-            self.dlg.change_tpi_alpha_param_from_spinbox)
-        
-        # マップスタイルのプレビューを表示
-        self.dlg.btn_ShowStyles.clicked.connect(self.dlg.show_map_styles)
-        self.dlg.pushBtn_GaussHint.clicked.connect(self.dlg.show_gaussian_hint)
-        self.dlg.pushBtn_GaussHint_.clicked.connect(self.dlg.show_gaussian_hint)
-
-        # 微地形図の作成
-        self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
-
-        self.dlg.pushBtn_Cancel.clicked.connect(self.dlg.close)        
-    
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
+        """Get the translation for a string using Qt translation API."""
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('Topo Maps', message)
 
@@ -146,46 +96,9 @@ class TopoMaps:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
-        """Add a toolbar icon to the toolbar.
-
-        :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
-
-        :param text: Text that should be shown in menu items for this action.
-        :type text: str
-
-        :param callback: Function to be called when the action is triggered.
-        :type callback: function
-
-        :param enabled_flag: A flag indicating if the action should be enabled
-            by default. Defaults to True.
-        :type enabled_flag: bool
-
-        :param add_to_menu: Flag indicating whether the action should also
-            be added to the menu. Defaults to True.
-        :type add_to_menu: bool
-
-        :param add_to_toolbar: Flag indicating whether the action should also
-            be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
-
-        :param status_tip: Optional text to show in a popup when mouse pointer
-            hovers over the action.
-        :type status_tip: str
-
-        :param parent: Parent widget for the new action. Defaults None.
-        :type parent: QWidget
-
-        :param whats_this: Optional text to show in the status bar when the
-            mouse pointer hovers over the action.
-
-        :returns: The action that was created. Note that the action is also
-            added to self.actions list.
-        :rtype: QAction
-        """
-
+        parent=None
+    ):
+        """Add a toolbar icon to the toolbar."""
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
@@ -212,7 +125,6 @@ class TopoMaps:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
         icon_path = ':/plugins/generate_topography/views/icon.png'
         self.add_action(
             icon_path,
@@ -222,15 +134,14 @@ class TopoMaps:
 
         # will be set False in run()
         self.first_start = True
-        # 
-        self.dlg.btn_ShowTpiHint.clicked.connect(self.dlg.show_kernel_help)
     
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&Generating Topographic map'),
-                action)
+                action
+            )
             self.iface.removeToolBarIcon(action)
 
     def run(self):
@@ -240,19 +151,19 @@ class TopoMaps:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
+        else:
+            self.dlg = None
+            self.dlg = TopoMapsDialog()
         
         # show the dialog
         self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+        print(self.dlg)
+        print(type(self.dlg))
+        # 微地形図の作成
+        self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
+
 
     def execute_algorithom(self):
-        sample = self.dlg.checkBox_Sample.isChecked()
         self.dlg.write_options()
         progress = self.dlg.progressBar
         label_log = self.dlg.label_Log
@@ -261,15 +172,17 @@ class TopoMaps:
         label_log.setText('ファイルの読み込み')
         log_board = self.dlg.textBrowser_Log
         # Rasterの読み込み
+        self.dlg.check_file()
         org_dst = gdal.Open(self.dlg.get_input_file_path)
-        if sample:
-            # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
+
+        # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
+        if self.dlg.checkBox_Sample.isChecked():
             org_dst = process.get_sample_raster(org_dst)
-        
         # RasterSizeをLogに書き込む
         self.dlg._new_line
         log_board.append("<<< Original raster size >>>\n")
         self.dlg.show_input_data(org_dst)
+        
         # リサンプルの実行
         org_dst = self.dlg.first_perform_resample(org_dst)
         if self.dlg.checkBox_StartResample.isChecked():
@@ -322,10 +235,10 @@ class TopoMaps:
         label_log.setText('画像の合成中')
         log_board.append("Start compositing images\n")
         composited_img = composite_images(slope_img, tpi_img, 
-                                          tri_img, hillshade_img)
+                                        tri_img, hillshade_img)
         log_board.append("Composite images is completed\n\n")
         progress.setValue(97)
-        if sample:
+        if self.dlg.checkBox_Sample.isChecked():
             label_log.setText('Sampleを表示します')
             img = np.array(composited_img)
             plt.title('Sample Image', fontweight='bold', fontsize=18)
@@ -341,6 +254,7 @@ class TopoMaps:
                 img=composited_img,
                 org_dst=org_dst
             )
+            self.dlg.add_lyr()
             progress.setValue(100)
             log_board.append("Writing raster file is completed\n\n")
             log_board.append("<<< Finish >>>")

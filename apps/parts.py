@@ -201,8 +201,10 @@ class Process(object):
     
         band = org_dst.GetRasterBand(1)
         nodata = band.GetNoDataValue()
+        if nodata is None:
+            nodata = np.nan
         ary = org_dst.ReadAsArray()
-        y_size, x_size = [int(size / 3) for size in ary.shape]
+        x_size, y_size = [int(size / 3) for size in ary.shape]
         # サイズが大きすぎる場合は、2,000に制限する
         if 2_000 < x_size:
             x_size = 2_000
@@ -230,24 +232,22 @@ class Process(object):
                 x_center - herf_x_size: x_center + herf_x_size,
                 y_center - herf_y_size: y_center + herf_y_size
             ]
-        print(new_ary.shape)
+
         # データセットを作成
         driver = gdal.GetDriverByName('MEM')
         driver.Register()
         new_dst = driver.Create(
             '',
-            xsize=x_size, 
-            ysize=y_size, 
+            xsize=new_ary.shape[1], 
+            ysize=new_ary.shape[0],
             bands=1, 
             eType=gdal.GDT_Float32
         )
-        print(new_dst.RasterXSize, new_dst.RasterYSize)
-        print(new_ary.shape)
         new_dst.SetGeoTransform(org_dst.GetGeoTransform())
         new_dst.SetProjection(org_dst.GetProjection())
         band = new_dst.GetRasterBand(1)
         band.WriteArray(new_ary)
-        band.SetNoDataValue(org_dst.GetRasterBand(1).GetNoDataValue())
+        band.SetNoDataValue(nodata)
         return new_dst
         
 
@@ -256,3 +256,7 @@ class Process(object):
 process = Process()
 
 
+if __name__ == '__main__':
+    file = r"D:\Repositories\ProcessingRaster\datasets\DTM_Kouchi__R10M.tif"
+    dst = gdal.Open(file)
+    sample = process.get_sample_raster(dst)

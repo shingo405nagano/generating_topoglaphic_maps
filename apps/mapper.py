@@ -175,7 +175,7 @@ class TpiOptions:
         Returns:
             np.ndarray
         """
-        if self.checked or self.kernel_type == KernelTypes.original:
+        if (self.checked) & (self.kernel_type != KernelTypes.original):
             band = org_dst.GetRasterBand(1)
             nodata = band.GetNoDataValue()
             ary = band.ReadAsArray()
