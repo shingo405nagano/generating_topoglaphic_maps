@@ -198,40 +198,46 @@ class Process(object):
             X_SIZE, Y_SIZE = org_dst.RasterXSize, org_dst.RasterYSize
             x_center, y_center = int(X_SIZE / 2), int(Y_SIZE / 2)
             return [x_center, y_center]
-    
+        
         band = org_dst.GetRasterBand(1)
         nodata = band.GetNoDataValue()
         if nodata is None:
             nodata = np.nan
         ary = org_dst.ReadAsArray()
-        x_size, y_size = [int(size / 3) for size in ary.shape]
-        # サイズが大きすぎる場合は、2,000に制限する
-        if 2_000 < x_size:
-            x_size = 2_000
-        if 2_000 < y_size:
-            y_size = 2_000
-        # Nodataのセルが多い場合は、別な箇所をサンプリングする
-        arys = [
-            ary[: x_size, : y_size],
-            ary[: x_size, -y_size:],
-            ary[-x_size:, : y_size],
-            ary[-x_size:, -y_size:]
-        ]
-        new_ary = None
-        for _ary in arys:
-            if 0.8 < nodata_checker(_ary, nodata):
-                new_ary = _ary
-                del arys
-                break
-            else:
-                continue
-        if new_ary is None:
-            x_center, y_center = calc_center_xy(org_dst)
-            herf_x_size, herf_y_size = [int(size / 2) for size in [x_size, y_size]]
-            new_ary = ary[
-                x_center - herf_x_size: x_center + herf_x_size,
-                y_center - herf_y_size: y_center + herf_y_size
+        maximum_size = 3_000_000
+        if org_dst.RasterXSize * org_dst.RasterYSize < maximum_size:
+            # サイズが小さい場合はそのまま使用する
+            new_ary = ary
+        else:
+            # サイズが大きい場合は、サンプリングする
+            y_size, x_size = [int(size / 3) for size in ary.shape]
+            # サイズが大きすぎる場合は、2,000に制限する
+            if 2_000 < x_size:
+                x_size = 2_000
+            if 2_000 < y_size:
+                y_size = 2_000
+            # Nodataのセルが多い場合は、別な箇所をサンプリングする
+            arys = [
+                ary[: x_size, : y_size],
+                ary[: x_size, -y_size:],
+                ary[-x_size:, : y_size],
+                ary[-x_size:, -y_size:]
             ]
+            new_ary = None
+            for _ary in arys:
+                if 0.8 < nodata_checker(_ary, nodata):
+                    new_ary = _ary
+                    del arys
+                    break
+                else:
+                    continue
+            if new_ary is None:
+                x_center, y_center = calc_center_xy(org_dst)
+                herf_x_size, herf_y_size = [int(size / 2) for size in [x_size, y_size]]
+                new_ary = ary[
+                    x_center - herf_x_size: x_center + herf_x_size,
+                    y_center - herf_y_size: y_center + herf_y_size
+                ]
 
         # データセットを作成
         driver = gdal.GetDriverByName('MEM')

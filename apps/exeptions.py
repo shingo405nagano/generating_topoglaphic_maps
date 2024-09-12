@@ -1,64 +1,61 @@
+from dataclasses import dataclass
 import os
 
 from osgeo import gdal
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox
 
-class ExeptionMessage(object):
+
+
+class Message(object):
+    def __init__(self):
+        self.file_not_found = self.tr('入力ファイルが存在しません')
+        self.file_is_not_specified = self.tr('出力ファイルが指定されていません')
+        self.mismuch_band = self.tr('RasterDataのBand数が期待値と異なります')
+
+    def tr(self, message):
+        return QCoreApplication.translate('ExeptionMesssage', message)
+
+
+
+class ExeptionMessage(Message):
     def __init__(self, dlg):
+        super().__init__()
         self.dlg = dlg
-        self._error_font = "QLabel {color: red; font-weight: bold;}"
-        self._success_font = "QLabel {color: black;}"
 
     def msg(self, message: str) -> None:
-        QMessageBox.information(
-            None,
-            'Error Message ...',
-            message
-        )
+        QMessageBox.information(None, 'Error Message ...', message)
 
+    @property
     def check_input_file_path(self) -> bool:
-        if os.path.exists(self.dlg.get_input_file_path):
-            self.dlg.label_Log.setStyleSheet(self._success_font)
-            return True
-        else:
-            self.dlg.label_Log.setStyleSheet(self._error_font)
-            self.dlg.label_Log.setText('No such file or directory')
-            self.msg('No such file or directory')
+        # 入力ファイルが存在しない場合にエラーメッセージを表示
+        if not os.path.exists(self.dlg.get_input_file_path):
+            self.msg(self.file_not_found)
             return False
-        
+        return True
+    
+    @property
     def check_output_file_path(self) -> bool:
-        if self.checkBox_Sample.isChecked():
-            self.dlg.label_Log.setStyleSheet(self._success_font)
+        # 出力ファイルが指定されていない場合にエラーメッセージを表示
+        if self.dlg.checkBox_Sample.isChecked():
+            # サンプルのみの場合は出力ファイルを指定しない
             return True
         elif self.dlg.get_output_file_path == '':
-            self.dlg.label_Log.setStyleSheet(self._error_font)
-            self.dlg.label_Log.setText('Output file path is not specified')
-        # ---------------------- ここから ----------------------
-
-    def _check_file_fmt(self) -> bool:
-        if self.dlg.get_output_file_path.endswith('.tif'):
-            self.dlg.label_Log.setStyleSheet(self._success_font)
-            return True
-        else:
-            self.dlg.label_Log.setStyleSheet(self._error_font)
-            self.dlg.label_Log.setText('File format is not supported.')
-            self.msg('File format is not supported.\nPlease select .tif file.')
+            self.msg(self.file_is_not_specified)
             return False
+        else:
+            return True
     
+    @property
     def check_raster_band(self) -> bool:
+        # バンド数が1でない場合にエラーメッセージを表示
         dst = gdal.Open(self.dlg.get_input_file_path)
         bands = dst.RasterCount
         dst = None
         if 1 == bands:
-            self.dlg.label_Log.setStyleSheet(self._success_font)
             return True
         else:
-            self.dlg.label_Log.setStyleSheet(self._error_font)
-            self.dlg.label_Log.setText('Many bands')
-            self.msg(f"""
-More bands than expected.
-Input: {bands} bands
-Expected: 1 band
-""")
+            self.msg(self.mismuch_band)
             return False
         
+    

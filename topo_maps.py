@@ -32,6 +32,8 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 from .apps.colors import Coloring
+from .apps.exeptions import ExeptionMessage
+from .apps.my_log import MyLogger
 from .apps.mapper import composite_images
 from .apps.mapper import save_image_rgba
 from .apps.parts import process
@@ -41,7 +43,6 @@ from .resources import *
 from .topo_maps_dialog import TopoMapsDialog
 from .topo_maps_dialog import KernelHelpDialog
 coloring = Coloring()
-
 
 
 class TopoMaps:
@@ -62,11 +63,15 @@ class TopoMaps:
         self.dlg = TopoMapsDialog()
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
+        if locale == 'ja':
+            lang = 'ja'
+        else:
+            lang = 'en'
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
-            'TopoMaps_{}.qm'.format(locale))
-
+            f"topo_maps_{lang}.qm"
+        )
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -128,10 +133,10 @@ class TopoMaps:
         icon_path = ':/plugins/generate_topography/views/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'地形図の生成'),
+            text='Topo Maps',
             callback=self.run,
-            parent=self.iface.mainWindow())
-
+            parent=self.iface.mainWindow()
+        )
         # will be set False in run()
         self.first_start = True
     
@@ -153,75 +158,84 @@ class TopoMaps:
             self.first_start = False
         else:
             self.dlg = None
-            self.dlg = TopoMapsDialog()
-        
+        self.dlg = TopoMapsDialog()
+        self.my_log = MyLogger(self.dlg)
         # show the dialog
         self.dlg.show()
-        print(self.dlg)
-        print(type(self.dlg))
         # 微地形図の作成
         self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
 
 
     def execute_algorithom(self):
+        # 問題がある場合は処理を中止
+        msg = ExeptionMessage(self.dlg)
+        execute = True
+        if not msg.check_input_file_path:
+            self.my_log.stop_process
+            return 
+        if not msg.check_output_file_path:
+            self.my_log.stop_process
+            return
+        if not msg.check_raster_band:
+            self.my_log.stop_process
+            return
+        
         self.dlg.write_options()
         progress = self.dlg.progressBar
-        label_log = self.dlg.label_Log
-        label_log.setText('処理の開始 ... ')
         progress.setValue(0)
-        label_log.setText('ファイルの読み込み')
-        log_board = self.dlg.textBrowser_Log
+        self.my_log.start_log
         # Rasterの読み込み
-        self.dlg.check_file()
         org_dst = gdal.Open(self.dlg.get_input_file_path)
-
-        # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
-        if self.dlg.checkBox_Sample.isChecked():
-            org_dst = process.get_sample_raster(org_dst)
         # RasterSizeをLogに書き込む
-        self.dlg._new_line
-        log_board.append("<<< Original raster size >>>\n")
-        self.dlg.show_input_data(org_dst)
-        
+        self.my_log.input_raster_size
+        self.my_log.show_input_data(org_dst)
+
         # リサンプルの実行
-        org_dst = self.dlg.first_perform_resample(org_dst)
+        org_dst = self.my_log.resample_log(
+            self.dlg.first_perform_resample,
+            org_dst
+        )
         if self.dlg.checkBox_StartResample.isChecked():
             # リサンプルした場合はもう一度RasterSizeをLogに書き込む
-            self.dlg._new_line
-            log_board.append("<<< Resampled raster size >>>\n")
-            self.dlg.show_input_data(org_dst)
-        progress.setValue(1)
+            self.my_log.show_input_data(org_dst)
+        progress.setValue(5)
+
+        if self.dlg.checkBox_Sample.isChecked():
+            # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
+            org_dst = self.my_log.cliping_raster_log(
+                process.get_sample_raster,
+                org_dst
+            )
+        progress.setValue(10)
         
-        self.dlg._new_line
-        log_board.append("<<< Start to calculate topographic maps >>>\n")
         # 傾斜の計算とRGBA化
-        label_log.setText('傾斜の計算中')
-        log_board.append("Start to calculate slope\n")
         slope_options = self.dlg.get_slope_options()
-        slope_img = slope_options.to_slope_img(org_dst, progress=progress)
-        log_board.append("Slope calculation is completed\n\n")
-        
+        slope_img = self.my_log.slope_log(
+            slope_options.to_slope_img,
+            org_dst,
+            progress=progress
+        )
         # TPI の計算とRGBA化
-        label_log.setText('TPIの計算中')
-        log_board.append("Start to calculate TPI\n")
         tpi_options = self.dlg.get_tpi_options()
-        tpi_img = tpi_options.to_tpi_img(org_dst, progress=progress)
-        log_board.append("TPI calculation is completed\n\n")
-        
+        tpi_img = self.my_log.tpi_log(
+            tpi_options.to_tpi_img,
+            org_dst,
+            progress=progress
+        )
         # TRI の計算とRGBA化
-        label_log.setText('TRIの計算中')
-        log_board.append("Start to calculate TRI\n")
         tri_options = self.dlg.get_tri_options()
-        tri_img = tri_options.to_tri_img(org_dst, progress=progress)
-        log_board.append("TRI calculation is completed\n\n")
-
+        tri_img = self.my_log.tri_log(
+            tri_options.to_tri_img,
+            org_dst,
+            progress=progress
+        )
         # Hillshade の計算とRGBA化
-        label_log.setText('Hillshadeの計算中')
-        log_board.append("Start to calculate Hillshade\n")
         hillshade_options = self.dlg.get_hillshade_options()
-        hillshade_img = hillshade_options.to_hillshade_img(org_dst, progress=progress)
-        log_board.append("Hillshade calculation is completed\n\n")
-
+        hillshade_img = self.my_log.hillshade_log(
+            hillshade_options.to_hillshade_img,
+            org_dst,
+            progress=progress
+        )
         # 透過率の変更
         defalut_alpha = 100
         if self.dlg.spinBoxInt_SlopeAlpha.value() != defalut_alpha:
@@ -232,14 +246,18 @@ class TopoMaps:
             tpi_img = self.dlg.change_alpha(tpi_img, alpha)
 
         # 画像の合成
-        label_log.setText('画像の合成中')
-        log_board.append("Start compositing images\n")
-        composited_img = composite_images(slope_img, tpi_img, 
-                                        tri_img, hillshade_img)
-        log_board.append("Composite images is completed\n\n")
+        composited_img = self.my_log.composite_log(
+            composite_images,
+            slope_img,
+            tpi_img,
+            tri_img,
+            hillshade_img
+        )
         progress.setValue(97)
+
         if self.dlg.checkBox_Sample.isChecked():
-            label_log.setText('Sampleを表示します')
+            # Sampleにチェックが入っている場合は、画像を表示し、保存しない
+            self.my_log.show_sample_img
             img = np.array(composited_img)
             plt.title('Sample Image', fontweight='bold', fontsize=18)
             plt.imshow(img)
@@ -247,16 +265,12 @@ class TopoMaps:
             plt.show()
         else:
             # Rasterの保存
-            label_log.setText('ファイルの保存を開始')
-            log_board.append("Start writing raster file\n")
-            save_image_rgba(
-                out_file_path=self.dlg.get_output_file_path,
-                img=composited_img,
-                org_dst=org_dst
+            self.my_log.write_raster_log(
+                save_image_rgba,
+                self.dlg.get_output_file_path,
+                composited_img,
+                org_dst
             )
-            self.dlg.add_lyr()
+            self.my_log.add_lyr_log(self.dlg.add_lyr)
             progress.setValue(100)
-            log_board.append("Writing raster file is completed\n\n")
-            log_board.append("<<< Finish >>>")
-            label_log.setText('処理が完了しました')
 

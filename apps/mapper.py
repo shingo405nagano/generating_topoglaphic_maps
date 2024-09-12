@@ -231,7 +231,11 @@ class TpiOptions:
             KernelTypes.eight_direction: Kernels.eight_directions,
         }
         func = funcs.get(self.kernel_type)
-        if self.kernel_size_type == 'カーネルサイズを距離で指定':
+        distance_type = [
+            'カーネルサイズを距離で指定', 
+            'Kernel size specified by distance'
+        ]
+        if self.kernel_size_type in distance_type:
             kernel_size = Kernels.distance_to_kernel_size(
                 one_side_distance=self.one_side_distance,
                 cell_size=x_resol

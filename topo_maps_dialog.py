@@ -35,6 +35,7 @@ from qgis.core import QgsProject
 from qgis.core import QgsRasterLayer
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox
 
 from .apps.colors import CsColorMaps
@@ -137,13 +138,9 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.btn_ShowTpiHint.clicked.connect(self.show_kernel_help)
         self.pushBtn_Cancel.clicked.connect(self.close_dlg)
 
-        self.pushButton.clicked.connect(self.msg)
-
-    def msg(self):
-        QMessageBox.information(
-            None,
-            'Error',
-            'ファイルが存在しません')
+    
+    def tr(self, message):
+        return QCoreApplication.translate("TopoMapsDialog", message)
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
@@ -189,48 +186,28 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def write_options(self) -> None:
         """設定をTextBrowserに書き込む"""
-        log_console = self.textBrowser_Log
-        log_console.clear()
-        self._new_line
-        log_console.append("<<< Set options >>>\n")
-        log_console.append(f"Input File: {self.get_input_file_path}\n")
-        log_console.append(f"Output File: {self.get_output_file_path}\n")
-        log_console.append(f"Color: {CsColorMaps.__qualname__}\n")
-        log_console.append(f"Resampling: {self.checkBox_StartResample.isChecked()}\n")
+        log_board = self.textBrowser_Log
+        log_board.clear()
+        log_board.append('\n')
+        log_board.append('___________________________________________\n')
+        log_board.append("<<< Set options >>>\n")
+        log_board.append(f"Input File: {self.get_input_file_path}\n")
+        log_board.append(f"Output File: {self.get_output_file_path}\n")
+        log_board.append(f"Color: {CsColorMaps.__qualname__}\n")
+        log_board.append(f"Resampling: {self.checkBox_StartResample.isChecked()}\n")
         if self.checkBox_StartResample.isChecked():
-            log_console.append(f"Resolution: {self.spinBoxF_StartResampleResol.value()}\n")
-            log_console.append(f"Algorithm: {self.comboBox_StartResampleAlg.currentText()}\n")
-        log_console.append(f"Slope: {self.__del_cmap(self.get_slope_options())}\n")
-        log_console.append(f"TPI: {self.__del_cmap(self.get_tpi_options())}\n")
-        log_console.append(f"TRI: {self.__del_cmap(self.get_tri_options())}\n")
-        log_console.append(f"Hillshade: {self.__del_cmap(self.get_hillshade_options())}\n")
+            log_board.append(f"Resolution: {self.spinBoxF_StartResampleResol.value()}\n")
+            log_board.append(f"Algorithm: {self.comboBox_StartResampleAlg.currentText()}\n")
+        log_board.append(f"Slope: {self.__del_cmap(self.get_slope_options())}\n")
+        log_board.append(f"TPI: {self.__del_cmap(self.get_tpi_options())}\n")
+        log_board.append(f"TRI: {self.__del_cmap(self.get_tri_options())}\n")
+        log_board.append(f"Hillshade: {self.__del_cmap(self.get_hillshade_options())}\n")
     
     def __del_cmap(self, options: OptionsType) -> Dict[str, Any]:
         """カラーマップを削除"""
         options_dict = options.__dict__.copy()
         options_dict.pop('cmap')
         return options_dict
-    
-    @property
-    def _new_line(self) -> None:
-        self.textBrowser_Log.append('\n')
-        self.textBrowser_Log.append('___________________________________________\n')
-
-    def show_input_data(self, dst: gdal.Dataset) -> None:
-        crs = pyproj.CRS(dst.GetProjection())
-        proj = crs.to_json_dict()
-        self.textBrowser_Log.append(f"Name: {proj['name']}\n")
-        self.textBrowser_Log.append(f"EPSG: {proj['id']['code']}\n")
-        transform = dst.GetGeoTransform()
-        x_min = transform[0]
-        y_max = transform[3]
-        x_max = x_min + transform[1] * dst.RasterXSize
-        y_min = y_max + transform[5] * dst.RasterYSize
-        self.textBrowser_Log.append(f"Scope X: x_min={x_min}, x_max{x_max}\n")
-        self.textBrowser_Log.append(f"Scope Y: y_min={y_min}, y_max={y_max}\n")
-        self.textBrowser_Log.append(f"Resolution: x={transform[1]}, y={transform[5]}\n")
-        self.textBrowser_Log.append(f"Width(Cells): {dst.RasterXSize}\n")
-        self.textBrowser_Log.append(f"Height(Cells): {dst.RasterYSize}\n")
 
     @property
     def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
@@ -464,52 +441,6 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             lyr_name = os.path.basename(file_path).split('.')[0]
             lyr = QgsRasterLayer(file_path, lyr_name, 'gdal')
             QgsProject.instance().addMapLayer(lyr)
-
-    def check_file(self) -> bool:
-        checked_file_path = self._check_file_path
-        checked_bands = self._check_number_of_dimensions
-    
-    @property
-    def _check_file_path(self) -> bool:
-        if not os.path.exists(self.get_input_file_path):
-            self.label_Log.setStyleSheet(self._error_font)
-            self.label_Log.setText("Error： 入力ファイルが見つかりません")
-            raise FileNotFoundError(f"File not found: {self.get_input_file_path}")
-        elif self.checkBox_Sample.isChecked():
-            self.label_Log.setStyleSheet(self._success_font)
-            return True
-        elif self.get_output_file_path == "":
-            self.label_Log.setStyleSheet(self._error_font)
-            self.label_Log.setText("Error： 出力ファイルのパスが設定されていません")
-            raise ValueError("Output file path is not set")
-        elif self._check_file_fmt:
-            self.label_Log.setStyleSheet(self._error_font)
-            self.label_Log.setText("Error： 出力ファイルのフォーマットが間違っています '.tif' を指定してください")
-            raise ValueError("Output file format is incorrect")
-        else:
-            self.label_Log.setStyleSheet(self._success_font)
-            return True
-    
-    @property
-    def _check_file_fmt(self):
-        file_path = self.get_output_file_path
-        fmt = os.path.basename(file_path).split('.')[-1]
-        if fmt != 'tif':
-            return True
-        else:
-            return False
-        
-    @property
-    def _check_number_of_dimensions(self) -> bool:
-        dst = gdal.Open(self.get_input_file_path)
-        bands = dst.RasterCount
-        if 1 < bands:
-            self.label_Log.setStyleSheet(self._error_font)
-            self.label_Log.setText("Error： ラスターのバンド数が多いです", )
-            return False
-        else:
-            self.label_Log.setStyleSheet(self._success_font)
-            return True
     
     def close_dlg(self) -> None:
         self.close()
