@@ -29,14 +29,12 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import numpy as np
 from osgeo import gdal
-import pyproj
 from qgis.core import QgsMapLayerProxyModel
 from qgis.core import QgsProject
 from qgis.core import QgsRasterLayer
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QMessageBox
 
 from .apps.colors import CsColorMaps
 from .apps.colors import RgbColorMaps
@@ -111,6 +109,8 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # TPI のダイアログ設定
         self._erase_dlg_gaussian_param()
+        self.make_tpi_dlg_distance_param()
+        self.cmbBox_Kernel.currentIndexChanged.connect(self.make_tpi_dlg_distance_param)
         self.radioBtn_OrgKernel.toggled.connect(self.make_tpi_dlg_original)
         self.radioBtn_DoughnutKernel.toggled.connect(self.make_tpi_dlg_other)
         self.radioBtn_MeanKernel.toggled.connect(self.make_tpi_dlg_other)
@@ -140,6 +140,12 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
 
     
     def tr(self, message):
+        """
+        Args:
+            message(str): 翻訳するメッセージ
+        Returns:
+            str: 翻訳されたメッセージ
+        """
         return QCoreApplication.translate("TopoMapsDialog", message)
 
     def show_map_styles(self) -> None:
@@ -158,6 +164,7 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         plt.show()
 
     def show_gaussian_hint(self) -> None:
+        """ガウシアンカーネルのヒントを表示"""
         one_side = 7
         sigma_lst = [round(v, 2) for v in np.arange(1.0, 4.01, 0.01)]
         distance_list = np.arange(0, one_side) + 1
@@ -224,9 +231,11 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return RgbColorMaps()
     
     @property
-    def get_input_file_path(self) -> str:
+    def get_input_file_path(self) -> Path:
         """
         ファイルパスを取得
+        Returns:
+            Path: ファイルパス
         """
         if self.radioBtn_InputIsFile.isChecked():
             return self.fileWgt_InputFile.filePath()
@@ -234,9 +243,11 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return self.lyrCombo_InputLyr.currentLayer().source()
     
     @property
-    def get_output_file_path(self) -> str:
+    def get_output_file_path(self) -> Path:
         """
         ファイルパスを取得
+        Returns:
+            Path: ファイルパス
         """
         return self.fileWgt_OutputFile.filePath()
     
@@ -263,6 +274,15 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return dst
 
     def get_slope_options(self) -> SlopeOptions:
+        """Slope に関するオプションを取得
+        Returns:
+            SlopeOptions: Slope に関するオプション
+                resampling(bool): Resampling を行うかどうか
+                resolution(int): 解像度
+                filtering(bool): フィルタリングを行うかどうか
+                gaussian_sigma(float): ガウシアンフィルタの標準偏差
+                cmap: カラーマップ
+        """
         options = SlopeOptions(
             checked=self.gpBox_Slope.isChecked(),
             resampling=self.gpBox_SlopeResample.isChecked(),
@@ -274,6 +294,17 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         return options
     
     def get_tpi_options(self) -> TpiOptions:
+        """TPI に関するオプションを取得
+        Returns:
+            TpiOptions: TPI に関するオプション
+                kernel_size_type(str): カーネルサイズの種類
+                one_side_distance(int): 中心セルからの距離
+                kernel_type(str): カーネルの種類
+                sigma(float): ガウシアンフィルタの標準偏差
+                outlier_treatment(bool): 外れ値処理を行うかどうか
+                threshold(int): 外れ値の閾値
+                cmap: カラーマップ
+        """
         # Kernel typeを取得
         if self.radioBtn_OrgKernel.isChecked():
             kernel_type = KernelTypes.original
@@ -292,11 +323,21 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         else:
             kernel_type = KernelTypes.original
         
+        # カーネルサイズを取得
+        distance_types = [
+            'カーネルサイズを距離で指定', 
+            'Kernel size specified by distance'
+        ]
+        if self.cmbBox_Kernel.currentText() in distance_types:
+            one_side_distance = self.spinBoxF_KernelSize.value()
+        else:
+            one_side_distance = self.spinBoxInt_KernelSize.value()
+        
         # TPI に関するオプションを取得
         options = TpiOptions(
             checked=self.gpBox_Tpi.isChecked(),
             kernel_size_type=self.cmbBox_Kernel.currentText(),
-            one_side_distance=self.spinBoxF_KernelSize.value(),
+            one_side_distance=one_side_distance,
             kernel_type=kernel_type,
             sigma=self.spinBoxF_GaussSigma.value(),
             outlier_treatment=self.gpBox_TpiOutTreatment.isChecked(),
@@ -306,7 +347,13 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         return options
 
     def get_tri_options(self) -> TriOptions:
-        """TRI に関するオプションを取得"""
+        """TRI に関するオプションを取得
+        Returns:
+            TriOptions: TRI に関するオプション
+                outlier_treatment(bool): 外れ値処理を行うかどうか
+                threshold(int): 外れ値の閾値
+                cmap: カラーマップ
+        """
         options = TriOptions(
             checked=self.gpBox_Tri.isChecked(),
             outlier_treatment=self.checkBox_TriOutTreatment.isChecked(),
@@ -318,7 +365,19 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         return options
 
     def get_hillshade_options(self) -> HillshadeOptions:
-        """Hillshade に関するオプションを取得"""
+        """
+        Hillshade に関するオプションを取得
+        Returns:
+            HillshadeOptions: Hillshade に関するオプション
+                hillshade_type(str): Hillshade の種類
+                azimuth(int): 方位角
+                altitude(int): 高度
+                z_factor(float): Z_Factor
+                combined(bool): Slope と Hillshade を合成するかどうか
+                cmap: カラーマップ
+                filtering(bool): フィルタリングを行うかどうか
+                gaussian_sigma(float): ガウシアンフィルタの標準偏差
+        """
         options = HillshadeOptions(
             checked=self.gpBox_Hillshade.isChecked(),
             hillshade_type=self.cmbBox_HillshadeType.currentText(),
@@ -333,24 +392,48 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         return options
 
     def make_input_dlg(self) -> None:
+        """
+        入力ファイルのダイアログを設定
+        ファイルにチェックを入れている時はファイル選択ダイアログを表示し、レイヤー選択を非表示にする。レイヤーにチェックを入れている時はファイル選択ダイアログを非表示にし、レイヤー選択を表示する
+        """
         self.file_filter()
         if self.radioBtn_InputIsFile.isChecked():
             self.label_InputFile.setVisible(True)
             self.fileWgt_InputFile.setVisible(True)
             self.label_InputLayer.setVisible(False)
             self.lyrCombo_InputLyr.setVisible(False)
-        else:
+        elif self.__in_raster():
             self.label_InputFile.setVisible(False)
             self.fileWgt_InputFile.setVisible(False)
             self.label_InputLayer.setVisible(True)
             self.lyrCombo_InputLyr.setVisible(True)
+        else:
+            self.radioBtn_InputIsFile.setChecked(True)
+            self.make_input_dlg()
+        
+    def __in_raster(self) -> bool:
+        """Raster データが存在するか確認"""
+        lyrs = QgsProject.instance().mapLayers().values()
+        rasters = False
+        fmts = ['.tif', '.tiff']
+        for lyr in lyrs:
+            source = lyr.source().lower()
+            for fmt in fmts:
+                if source.endswith(fmt):
+                    rasters = True
+                    break
+            if rasters:
+                break
+        return rasters
     
     def file_filter(self) -> None:
+        """tif ファイルのみを選択できるようにする"""
         self.fileWgt_InputFile.setFilter("GeoTiff (*.tif *.tiff *.TIF *.TIFF);;")
         self.lyrCombo_InputLyr.setFilters(QgsMapLayerProxyModel.RasterLayer)
         self.fileWgt_OutputFile.setFilter("GeoTiff (*.tif);;")
 
     def make_output_dlg(self) -> None:
+        """出力ファイルのダイアログを設定"""
         if self.checkBox_Sample.isChecked():
             self.checkBox_AddProject.setVisible(False)
             self.label_OutputFile.setVisible(False)
@@ -361,7 +444,7 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             self.fileWgt_OutputFile.setVisible(True)
         
     def make_resample_dlg(self) -> None:
-        """Resample の設定を表示"""
+        """リサンプルのダイアログを設定"""
         if self.checkBox_StartResample.isChecked():
             self.l_19.setVisible(True)
             self.l_20.setVisible(True)
@@ -377,12 +460,24 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         """TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示"""
         self._make_dlg_gaussian_param()
         self._make_dlg_kernel_param()
-    
+
+    def make_tpi_dlg_distance_param(self) -> None:
+        distance_type = [
+            'カーネルサイズを距離で指定', 
+            'Kernel size specified by distance'
+        ]
+        if self.cmbBox_Kernel.currentText() in distance_type:
+            self.spinBoxF_KernelSize.setVisible(True)
+            self.spinBoxInt_KernelSize.setVisible(False)
+        else:
+            self.spinBoxF_KernelSize.setVisible(False)
+            self.spinBoxInt_KernelSize.setVisible(True)
+
     def make_tpi_dlg_original(self) -> None:
         """TPI の設定で隣接セルを使用した場合に、パラメータを非表示にする"""
         self._erase_dlg_gaussian_param()
         self._erase_dlg_kernel_param()
-    
+
     def make_tpi_dlg_other(self) -> None:
         """TPi の設定でガウシアンカーネル以外を選択した場合、パラメータを表示する"""
         self._erase_dlg_gaussian_param()
@@ -411,22 +506,34 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.spinBoxF_KernelSize.setVisible(False)
 
     def change_slope_alpha_param_from_slider(self) -> None:
+        # 透過率のスライダーの値を変更
         alpha = self.hSlider_SlopeAlpha.value()
         self.spinBoxInt_SlopeAlpha.setValue(alpha)
     
     def change_slope_alpha_param_from_spinbox(self) -> None:
+        # 透過率のスピンボックスの値を変更
         alpha = self.spinBoxInt_SlopeAlpha.value()
         self.hSlider_SlopeAlpha.setValue(alpha)
 
     def change_tpi_alpha_param_from_slider(self) -> None:
+        # 透過率のスライダーの値を変更
         alpha = self.hSlider_TpiAlpha.value()
         self.spinBoxInt_TpiAlpha.setValue(alpha)
 
     def change_tpi_alpha_param_from_spinbox(self) -> None:
+        # 透過率のスピンボックスの値を変更
         alpha = self.spinBoxInt_TpiAlpha.value()
         self.hSlider_TpiAlpha.setValue(alpha)
 
     def change_alpha(self, img: Image.Image, alpha: float) -> Image.Image:
+        """
+        画像の透過率を変更
+        Args:
+            img(Image.Image): 画像
+            alpha(float): 透過率
+        Returns:
+            Image.Image: 透過率を変更したRGBA画像
+        """
         ary = np.array(img)
         alpha_band = ary[:, :, 3]
         new_alpha_band = (alpha_band * alpha).astype('uint8')
@@ -435,6 +542,7 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         return new_img
     
     def add_lyr(self) -> None:
+        """プロジェクトにレイヤーを追加"""
         if self.checkBox_AddProject.isChecked():
             self.textBrowser_Log.append("Add a raster layer to project\n")
             file_path = self.get_output_file_path
@@ -449,9 +557,8 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
 
 class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):
     def __init__(self, parent=None):
-        """Constructor."""
+        """カーネルのヘルプダイアログ"""
         super(KernelHelpDialog, self).__init__(parent)
         self.setupUi(self)
-        # self.btn_Close.clicked.connect(self.close)
         self.show()
 

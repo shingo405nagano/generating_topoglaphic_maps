@@ -1,3 +1,4 @@
+# **- coding: utf-8 -**
 import json
 from typing import Dict, List, NamedTuple, Tuple
 
@@ -32,10 +33,21 @@ class ColorMaps(object):
         colors: List[Tuple[float]], 
         name: str
     ) -> LinearSegmentedColormap:
+        """
+        リストからカラーマップを作成
+        Args:
+            colors(List[Tuple[float]]): 0-1のRGBA値のリスト
+            name(str): カラーマップ名
+        """
         cmap = LinearSegmentedColormap.from_list(name=name, colors=colors, N=256)
         return cmap
     
     def _get_cmap(self, name: str) -> Cmap:
+        """
+        カラーマップを取得
+        Args:
+            name(str): app/config.jsonに記録しているカラーマップ名
+        """
         cmap = self._list_to_cmap(self.COLORS_DICT[name], name)
         colors = [cmap(i) for i in range(0, 256)]
         colors_255 = [tuple(int(255 * c) for c in color) for color in colors]
@@ -164,13 +176,14 @@ class Coloring(object):
         )
     
     def styling(self, ary: np.ndarray, cmap: List[List[int]]) -> np.ndarray:
+        """
+        配列にカラーマップを適用し、RGBA画像を作成
+        Args:
+            ary(np.ndarray): 配列
+            cmap(List[List[int]]): カラーマップ
+        Returns:
+            np.ndarray
+        """
         scaled_ary = self.scaling(ary)
         img = self.get_color(scaled_ary, cmap)
         return img.astype('uint8')
-
-
-
-if __name__ == '__main__':
-    vintage_cmaps = VintageColorMaps()
-    rgb_cmaps = RgbColorMaps()
-    brown_cmaps = BrownColorMaps()

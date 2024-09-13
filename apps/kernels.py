@@ -1,14 +1,14 @@
+# **- coding: utf-8 -**
 from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
 
 
-def _adjust_distance(func) -> int:
-    """
-    カーネルのサイズを調整するデコレータ
-    """
+def _adjust_distance(func: Callable) -> int:
+    # カーネルのサイズを調整するデコレータ
     def wrapper(*args, **kwargs):
+        # カーネルのサイズは奇数である必要がある
         if 'distance' in kwargs:
             if kwargs['distance'] % 2 == 0:
                 kwargs['distance'] += 1
@@ -93,6 +93,13 @@ def doughnut_kernel(distance: int) -> np.ndarray:
 
 @_adjust_distance
 def _gaussian_kernel(distance, sigma, func):
+    """
+    ガウシアンカーネルを生成する。
+    Args:
+        distance(int): カーネルのサイズ
+        sigma(float): ガウシアンの標準偏差
+        func: ガウシアン関数
+    """
     shape = (distance, distance)
     kernel = np.zeros(shape)
     center = distance // 2
@@ -225,15 +232,3 @@ class Kernels(object):
     four_directions: Callable[[int], np.ndarray] = four_directions_kernel
     eight_directions: Callable[[int], np.ndarray] = eight_directions_kernel
 
-
-
-if __name__ == '__main__':
-    # kernel_type = 'カーネルサイズを距離で指定'
-    kernel_type = 'カーネルサイズをセル数で指定'
-    one_side_distance = 5
-    sigma = 2
-    if kernel_type == 'カーネルサイズを距離で指定':
-        print(Kernels.distance_to_kernel_size(one_side_distance, 0.5))
-    elif kernel_type == 'カーネルサイズをセル数で指定':
-        print(Kernels.cells_to_kernel_size(one_side_distance))
-    

@@ -1,3 +1,4 @@
+# **- coding: utf-8 -**
 from dataclasses import dataclass
 import os
 
@@ -6,30 +7,31 @@ from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox
 
 
-
-class Message(object):
-    def __init__(self):
-        self.file_not_found = self.tr('入力ファイルが存在しません')
-        self.file_is_not_specified = self.tr('出力ファイルが指定されていません')
-        self.mismuch_band = self.tr('RasterDataのBand数が期待値と異なります')
-
-    def tr(self, message):
-        return QCoreApplication.translate('ExeptionMesssage', message)
-
-
-
-class ExeptionMessage(Message):
+class ExeptionMessage(object):
     def __init__(self, dlg):
         super().__init__()
         self.dlg = dlg
+        self.file_not_found = self.tr('入力ファイルが存在しません')
+        self.file_is_not_specified = self.tr('出力ファイルが指定されていません')
+        self.mismuch_band = self.tr('RasterDataのBand数が期待値と異なります')
+        self.yes_no_msg = self.tr('このまま処理をする場合は少し時間が掛かります。 処理を続行しますか?')
+
+    def tr(self, message):
+        """翻訳関数"""
+        return QCoreApplication.translate('ExeptionMessage', message)
 
     def msg(self, message: str) -> None:
+        """エラーメッセージを表示"""
         QMessageBox.information(None, 'Error Message ...', message)
 
     @property
     def check_input_file_path(self) -> bool:
         # 入力ファイルが存在しない場合にエラーメッセージを表示
-        if not os.path.exists(self.dlg.get_input_file_path):
+        file_path = self.dlg.get_input_file_path
+        if file_path is None:
+            self.msg(self.file_not_found)
+            return False
+        elif not os.path.exists(file_path):
             self.msg(self.file_not_found)
             return False
         return True
@@ -57,5 +59,23 @@ class ExeptionMessage(Message):
         else:
             self.msg(self.mismuch_band)
             return False
-        
     
+    def yes_no(self, dst: gdal.Dataset) -> bool:
+        # ファイルサイズが大きい場合に確認メッセージを表示
+        size = dst.RasterXSize * dst.RasterYSize
+        threshold = 25_000_000
+        if threshold < size:
+            reply = QMessageBox.question(
+                None,
+                'Message',
+                self.yes_no_msg,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                return True
+            else:
+                return False
+        else:
+            return True
+        

@@ -27,7 +27,11 @@ os.chdir(os.path.dirname(__file__))
 from matplotlib import pyplot as plt
 import numpy as np
 from osgeo import gdal
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtCore import QTranslator
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -41,7 +45,6 @@ from .apps.parts import process
 from .resources import *
 # Import the code for the dialog
 from .topo_maps_dialog import TopoMapsDialog
-from .topo_maps_dialog import KernelHelpDialog
 coloring = Coloring()
 
 
@@ -165,11 +168,9 @@ class TopoMaps:
         # 微地形図の作成
         self.dlg.pushBtn_Execute.clicked.connect(self.execute_algorithom)
 
-
     def execute_algorithom(self):
         # 問題がある場合は処理を中止
         msg = ExeptionMessage(self.dlg)
-        execute = True
         if not msg.check_input_file_path:
             self.my_log.stop_process
             return 
@@ -180,80 +181,11 @@ class TopoMaps:
             self.my_log.stop_process
             return
         
-        self.dlg.write_options()
-        progress = self.dlg.progressBar
-        progress.setValue(0)
-        self.my_log.start_log
-        # Rasterの読み込み
-        org_dst = gdal.Open(self.dlg.get_input_file_path)
-        # RasterSizeをLogに書き込む
-        self.my_log.input_raster_size
-        self.my_log.show_input_data(org_dst)
-
-        # リサンプルの実行
-        org_dst = self.my_log.resample_log(
-            self.dlg.first_perform_resample,
-            org_dst
-        )
-        if self.dlg.checkBox_StartResample.isChecked():
-            # リサンプルした場合はもう一度RasterSizeをLogに書き込む
-            self.my_log.show_input_data(org_dst)
-        progress.setValue(5)
-
-        if self.dlg.checkBox_Sample.isChecked():
-            # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
-            org_dst = self.my_log.cliping_raster_log(
-                process.get_sample_raster,
-                org_dst
-            )
-        progress.setValue(10)
-        
-        # 傾斜の計算とRGBA化
-        slope_options = self.dlg.get_slope_options()
-        slope_img = self.my_log.slope_log(
-            slope_options.to_slope_img,
-            org_dst,
-            progress=progress
-        )
-        # TPI の計算とRGBA化
-        tpi_options = self.dlg.get_tpi_options()
-        tpi_img = self.my_log.tpi_log(
-            tpi_options.to_tpi_img,
-            org_dst,
-            progress=progress
-        )
-        # TRI の計算とRGBA化
-        tri_options = self.dlg.get_tri_options()
-        tri_img = self.my_log.tri_log(
-            tri_options.to_tri_img,
-            org_dst,
-            progress=progress
-        )
-        # Hillshade の計算とRGBA化
-        hillshade_options = self.dlg.get_hillshade_options()
-        hillshade_img = self.my_log.hillshade_log(
-            hillshade_options.to_hillshade_img,
-            org_dst,
-            progress=progress
-        )
-        # 透過率の変更
-        defalut_alpha = 100
-        if self.dlg.spinBoxInt_SlopeAlpha.value() != defalut_alpha:
-            alpha = self.dlg.spinBoxInt_SlopeAlpha.value() * 0.01
-            slope_img = self.dlg.change_alpha(slope_img, alpha)
-        if self.dlg.spinBoxInt_TpiAlpha.value() != defalut_alpha:
-            alpha = self.dlg.spinBoxInt_TpiAlpha.value() * 0.01
-            tpi_img = self.dlg.change_alpha(tpi_img, alpha)
-
-        # 画像の合成
-        composited_img = self.my_log.composite_log(
-            composite_images,
-            slope_img,
-            tpi_img,
-            tri_img,
-            hillshade_img
-        )
-        progress.setValue(97)
+        # Rasterのサイズによっては処理が重くなるため、QThreadで処理を行う
+        worker = Worker()
+        worker.progress.connect(self.dlg.progressBar.setValue)
+        worker.start()
+        composited_img, org_dst = worker.run(self.dlg, self.my_log)
 
         if self.dlg.checkBox_Sample.isChecked():
             # Sampleにチェックが入っている場合は、画像を表示し、保存しない
@@ -272,5 +204,91 @@ class TopoMaps:
                 org_dst
             )
             self.my_log.add_lyr_log(self.dlg.add_lyr)
-            progress.setValue(100)
+            self.dlg.progressBar.setValue(100)
 
+
+class Worker(QThread):
+    progress = pyqtSignal(int)
+
+    def run(self, dlg, my_log):
+        """微地形図計算のメイン処理"""
+        my_log.start_log
+        dlg.write_options()
+        self.progress.emit(0)
+        # Rasterの読み込み
+        org_dst = gdal.Open(dlg.get_input_file_path)
+        # RasterSizeをLogに書き込む
+        my_log.input_raster_size
+        my_log.show_input_data(org_dst)
+        self.progress.emit(2)
+
+        # リサンプルの実行
+        org_dst = my_log.resample_log(
+            dlg.first_perform_resample,
+            org_dst
+        )
+        msg = ExeptionMessage(dlg)
+        if not msg.yes_no(org_dst):
+            # ファイルサイズが大きい場合は処理を続けるか確認
+            return 
+        
+        if dlg.checkBox_StartResample.isChecked():
+            # リサンプルした場合はもう一度RasterSizeをLogに書き込む
+            my_log.show_input_data(org_dst)
+        self.progress.emit(5)
+
+        if dlg.checkBox_Sample.isChecked():
+            # サンプルのを表示するだけの場合は、Rasterのサイズを縮小する
+            org_dst = my_log.clipping_raster_log(
+                process.get_sample_raster,
+                org_dst
+            )
+        self.progress.emit(10)
+        
+        # 傾斜の計算とRGBA化
+        slope_options = dlg.get_slope_options()
+        slope_img = my_log.slope_log(
+            slope_options.to_slope_img,
+            org_dst,
+            progress=self.progress
+        )
+        # TPI の計算とRGBA化
+        tpi_options = dlg.get_tpi_options()
+        tpi_img = my_log.tpi_log(
+            tpi_options.to_tpi_img,
+            org_dst,
+            progress=self.progress
+        )
+        # TRI の計算とRGBA化
+        tri_options = dlg.get_tri_options()
+        tri_img = my_log.tri_log(
+            tri_options.to_tri_img,
+            org_dst,
+            progress=self.progress
+        )
+        # Hillshade の計算とRGBA化
+        hillshade_options = dlg.get_hillshade_options()
+        hillshade_img = my_log.hillshade_log(
+            hillshade_options.to_hillshade_img,
+            org_dst,
+            progress=self.progress
+        )
+        # 透過率の変更
+        defalut_alpha = 100
+        if dlg.spinBoxInt_SlopeAlpha.value() != defalut_alpha:
+            alpha = dlg.spinBoxInt_SlopeAlpha.value() * 0.01
+            slope_img = dlg.change_alpha(slope_img, alpha)
+        if dlg.spinBoxInt_TpiAlpha.value() != defalut_alpha:
+            alpha = dlg.spinBoxInt_TpiAlpha.value() * 0.01
+            tpi_img = dlg.change_alpha(tpi_img, alpha)
+
+        # 画像の合成
+        composited_img = my_log.composite_log(
+            composite_images,
+            slope_img,
+            tpi_img,
+            tri_img,
+            hillshade_img
+        )
+        self.progress.emit(97)
+        return composited_img, org_dst

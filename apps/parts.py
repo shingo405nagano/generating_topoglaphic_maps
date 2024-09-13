@@ -1,22 +1,4 @@
-"""
-process.write_raster_to_mem
-    Rasterデータをメモリ上に作成する。
-
-process.get_ary
-    Rasterデータの配列を取得する。
-
-process.nodata_to_nan
-    RasterデータのNoDataをnanに変換し、配列を返す。
-
-process.outlier_treatment
-    四分位範囲を用いた外れ値処理
-
-process.convolution
-    畳み込み処理を行う
-
-process.resampling
-    ラスターデータの解像度を変更する
-"""
+# **- coding: utf-8 -**
 import math
 from typing import Any
 from typing import List
@@ -172,6 +154,13 @@ class Process(object):
         return gdal.GetDriverByName('MEM').CreateCopy('', dst)
 
     def get_bounds(self, dst: gdal.Dataset) -> Tuple[float]:
+        """
+        ラスターデータの範囲を取得する
+        Args:
+            dst(gdal.Dataset): ラスターデータ
+        Returns:
+            Tuple[float]: (x_min, y_min, x_max, y_max)
+        """
         transform = dst.GetGeoTransform()
         x_min = transform[0]
         y_max = transform[3]
@@ -184,7 +173,15 @@ class Process(object):
         return (x_min, y_min, x_max, y_max)
     
     def get_sample_raster(self, org_dst: gdal.Dataset) -> gdal.Dataset:
+        """
+        ラスターデータのサンプリングを行う
+        Args:
+            org_dst(gdal.Dataset): ラスターデータ
+        Returns:
+            gdal.Dataset
+        """
         def nodata_checker(ary: np.ndarray, nodata: Any) -> float:
+            """NoDataの割合を計算する"""
             if nodata is None:
                 data_size = ary[ary != nodata].size
             elif math.isnan(nodata):
@@ -195,6 +192,7 @@ class Process(object):
             return data_size / total_size
 
         def calc_center_xy(org_dst: gdal.Dataset) -> List[int]:
+            """中心座標を計算する"""
             X_SIZE, Y_SIZE = org_dst.RasterXSize, org_dst.RasterYSize
             x_center, y_center = int(X_SIZE / 2), int(Y_SIZE / 2)
             return [x_center, y_center]
@@ -258,11 +256,4 @@ class Process(object):
         
 
 
-
 process = Process()
-
-
-if __name__ == '__main__':
-    file = r"D:\Repositories\ProcessingRaster\datasets\DTM_Kouchi__R10M.tif"
-    dst = gdal.Open(file)
-    sample = process.get_sample_raster(dst)

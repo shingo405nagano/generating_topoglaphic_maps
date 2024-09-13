@@ -1,3 +1,4 @@
+# **- coding: utf-8 -**
 from dataclasses import dataclass
 from pathlib import Path
 from PIL import Image
@@ -61,13 +62,21 @@ class SlopeOptions:
         return ary
     
     def to_slope_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        """
+        Slopeの配列から画像を生成する
+        Args:
+            org_dst(gdal.Dataset): Raster data
+            progress(QProgressBar): 進捗バー
+        Returns:
+            Image.Image
+        """
         progress = kwargs.get('progress')
         ary = self.to_slope_ary(org_dst)
         if progress:
-            progress.setValue(13)
+            progress.emit(13)
         img = colorling.styling(ary, self.cmap)
         if progress:
-            progress.setValue(19)
+            progress.emit(19)
         return Image.fromarray(img)
 
     def _resampling_alg(self, 
@@ -77,6 +86,17 @@ class SlopeOptions:
         width: int=None,
         height: int=None
     ) -> gdal.Dataset:
+        """
+        リサンプリングを行う
+        Args:
+            dst(gdal.Dataset): Raster data
+            x_resol(float): X方向の地上分解能
+            y_resol(float): Y方向の地上分解能
+            width(int): 幅
+            height(int): 高さ
+        Returns:
+            gdal.Dataset
+        """
         if (width is not None) & (height is not None):
             options = self._option_template(dst, x_resol, y_resol, width, height)
         else:
@@ -85,6 +105,7 @@ class SlopeOptions:
         return gdal.Warp('', dst, options=options)
 
     def _slope_alg(self, dst: gdal.Dataset) -> gdal.Dataset:
+        # Slopeを計算する
         return gdal.DEMProcessing(
             destName='',
             srcDS=dst,
@@ -93,12 +114,28 @@ class SlopeOptions:
         )
     
     def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        """
+        配列にガウシアンフィルタを適用する
+        Args:
+            ary(np.ndarray): 配列
+            filtering(bool): フィルタリングを行うかどうか
+            sigma(float): ガウシアンフィルタの標準偏差
+        Returns:
+            np.ndarray
+        """
         if filtering:
             return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
         else:
             return ary
 
     def _get_bounds(self, dst: gdal.Dataset) -> Tuple[float]:
+        """
+        ラスタデータの範囲を取得する
+        Args:
+            dst(gdal.Dataset): Raster data
+        Returns: 
+            Tuple[float]: (x_min, y_min, x_max, y_max)
+        """
         transform = dst.GetGeoTransform()
         x_min = transform[0]
         y_max = transform[3]
@@ -117,6 +154,17 @@ class SlopeOptions:
         width: int=None,
         height: int=None
     ) -> dict:
+        """
+        リサンプリングのオプションテンプレートを取得する
+        Args:
+            dst(gdal.Dataset): Raster data
+            x_resol(float): X方向の地上分解能
+            y_resol(float): Y方向の地上分解能
+            width(int): 幅
+            height(int): 高さ
+        Returns:
+            dict
+        """
         template = dict(
             format='MEM', 
             xRes=x_resol, 
@@ -204,13 +252,21 @@ class TpiOptions:
         return ary
     
     def to_tpi_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        """
+        TPIの配列から画像を生成する
+        Args:
+            org_dst(gdal.Dataset): Raster data
+            progress(QProgressBar): 進捗バー
+        Returns:
+            Image.Image: TPIのRGBA画像
+        """
         progress = kwargs.get('progress')
         ary = self.to_tpi_ary(org_dst)
         if progress:
-            progress.setValue(57)
+            progress.emit(57)
         img = colorling.styling(ary, self.cmap)
         if progress:
-            progress.setValue(63)
+            progress.emit(63)
         return Image.fromarray(img)
 
     def _select_kernel(self, org_dst: gdal.Dataset) -> np.ndarray:
@@ -284,16 +340,33 @@ class TriOptions:
         return ary
 
     def to_tri_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        """
+        TRIの配列から画像を生成する
+        Args:
+            org_dst(gdal.Dataset): Raster data
+            progress(QProgressBar): 進捗バー
+        Returns:
+            Image.Image: TRIのRGBA画像
+        """
         progress = kwargs.get('progress')
         ary = self.to_tri_ary(org_dst)
         if progress:
-            progress.setValue(72)
+            progress.emit(72)
         img = colorling.styling(ary, self.cmap)
         if progress:
-            progress.setValue(78)
+            progress.emit(78)
         return Image.fromarray(img)
     
     def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        """
+        配列にガウシアンフィルタを適用する
+        Args:
+            ary(np.ndarray): 配列
+            filtering(bool): フィルタリングを行うかどうか
+            sigma(float): ガウシアンフィルタの標準偏差
+        Returns:
+            np.ndarray
+        """
         if filtering:
             return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
         else:
@@ -341,23 +414,45 @@ class HillshadeOptions:
         return ary
     
     def _gaussian_alg(self, ary: np.ndarray, filtering: bool, sigma: float) -> np.ndarray:
+        """
+        配列にガウシアンフィルタを適用する
+        Args:
+            ary(np.ndarray): 配列
+            filtering(bool): フィルタリングを行うかどうか
+            sigma(float): ガウシアンフィルタの標準偏差
+        Returns:
+            np.ndarray
+        """
         if filtering:
             return scipy.ndimage.gaussian_filter(ary, sigma=sigma)
         else:
             return ary
 
     def to_hillshade_img(self, org_dst: gdal.Dataset, **kwargs) -> Image.Image:
+        """
+        Hillshadeの配列から画像を生成する
+        Args:
+            org_dst(gdal.Dataset): Raster data
+            progress(QProgressBar): 進捗バー
+        Returns:
+            Image.Image: HillshadeのRGBA画像
+        """
         progress = kwargs.get('progress')
         ary = self.to_hillshade_ary(org_dst)
         if progress:
-            progress.setValue(86)
+            progress.emit(86)
         img = colorling.styling(ary, self.cmap)
         if progress:
-            progress.setValue(92)
+            progress.emit(92)
         return Image.fromarray(img)
 
     @property
     def parameters_template(self) -> Dict[str, Any]:
+        """
+        Hillshadeのパラメータテンプレート
+        Returns:
+            Dict[str, Any]
+        """
         return dict(
             process='hillshade',
             format='MEM',
@@ -374,6 +469,16 @@ def composite_images(
     tri_img: Image.Image,
     hillshade_img: Image.Image
 ) -> Image.Image:
+    """
+    画像を合成する
+    Args:
+        slope_img(Image.Image): 傾斜画像
+        tpi_img(Image.Image): TPI画像
+        tri_img(Image.Image): TRI画像
+        hillshade_img(Image.Image): Hillshade画像
+    Returns:
+        Image.Image: 微地形図のRGBA画像
+    """
     composited_img = Image.alpha_composite(hillshade_img, tri_img)
     composited_img = Image.alpha_composite(composited_img, tpi_img)
     composited_img = Image.alpha_composite(composited_img, slope_img)
@@ -381,6 +486,13 @@ def composite_images(
     
 
 def save_image_rgba(out_file_path: Path, img: Image.Image, org_dst: gdal.Dataset) -> None:
+    """
+    RGBA画像を保存する
+    Args:
+        out_file_path(Path): 保存先のファイルパス
+        img(Image.Image): 画像
+        org_dst(gdal.Dataset): Raster data
+    """
     img_ary = np.array(img)
     driver = gdal.GetDriverByName('GTiff')
     driver.Register()
