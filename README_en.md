@@ -1,7 +1,3 @@
-Here is the translation of the `README.md` file into English:
-
----
-
 ![](./views/Contour.jpg)
 <img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square"><img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square">
 

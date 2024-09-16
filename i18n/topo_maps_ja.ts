@@ -21,7 +21,7 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="51"/>
         <source>リサンプリング</source>
-        <translation>Resampling</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="87"/>
@@ -61,7 +61,7 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="578"/>
         <source>相対的な透過率の変更</source>
-        <translation> transmittance</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="602"/>
@@ -127,7 +127,7 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="467"/>
         <source>逆ガウシアン</source>
-        <translation> Gaussian</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="474"/>
@@ -137,12 +137,12 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="484"/>
         <source>隣接セルを使用</source>
-        <translation> cells</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="759"/>
         <source>外れ値処理</source>
-        <translation> treatment</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="530"/>
