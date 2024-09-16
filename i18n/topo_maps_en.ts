@@ -54,6 +54,16 @@
         <translation>Change in relative transmittance</translation>
     </message>
     <message>
+        <location filename="../views/generate_topography_dialog_base.ui" line="214"/>
+        <source>絶対値で分解能を決める</source>
+        <translation type="unfinished">Resolution by absolute value</translation>
+    </message>
+    <message>
+        <location filename="../views/generate_topography_dialog_base.ui" line="229"/>
+        <source>相対的に分解能を決める</source>
+        <translation>Resolution by relative value</translation>
+    </message>
+    <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="602"/>
         <source>%</source>
         <translation>%</translation>
@@ -316,7 +326,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="1464"/>
         <source>プロジェクトにレイヤーを追加</source>
-        <translation type="unfinished">Add layer for project</translation>
+        <translation>Add layer for project</translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="1509"/>
@@ -402,7 +412,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../apps/exeptions.py" line="16"/>
         <source>このまま処理をする場合は少し時間が掛かります。 処理を続行しますか?</source>
-        <translation type="unfinished">If you want to continue processing, it will take some time. Would you like to continue?</translation>
+        <translation>If you want to continue processing, it will take some time. Would you like to continue?</translation>
     </message>
 </context>
 </TS>

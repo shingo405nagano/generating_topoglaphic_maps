@@ -106,6 +106,8 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         # Resampleのダイアログ設定
         self.make_resample_dlg()
         self.checkBox_StartResample.stateChanged.connect(self.make_resample_dlg)
+        self.rarioBtn_ResolIsAbs.toggled.connect(self.make_resample_dlg)
+        self.radioBtn_ResolIsRel.toggled.connect(self.make_resample_dlg)
 
         # TPI のダイアログ設定
         self._erase_dlg_gaussian_param()
@@ -266,7 +268,14 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             'Cubic Spline': gdal.GRA_CubicSpline,
         }
         if self.checkBox_StartResample.isChecked():
-            resolution = self.spinBoxF_StartResampleResol.value()
+            if self.rarioBtn_ResolIsAbs.isChecked():
+                # 絶対値で解像度を指定
+                resolution = self.spinBoxF_StartResampleResol.value()
+            elif self.radioBtn_ResolIsRel.isChecked():
+                # 相対値で解像度を指定
+                resolution = self.spinBoxInt_StartResampleResol.value()
+                org_resol = dst.GetGeoTransform()[1]
+                resolution = org_resol / resolution
             alg = algs.get(self.comboBox_StartResampleAlg.currentText())
             dst = process.resampling(dst, resolution, alg)
             return dst
@@ -446,14 +455,28 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
     def make_resample_dlg(self) -> None:
         """リサンプルのダイアログを設定"""
         if self.checkBox_StartResample.isChecked():
-            self.l_19.setVisible(True)
+            self.rarioBtn_ResolIsAbs.setVisible(True)
+            self.radioBtn_ResolIsRel.setVisible(True)
+            if self.rarioBtn_ResolIsAbs.isChecked():
+                self.l_19.setVisible(True)
+                self.l_21.setVisible(False)
+                self.spinBoxF_StartResampleResol.setVisible(True)
+                self.spinBoxInt_StartResampleResol.setVisible(False)
+            else:
+                self.l_19.setVisible(False)
+                self.l_21.setVisible(True)
+                self.spinBoxF_StartResampleResol.setVisible(False)
+                self.spinBoxInt_StartResampleResol.setVisible(True)
             self.l_20.setVisible(True)
-            self.spinBoxF_StartResampleResol.setVisible(True)
             self.comboBox_StartResampleAlg.setVisible(True)
         else:
+            self.rarioBtn_ResolIsAbs.setVisible(False)
+            self.radioBtn_ResolIsRel.setVisible(False)
             self.l_19.setVisible(False)
             self.l_20.setVisible(False)
+            self.l_21.setVisible(False)
             self.spinBoxF_StartResampleResol.setVisible(False)
+            self.spinBoxInt_StartResampleResol.setVisible(False)
             self.comboBox_StartResampleAlg.setVisible(False)
 
     def make_tpi_dlg_gaussian(self) -> None:

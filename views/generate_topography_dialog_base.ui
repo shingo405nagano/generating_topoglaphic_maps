@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>874</width>
-    <height>582</height>
+    <width>696</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -140,13 +140,9 @@
            </layout>
           </item>
           <item>
-           <layout class="QGridLayout" name="gL" columnstretch="1,3">
-            <item row="0" column="1">
-             <widget class="QgsFileWidget" name="fileWgt_InputFile">
-              <property name="storageMode">
-               <enum>QgsFileWidget::GetFile</enum>
-              </property>
-             </widget>
+           <layout class="QGridLayout" name="gL" columnstretch="1,4">
+            <item row="1" column="1">
+             <widget class="QgsMapLayerComboBox" name="lyrCombo_InputLyr"/>
             </item>
             <item row="0" column="0">
              <widget class="QLabel" name="label_InputFile">
@@ -172,8 +168,12 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QgsMapLayerComboBox" name="lyrCombo_InputLyr"/>
+            <item row="0" column="1">
+             <widget class="QgsFileWidget" name="fileWgt_InputFile">
+              <property name="storageMode">
+               <enum>QgsFileWidget::GetFile</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -202,6 +202,37 @@
            <number>6</number>
           </property>
           <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QRadioButton" name="rarioBtn_ResolIsAbs">
+              <property name="styleSheet">
+               <string notr="true">QRadioButton {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>絶対値で分解能を決める</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="radioBtn_ResolIsRel">
+              <property name="styleSheet">
+               <string notr="true">QRadioButton {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>相対的に分解能を決める</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QGridLayout" name="gridLayout_10">
             <property name="horizontalSpacing">
              <number>6</number>
@@ -224,48 +255,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="checkBox_StartResample">
-              <property name="text">
-               <string>最初にリサンプリングを行う</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QgsDoubleSpinBox" name="spinBoxF_StartResampleResol">
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.500000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-              <property name="showClearButton">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QLabel" name="l_20">
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-	padding-left: 20px;
-}</string>
-              </property>
-              <property name="text">
-               <string>アルゴリズム</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
+            <item row="0" column="6">
              <widget class="QComboBox" name="comboBox_StartResampleAlg">
               <item>
                <property name="text">
@@ -289,7 +279,37 @@
               </item>
              </widget>
             </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="l_21">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>1/n</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="5">
+             <widget class="QLabel" name="l_20">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>アルゴリズム</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="7">
              <spacer name="hS_12">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -301,6 +321,51 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="checkBox_StartResample">
+              <property name="text">
+               <string>最初にリサンプリングを行う</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QgsDoubleSpinBox" name="spinBoxF_StartResampleResol">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="minimum">
+               <double>0.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.500000000000000</double>
+              </property>
+              <property name="value">
+               <double>1.000000000000000</double>
+              </property>
+              <property name="showClearButton">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QgsSpinBox" name="spinBoxInt_StartResampleResol">
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="minimum">
+               <number>2</number>
+              </property>
+              <property name="maximum">
+               <number>20</number>
+              </property>
+              <property name="showClearButton">
+               <bool>false</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -525,7 +590,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="SlopeTab">
       <attribute name="title">
@@ -569,8 +634,11 @@
               <layout class="QGridLayout" name="gl_5">
                <item row="0" column="1">
                 <widget class="QgsDoubleSpinBox" name="spinBoxF_ResampleResol">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="suffix">
-                  <string>m</string>
+                  <string/>
                  </property>
                  <property name="decimals">
                   <number>1</number>
@@ -650,6 +718,9 @@
                </item>
                <item row="0" column="2">
                 <widget class="QgsDoubleSpinBox" name="spinBoxF_SlopeGaussSigma">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -949,6 +1020,9 @@
                  </item>
                  <item row="0" column="3">
                   <widget class="QgsSpinBox" name="spinBoxInt_KernelSize">
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
                    <property name="minimum">
                     <number>1</number>
                    </property>
@@ -1372,6 +1446,9 @@ p, li { white-space: pre-wrap; }
              </item>
              <item row="1" column="1">
               <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeHighlight">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -1407,6 +1484,9 @@ p, li { white-space: pre-wrap; }
              </item>
              <item row="0" column="5">
               <widget class="QgsSpinBox" name="spinBoxInt_HillshadeHight">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
                <property name="maximum">
                 <number>90</number>
                </property>
@@ -1449,6 +1529,9 @@ p, li { white-space: pre-wrap; }
              </item>
              <item row="0" column="3">
               <widget class="QgsSpinBox" name="spinBoxInt_HillshadeAzimuth">
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
                <property name="maximum">
                 <number>359</number>
                </property>
@@ -1533,6 +1616,9 @@ p, li { white-space: pre-wrap; }
                </item>
                <item row="0" column="2">
                 <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeGaussSigma">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>

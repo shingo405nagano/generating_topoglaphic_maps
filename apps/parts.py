@@ -202,24 +202,25 @@ class Process(object):
         if nodata is None:
             nodata = np.nan
         ary = org_dst.ReadAsArray()
-        maximum_size = 3_000_000
+        maximum_size = 5_000_000
         if org_dst.RasterXSize * org_dst.RasterYSize < maximum_size:
             # サイズが小さい場合はそのまま使用する
             new_ary = ary
         else:
             # サイズが大きい場合は、サンプリングする
-            y_size, x_size = [int(size / 3) for size in ary.shape]
-            # サイズが大きすぎる場合は、2,000に制限する
-            if 2_000 < x_size:
-                x_size = 2_000
-            if 2_000 < y_size:
-                y_size = 2_000
+            rows = int(ary.shape[0] * 0.25)
+            cols = int(rows * 1.3)
+            if 2_000 < rows:
+                # サンプリングサイズが大きい場合は、サイズを調整する
+                rows = 1_800
+                cols = 2_500
+            
             # Nodataのセルが多い場合は、別な箇所をサンプリングする
             arys = [
-                ary[: x_size, : y_size],
-                ary[: x_size, -y_size:],
-                ary[-x_size:, : y_size],
-                ary[-x_size:, -y_size:]
+                ary[: rows, : cols],
+                ary[: rows, -cols:],
+                ary[-rows:, : cols],
+                ary[-cols:, -cols:]
             ]
             new_ary = None
             for _ary in arys:
@@ -231,18 +232,18 @@ class Process(object):
                     continue
             if new_ary is None:
                 x_center, y_center = calc_center_xy(org_dst)
-                herf_x_size, herf_y_size = [int(size / 2) for size in [x_size, y_size]]
+                herf_x_size, herf_y_size = [int(size / 2) for size in [rows, cols]]
                 new_ary = ary[
                     x_center - herf_x_size: x_center + herf_x_size,
                     y_center - herf_y_size: y_center + herf_y_size
                 ]
-
+        
         # データセットを作成
         driver = gdal.GetDriverByName('MEM')
         driver.Register()
         new_dst = driver.Create(
             '',
-            xsize=new_ary.shape[1], 
+            xsize=new_ary.shape[1],
             ysize=new_ary.shape[0],
             bands=1, 
             eType=gdal.GDT_Float32
