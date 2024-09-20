@@ -78,4 +78,4 @@ Creating a micro-topographic map from a high-resolution DTM with this plugin tak
 ![](./views/Sample__CS-Map__R10.jpg)
 
 ## **UI Image**
-![](./views/UI.png)
+![](./views/UI_en.png)
