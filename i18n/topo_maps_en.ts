@@ -102,7 +102,7 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="372"/>
         <source>片側</source>
-        <translation>One size</translation>
+        <translation>One side</translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="433"/>
