@@ -68,7 +68,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_InputTab">
       <attribute name="title">
@@ -418,33 +418,6 @@
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout_13">
-            <item row="0" column="1">
-             <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
-              <property name="text">
-               <string>ヴィンテージ</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QPushButton" name="btn_ShowStyles">
-              <property name="text">
-               <string>スタイルの確認</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <spacer name="hS_9">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item row="0" column="0">
              <widget class="QRadioButton" name="mapSelectRadioBtn_BR">
               <property name="styleSheet">
@@ -462,6 +435,47 @@
              <widget class="QRadioButton" name="mapSelectRadioBtn_Dark">
               <property name="text">
                <string>RGB</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
+              <property name="text">
+               <string>ヴィンテージ</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <spacer name="hS_9">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="6">
+             <widget class="QPushButton" name="btn_ShowStyles">
+              <property name="text">
+               <string>スタイルの確認</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QRadioButton" name="radioButton">
+              <property name="text">
+               <string>Your</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QPushButton" name="pushButton">
+              <property name="text">
+               <string>調整</string>
               </property>
              </widget>
             </item>
