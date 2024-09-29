@@ -20,55 +20,13 @@
 </string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="1" column="0">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <layout class="QGridLayout" name="gL_3" columnstretch="1,0,0" rowminimumheight="0,0,0">
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushBtn_Cancel">
-       <property name="text">
-        <string>キャンセル</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="pushBtn_Execute">
-       <property name="text">
-        <string>実行</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0" colspan="3">
-      <widget class="QProgressBar" name="progressBar">
-       <property name="value">
-        <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_Log">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tW_1">
      <property name="styleSheet">
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_InputTab">
       <attribute name="title">
@@ -169,11 +127,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QgsFileWidget" name="fileWgt_InputFile">
-              <property name="storageMode">
-               <enum>QgsFileWidget::GetFile</enum>
-              </property>
-             </widget>
+             <widget class="QgsFileWidget" name="fileWgt_InputFile" native="true"/>
             </item>
            </layout>
           </item>
@@ -346,7 +300,7 @@
               <property name="value">
                <double>1.000000000000000</double>
               </property>
-              <property name="showClearButton">
+              <property name="showClearButton" stdset="0">
                <bool>false</bool>
               </property>
              </widget>
@@ -362,7 +316,7 @@
               <property name="maximum">
                <number>20</number>
               </property>
-              <property name="showClearButton">
+              <property name="showClearButton" stdset="0">
                <bool>false</bool>
               </property>
              </widget>
@@ -418,33 +372,6 @@
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout_13">
-            <item row="0" column="1">
-             <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
-              <property name="text">
-               <string>ヴィンテージ</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QPushButton" name="btn_ShowStyles">
-              <property name="text">
-               <string>スタイルの確認</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <spacer name="hS_9">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item row="0" column="0">
              <widget class="QRadioButton" name="mapSelectRadioBtn_BR">
               <property name="styleSheet">
@@ -459,9 +386,50 @@
              </widget>
             </item>
             <item row="0" column="2">
-             <widget class="QRadioButton" name="mapSelectRadioBtn_Dark">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_RGB">
               <property name="text">
                <string>RGB</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_Vintage">
+              <property name="text">
+               <string>ヴィンテージ</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <spacer name="hS_9">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="6">
+             <widget class="QPushButton" name="btn_ShowStyles">
+              <property name="text">
+               <string>スタイルの確認</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QRadioButton" name="mapSelectRadioBtn_YourStyle">
+              <property name="text">
+               <string>Your</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QPushButton" name="btn_CustomDlg">
+              <property name="text">
+               <string>調整</string>
               </property>
              </widget>
             </item>
@@ -535,18 +503,15 @@
           <item>
            <layout class="QGridLayout" name="gridLayout_15">
             <item row="1" column="1">
-             <widget class="QgsFileWidget" name="fileWgt_OutputFile">
-              <property name="fileWidgetButtonVisible">
+             <widget class="QgsFileWidget" name="fileWgt_OutputFile" native="true">
+              <property name="fileWidgetButtonVisible" stdset="0">
                <bool>true</bool>
               </property>
-              <property name="useLink">
+              <property name="useLink" stdset="0">
                <bool>false</bool>
               </property>
-              <property name="fullUrl">
+              <property name="fullUrl" stdset="0">
                <bool>false</bool>
-              </property>
-              <property name="storageMode">
-               <enum>QgsFileWidget::SaveFile</enum>
               </property>
              </widget>
             </item>
@@ -584,6 +549,54 @@
      </widget>
     </widget>
    </item>
+   <item row="4" column="0">
+    <spacer name="vS_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="0">
+    <layout class="QGridLayout" name="gL_3" columnstretch="1,0,0" rowminimumheight="0,0,0">
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushBtn_Cancel">
+       <property name="text">
+        <string>キャンセル</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="pushBtn_Execute">
+       <property name="text">
+        <string>実行</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="3">
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_Log">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="3" column="0">
     <widget class="QTabWidget" name="tW">
      <property name="styleSheet">
@@ -592,7 +605,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="SlopeTab">
+     <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>Slope</string>
       </attribute>
@@ -649,7 +662,7 @@
                  <property name="value">
                   <double>10.000000000000000</double>
                  </property>
-                 <property name="showClearButton">
+                 <property name="showClearButton" stdset="0">
                   <bool>false</bool>
                  </property>
                 </widget>
@@ -733,7 +746,7 @@
                  <property name="value">
                   <double>1.000000000000000</double>
                  </property>
-                 <property name="showClearButton">
+                 <property name="showClearButton" stdset="0">
                   <bool>false</bool>
                  </property>
                 </widget>
@@ -802,7 +815,7 @@
                <property name="value">
                 <number>100</number>
                </property>
-               <property name="showClearButton">
+               <property name="showClearButton" stdset="0">
                 <bool>false</bool>
                </property>
               </widget>
@@ -955,13 +968,13 @@
                    <property name="value">
                     <double>15.000000000000000</double>
                    </property>
-                   <property name="showClearButton">
+                   <property name="showClearButton" stdset="0">
                     <bool>false</bool>
                    </property>
-                   <property name="clearValue">
+                   <property name="clearValue" stdset="0">
                     <bool>false</bool>
                    </property>
-                   <property name="expressionsEnabled">
+                   <property name="expressionsEnabled" stdset="0">
                     <bool>true</bool>
                    </property>
                   </widget>
@@ -987,7 +1000,7 @@
                    <property name="value">
                     <double>2.000000000000000</double>
                    </property>
-                   <property name="showClearButton">
+                   <property name="showClearButton" stdset="0">
                     <bool>false</bool>
                    </property>
                   </widget>
@@ -1032,7 +1045,7 @@
                    <property name="value">
                     <number>15</number>
                    </property>
-                   <property name="showClearButton">
+                   <property name="showClearButton" stdset="0">
                     <bool>false</bool>
                    </property>
                   </widget>
@@ -1170,7 +1183,7 @@
                <property name="value">
                 <double>1.500000000000000</double>
                </property>
-               <property name="showClearButton">
+               <property name="showClearButton" stdset="0">
                 <bool>false</bool>
                </property>
               </widget>
@@ -1347,7 +1360,7 @@ p, li { white-space: pre-wrap; }
               <property name="value">
                <double>1.500000000000000</double>
               </property>
-              <property name="showClearButton">
+              <property name="showClearButton" stdset="0">
                <bool>false</bool>
               </property>
              </widget>
@@ -1464,7 +1477,7 @@ p, li { white-space: pre-wrap; }
                <property name="value">
                 <double>2.500000000000000</double>
                </property>
-               <property name="showClearButton">
+               <property name="showClearButton" stdset="0">
                 <bool>false</bool>
                </property>
               </widget>
@@ -1496,7 +1509,7 @@ p, li { white-space: pre-wrap; }
                <property name="value">
                 <number>90</number>
                </property>
-               <property name="showClearButton">
+               <property name="showClearButton" stdset="0">
                 <bool>false</bool>
                </property>
               </widget>
@@ -1541,7 +1554,7 @@ p, li { white-space: pre-wrap; }
                <property name="value">
                 <number>315</number>
                </property>
-               <property name="showClearButton">
+               <property name="showClearButton" stdset="0">
                 <bool>false</bool>
                </property>
               </widget>
@@ -1631,7 +1644,7 @@ p, li { white-space: pre-wrap; }
                  <property name="value">
                   <double>2.000000000000000</double>
                  </property>
-                 <property name="showClearButton">
+                 <property name="showClearButton" stdset="0">
                   <bool>false</bool>
                  </property>
                 </widget>
@@ -1686,6 +1699,11 @@ p, li { white-space: pre-wrap; }
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="OthersTab">
+      <attribute name="title">
+       <string>Others</string>
+      </attribute>
+     </widget>
      <widget class="QWidget" name="LogTab">
       <attribute name="title">
        <string>Log</string>
@@ -1698,18 +1716,12 @@ p, li { white-space: pre-wrap; }
      </widget>
     </widget>
    </item>
-   <item row="4" column="0">
-    <spacer name="vS_4">
+   <item row="1" column="0">
+    <widget class="Line" name="line">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+    </widget>
    </item>
   </layout>
  </widget>
