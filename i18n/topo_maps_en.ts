@@ -39,6 +39,11 @@
         <translation>Gaussian filter</translation>
     </message>
     <message>
+        <location filename="../views/generate_topography_dialog_base.ui" line="432"/>
+        <source>調整</source>
+        <translation>Custom</translation>
+    </message>
+    <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="996"/>
         <source>Sigma</source>
         <translation>Sigma</translation>
@@ -413,6 +418,42 @@ p, li { white-space: pre-wrap; }
         <location filename="../apps/exeptions.py" line="16"/>
         <source>このまま処理をする場合は少し時間が掛かります。 処理を続行しますか?</source>
         <translation>If you want to continue processing, it will take some time. Would you like to continue?</translation>
+    </message>
+</context>
+<context>
+    <name>CustomColorDialog</name>
+    <message>
+        <location filename="../custom_color_dialog.py" line="72"/>
+        <source>この設定を登録しますか?</source>
+        <translation>Do you want to register this setting?</translation>
+    </message>
+    <message>
+        <location filename="../custom_color_dialog.py" line="84"/>
+        <source>この設定を初期化しますか?</source>
+        <translation>Do you want to initialize this setting?</translation>
+    </message>
+</context>
+<context>
+    <name>Dialog</name>
+    <message>
+        <location filename="../views/color_ramp_dlg.ui" line="141"/>
+        <source>確認</source>
+        <translation>Show</translation>
+    </message>
+    <message>
+        <location filename="../views/color_ramp_dlg.ui" line="168"/>
+        <source>登録</source>
+        <translation>Registration</translation>
+    </message>
+    <message>
+        <location filename="../views/color_ramp_dlg.ui" line="175"/>
+        <source>初期化</source>
+        <translation>Initialize</translation>
+    </message>
+    <message>
+        <location filename="../views/color_ramp_dlg.ui" line="175"/>
+        <source>キャンセル</source>
+        <translation>Cancel</translation>
     </message>
 </context>
 </TS>

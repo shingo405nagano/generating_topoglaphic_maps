@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import json
 import os
 from typing import Any, Dict, NewType, Union
 from pathlib import Path
@@ -47,6 +48,7 @@ from .apps.mapper import TriOptions
 from .apps.mapper import HillshadeOptions
 from .apps.parts import process
 from .apps.exeptions import ExeptionMessage
+from .custom_color_dialog import CustomColorDialog
 
 OptionsType = NewType('OptionsType', Union[SlopeOptions, TpiOptions, TriOptions, HillshadeOptions])
 
@@ -140,7 +142,15 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.btn_ShowTpiHint.clicked.connect(self.show_kernel_help)
         self.pushBtn_Cancel.clicked.connect(self.close_dlg)
 
-    
+        self.btn_CustomDlg.clicked.connect(self.show_custom_color_dlg)
+        self.make_map_style()
+        self.mapSelectRadioBtn_YourStyle.toggled.connect(self.make_map_style)
+
+    def show_custom_color_dlg(self) -> None:
+        """カーネルのヘルプを表示"""
+        self.custom_color_dlg= CustomColorDialog(self)
+        self.custom_color_dlg.show()
+
     def tr(self, message):
         """
         Args:
@@ -149,6 +159,12 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             str: 翻訳されたメッセージ
         """
         return QCoreApplication.translate("TopoMapsDialog", message)
+
+    def make_map_style(self) -> None:
+        if self.mapSelectRadioBtn_YourStyle.isChecked():
+            self.btn_CustomDlg.setVisible(True)
+        else:
+            self.btn_CustomDlg.setVisible(False)
 
     def show_map_styles(self) -> None:
         """マップスタイルを適用した場合のプレビューを表示"""
@@ -229,8 +245,18 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return CsColorMaps()
         elif self.mapSelectRadioBtn_Vintage.isChecked():
             return VintageColorMaps()
-        else:
+        elif self.mapSelectRadioBtn_RGB.isChecked():
             return RgbColorMaps()
+        else:
+            # 設定したカスタムカラーマップを取得
+            from .apps.colors import CustomColorMaps
+            file = '.\\apps\\config.json'
+            with open(file, mode='r') as f:
+                config = json.load(f)
+                cmap = config.get('CUSTOM-Map')
+            custom_color_maps = CustomColorMaps()
+            custom_color_maps.COLORS_DICT = cmap
+            return custom_color_maps
     
     @property
     def get_input_file_path(self) -> Path:
@@ -584,4 +610,5 @@ class KernelHelpDialog(QtWidgets.QDialog, HELP_KERNELS):
         super(KernelHelpDialog, self).__init__(parent)
         self.setupUi(self)
         self.show()
+        self.btn_Close.clicked.connect(self.close)
 

@@ -15,6 +15,8 @@ with open(conf_path, mode='r') as file:
     VINRAGE_COLORS = config['Vintage-Map']
     global RGB_COLORS
     RGB_COLORS = config['RGB-Map']
+    global CUSTOM_COLORS
+    CUSTOM_COLORS = config['CUSTOM-Map']
 
 
 
@@ -127,6 +129,10 @@ class RgbColorMaps(ColorMaps):
     def __init__(self):
         super().__init__(RGB_COLORS)
 
+
+class CustomColorMaps(ColorMaps):
+    def __init__(self):
+        super().__init__(CUSTOM_COLORS)
 
 
 class Coloring(object):
