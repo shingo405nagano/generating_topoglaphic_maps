@@ -6,11 +6,11 @@
 name=Topo Maps
 qgisMinimumVersion=3.0
 description=微地形図の生成。Generate Topographic Maps.
-version=1.1
+version=1.2
 author=Shingo Nagano
 email=shingosnaganon@gmail.com
 
-about=TopoMapsプラグインは、デジタル地形モデルから詳細地形図を生成します。詳細地形図には3つのタイプがあります：「CS-Map Styled」、「Vintage-Map Styled」、「RGB-Map Styled」の3種類があり、ユーザーの好みに応じて選択することができます。これは山林の詳細な地形を把握する為のものであり、市街地の為のものではありません。TopoMaps plugin is generate details topographic maps from digital terrain model. There are three types of details maps: "CS-Map Styled," "Vintage-Map Styled," and "RGB-Map Styled," which can be selected according to the user's preference. This is for detailed topography of mountain forests, not for urban areas.
+about=TopoMapsプラグインは、デジタル地形モデルから詳細地形図を生成します。詳細地形図には3つのタイプがあります：「CS-Map Styled」、「Vintage-Map Styled」、「RGB-Map Styled」「Your-Map Styled」の4種類があり、ユーザーの好みに応じて選択することができます。これは山林の詳細な地形を把握する為のものであり、市街地の為のものではありません。The TopoMaps plug-in generates detailed topographic maps from digital terrain models. There are four types of detailed topographic maps: "CS-Map Styled", "Vintage-Map Styled", "RGB-Map Styled", and "Your-Map Styled", which can be selected according to user preference. This is for detailed topography of mountainous forests, not for urban areas.
 
 tracker=https://github.com/shingo405nagano/generating_topoglaphic_maps/issues
 repository=https://github.com/shingo405nagano/generating_topoglaphic_maps
