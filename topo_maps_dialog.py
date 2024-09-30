@@ -42,10 +42,16 @@ from .apps.colors import RgbColorMaps
 from .apps.colors import VintageColorMaps
 from .apps.kernels import Kernels
 from .apps.kernels import KernelTypes
+
+from .apps.mapper import ContrastOptions
+from .apps.mapper import EdgeOptions
+from .apps.mapper import GaussianOptions
 from .apps.mapper import SlopeOptions
+from .apps.mapper import HillshadeOptions
 from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
-from .apps.mapper import HillshadeOptions
+from .apps.mapper import UnsharpnOptions
+
 from .apps.parts import process
 from .apps.exeptions import ExeptionMessage
 from .custom_color_dialog import CustomColorDialog
@@ -82,85 +88,48 @@ global RGB_MAP_IMG
 RGB_MAP_IMG = plt.imread('./views/RGB-Map__Img.jpg')
 
 
-class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
-    def __init__(self, parent=None):
-        """Constructor."""
-        super(TopoMapsDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
-        # After self.setupUi() you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
-        self.setupUi(self)
-        self._error_font = "QLabel {color: red; font-weight: bold;}"
-        self._success_font = "QLabel {color: black;}"
-
-        # Set the help dialog to None
-        # ファイルの読み書きを設定
-        self.make_input_dlg()
-        self.radioBtn_InputIsFile.toggled.connect(self.make_input_dlg)
-        self.radioBtn_InputIsLayer.toggled.connect(self.make_input_dlg)
-        self.checkBox_Sample.stateChanged.connect(self.make_output_dlg)
-        
-        # ログの初期化
-        self.textBrowser_Log.clear()
-
-        # Resampleのダイアログ設定
-        self.make_resample_dlg()
-        self.checkBox_StartResample.stateChanged.connect(self.make_resample_dlg)
-        self.rarioBtn_ResolIsAbs.toggled.connect(self.make_resample_dlg)
-        self.radioBtn_ResolIsRel.toggled.connect(self.make_resample_dlg)
-
-        # TPI のダイアログ設定
-        self._erase_dlg_gaussian_param()
-        self.make_tpi_dlg_distance_param()
-        self.cmbBox_Kernel.currentIndexChanged.connect(self.make_tpi_dlg_distance_param)
-        self.radioBtn_OrgKernel.toggled.connect(self.make_tpi_dlg_original)
-        self.radioBtn_DoughnutKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_MeanKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_GaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
-        self.radioBtn_InvGaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
-        self.radioBtn_4DirecKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_8DirecKernel.toggled.connect(self.make_tpi_dlg_other)
-
-        # 透過率のダイアログ設定
-        self.hSlider_SlopeAlpha.valueChanged.connect(
-            self.change_slope_alpha_param_from_slider)
-        self.spinBoxInt_SlopeAlpha.valueChanged.connect(
-            self.change_slope_alpha_param_from_spinbox)
-        self.hSlider_TpiAlpha.valueChanged.connect(
-            self.change_tpi_alpha_param_from_slider)
-        self.spinBoxInt_TpiAlpha.valueChanged.connect(
-            self.change_tpi_alpha_param_from_spinbox)
-        
-        # マップスタイルのプレビューを表示
-        self.btn_ShowStyles.clicked.connect(self.show_map_styles)
-        self.pushBtn_GaussHint.clicked.connect(self.show_gaussian_hint)
-        self.pushBtn_GaussHint_.clicked.connect(self.show_gaussian_hint)
-
-        # KernelHelpDialogの表示
-        self.btn_ShowTpiHint.clicked.connect(self.show_kernel_help)
-        self.pushBtn_Cancel.clicked.connect(self.close_dlg)
-
-        self.btn_CustomDlg.clicked.connect(self.show_custom_color_dlg)
-        self.make_map_style()
-        self.mapSelectRadioBtn_YourStyle.toggled.connect(self.make_map_style)
-
+class InputTab(object):
+    def make_input_dlg(self) -> None:
+        """
+        入力ファイルのダイアログを設定
+        ファイルにチェックを入れている時はファイル選択ダイアログを表示し、レイヤー選択を非表示にする。レイヤーにチェックを入れている時はファイル選択ダイアログを非表示にし、レイヤー選択を表示する
+        """
+        self.file_filter()
+        if self.radioBtn_InputIsFile.isChecked():
+            self.label_InputFile.setVisible(True)
+            self.fileWgt_InputFile.setVisible(True)
+            self.label_InputLayer.setVisible(False)
+            self.lyrCombo_InputLyr.setVisible(False)
+        elif self.__in_raster():
+            self.label_InputFile.setVisible(False)
+            self.fileWgt_InputFile.setVisible(False)
+            self.label_InputLayer.setVisible(True)
+            self.lyrCombo_InputLyr.setVisible(True)
+        else:
+            self.radioBtn_InputIsFile.setChecked(True)
+            self.make_input_dlg()
+    
+    def __in_raster(self) -> bool:
+        """Raster データが存在するか確認"""
+        lyrs = QgsProject.instance().mapLayers().values()
+        rasters = False
+        fmts = ['.tif', '.tiff']
+        for lyr in lyrs:
+            source = lyr.source().lower()
+            for fmt in fmts:
+                if source.endswith(fmt):
+                    rasters = True
+                    break
+            if rasters:
+                break
+        return rasters
+    
     def show_custom_color_dlg(self) -> None:
         """カーネルのヘルプを表示"""
         self.custom_color_dlg= CustomColorDialog(self)
         self.custom_color_dlg.show()
 
-    def tr(self, message):
-        """
-        Args:
-            message(str): 翻訳するメッセージ
-        Returns:
-            str: 翻訳されたメッセージ
-        """
-        return QCoreApplication.translate("TopoMapsDialog", message)
-
-    def make_map_style(self) -> None:
+    def make_your_styling(self) -> None:
         if self.mapSelectRadioBtn_YourStyle.isChecked():
             self.btn_CustomDlg.setVisible(True)
         else:
@@ -180,83 +149,6 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             _ax = ax
         plt.subplots_adjust(wspace=0.05, hspace=0.15)
         plt.show()
-
-    def show_gaussian_hint(self) -> None:
-        """ガウシアンカーネルのヒントを表示"""
-        one_side = 7
-        sigma_lst = [round(v, 2) for v in np.arange(1.0, 4.01, 0.01)]
-        distance_list = np.arange(0, one_side) + 1
-        distance_list = (distance_list[::-1] * -1).tolist() + [0] + distance_list.tolist()
-        cmap = plt.get_cmap('cool', len(sigma_lst))
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.set_title("Sigma values of Gaussian Kernel", fontsize=15, fontweight='bold')
-        for i, sigma in enumerate(sigma_lst):
-            kernel = Kernels.gaussian(one_side * 2, sigma)[:, one_side + 1]
-            ax.plot(distance_list, kernel, c=cmap(i))
-        plt.text(1.15, 0.45, 'sigma', rotation=270, transform=ax.transAxes, fontsize=13)
-        ax.vlines(0, 0.0, 0.1, ls='dashed', lw=3, color='black', label='Target Cell')
-        ax.legend()
-        ax.set_xlabel('Distance', fontsize=12)
-        ax.set_ylabel('Weight', fontsize=12)
-        sm = plt.cm.ScalarMappable(
-            norm=plt.Normalize(vmin=min(sigma_lst), vmax=max(sigma_lst)), 
-            cmap=cmap)
-        fig.colorbar(sm, ticks=np.arange(min(sigma_lst), max(sigma_lst) + 1, 1), ax=ax)
-        plt.show()
-
-    def show_kernel_help(self) -> None:
-        """カーネルのヘルプを表示"""
-        self.help_kernels_dialog = KernelHelpDialog(self)
-        self.help_kernels_dialog.show()
-
-    def write_options(self) -> None:
-        """設定をTextBrowserに書き込む"""
-        log_board = self.textBrowser_Log
-        log_board.clear()
-        log_board.append('\n')
-        log_board.append('___________________________________________\n')
-        log_board.append("<<< Set options >>>\n")
-        log_board.append(f"Input File: {self.get_input_file_path}\n")
-        log_board.append(f"Output File: {self.get_output_file_path}\n")
-        log_board.append(f"Color: {CsColorMaps.__qualname__}\n")
-        log_board.append(f"Resampling: {self.checkBox_StartResample.isChecked()}\n")
-        if self.checkBox_StartResample.isChecked():
-            log_board.append(f"Resolution: {self.spinBoxF_StartResampleResol.value()}\n")
-            log_board.append(f"Algorithm: {self.comboBox_StartResampleAlg.currentText()}\n")
-        log_board.append(f"Slope: {self.__del_cmap(self.get_slope_options())}\n")
-        log_board.append(f"TPI: {self.__del_cmap(self.get_tpi_options())}\n")
-        log_board.append(f"TRI: {self.__del_cmap(self.get_tri_options())}\n")
-        log_board.append(f"Hillshade: {self.__del_cmap(self.get_hillshade_options())}\n")
-    
-    def __del_cmap(self, options: OptionsType) -> Dict[str, Any]:
-        """カラーマップを削除"""
-        options_dict = options.__dict__.copy()
-        options_dict.pop('cmap')
-        return options_dict
-
-    @property
-    def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
-        """
-        Radio buttonで選択されたカラーマップを返す
-        Returns:
-            Union[CsColorMaps, VintageColorMaps]
-        """
-        if self.mapSelectRadioBtn_BR.isChecked():
-            return CsColorMaps()
-        elif self.mapSelectRadioBtn_Vintage.isChecked():
-            return VintageColorMaps()
-        elif self.mapSelectRadioBtn_RGB.isChecked():
-            return RgbColorMaps()
-        else:
-            # 設定したカスタムカラーマップを取得
-            from .apps.colors import CustomColorMaps
-            file = '.\\apps\\config.json'
-            with open(file, mode='r') as f:
-                config = json.load(f)
-                cmap = config.get('CUSTOM-Map')
-            custom_color_maps = CustomColorMaps()
-            custom_color_maps.COLORS_DICT = cmap
-            return custom_color_maps
     
     @property
     def get_input_file_path(self) -> Path:
@@ -269,15 +161,6 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return self.fileWgt_InputFile.filePath()
         else:
             return self.lyrCombo_InputLyr.currentLayer().source()
-    
-    @property
-    def get_output_file_path(self) -> Path:
-        """
-        ファイルパスを取得
-        Returns:
-            Path: ファイルパス
-        """
-        return self.fileWgt_OutputFile.filePath()
     
     def first_perform_resample(self, dst: gdal.Dataset) -> bool:
         """
@@ -307,7 +190,93 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             return dst
         else:
             return dst
+    
+    def make_resample_dlg(self) -> None:
+        """リサンプルのダイアログを設定"""
+        if self.checkBox_StartResample.isChecked():
+            self.rarioBtn_ResolIsAbs.setVisible(True)
+            self.radioBtn_ResolIsRel.setVisible(True)
+            if self.rarioBtn_ResolIsAbs.isChecked():
+                self.l_19.setVisible(True)
+                self.l_21.setVisible(False)
+                self.spinBoxF_StartResampleResol.setVisible(True)
+                self.spinBoxInt_StartResampleResol.setVisible(False)
+            else:
+                self.l_19.setVisible(False)
+                self.l_21.setVisible(True)
+                self.spinBoxF_StartResampleResol.setVisible(False)
+                self.spinBoxInt_StartResampleResol.setVisible(True)
+            self.l_20.setVisible(True)
+            self.comboBox_StartResampleAlg.setVisible(True)
+        else:
+            self.rarioBtn_ResolIsAbs.setVisible(False)
+            self.radioBtn_ResolIsRel.setVisible(False)
+            self.l_19.setVisible(False)
+            self.l_20.setVisible(False)
+            self.l_21.setVisible(False)
+            self.spinBoxF_StartResampleResol.setVisible(False)
+            self.spinBoxInt_StartResampleResol.setVisible(False)
+            self.comboBox_StartResampleAlg.setVisible(False)
 
+
+
+class OutputTab(object):
+    @property
+    def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
+        """
+        Radio buttonで選択されたカラーマップを返す
+        Returns:
+            Union[CsColorMaps, VintageColorMaps]
+        """
+        if self.mapSelectRadioBtn_BR.isChecked():
+            return CsColorMaps()
+        elif self.mapSelectRadioBtn_Vintage.isChecked():
+            return VintageColorMaps()
+        elif self.mapSelectRadioBtn_RGB.isChecked():
+            return RgbColorMaps()
+        else:
+            # 設定したカスタムカラーマップを取得
+            from .apps.colors import CustomColorMaps
+            file = '.\\apps\\config.json'
+            with open(file, mode='r') as f:
+                config = json.load(f)
+                cmap = config.get('CUSTOM-Map')
+            custom_color_maps = CustomColorMaps()
+            custom_color_maps.COLORS_DICT = cmap
+            return custom_color_maps
+    
+    def make_output_dlg(self) -> None:
+        """出力ファイルのダイアログを設定"""
+        if self.checkBox_Sample.isChecked():
+            self.checkBox_AddProject.setVisible(False)
+            self.label_OutputFile.setVisible(False)
+            self.fileWgt_OutputFile.setVisible(False)
+        else:
+            self.checkBox_AddProject.setVisible(True)
+            self.label_OutputFile.setVisible(True)
+            self.fileWgt_OutputFile.setVisible(True)
+
+    @property
+    def get_output_file_path(self) -> Path:
+        """
+        ファイルパスを取得
+        Returns:
+            Path: ファイルパス
+        """
+        return self.fileWgt_OutputFile.filePath()
+
+    def add_lyr(self) -> None:
+        """プロジェクトにレイヤーを追加"""
+        if self.checkBox_AddProject.isChecked():
+            self.textBrowser_Log.append("Add a raster layer to project\n")
+            file_path = self.get_output_file_path
+            lyr_name = os.path.basename(file_path).split('.')[0]
+            lyr = QgsRasterLayer(file_path, lyr_name, 'gdal')
+            QgsProject.instance().addMapLayer(lyr)
+
+
+
+class SlopeTab(object):
     def get_slope_options(self) -> SlopeOptions:
         """Slope に関するオプションを取得
         Returns:
@@ -327,7 +296,20 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
             cmap=self.select_map_style.slope().colors_255
         )
         return options
+
+    def _change_slope_alpha_param_from_slider(self) -> None:
+        # 透過率のスライダーの値を変更
+        alpha = self.hSlider_SlopeAlpha.value()
+        self.spinBoxInt_SlopeAlpha.setValue(alpha)
     
+    def _change_slope_alpha_param_from_spinbox(self) -> None:
+        # 透過率のスピンボックスの値を変更
+        alpha = self.spinBoxInt_SlopeAlpha.value()
+        self.hSlider_SlopeAlpha.setValue(alpha)
+
+
+
+class TpiTab(object):
     def get_tpi_options(self) -> TpiOptions:
         """TPI に関するオプションを取得
         Returns:
@@ -381,130 +363,6 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         )
         return options
 
-    def get_tri_options(self) -> TriOptions:
-        """TRI に関するオプションを取得
-        Returns:
-            TriOptions: TRI に関するオプション
-                outlier_treatment(bool): 外れ値処理を行うかどうか
-                threshold(int): 外れ値の閾値
-                cmap: カラーマップ
-        """
-        options = TriOptions(
-            checked=self.gpBox_Tri.isChecked(),
-            outlier_treatment=self.checkBox_TriOutTreatment.isChecked(),
-            threshold=self.spinBoxF_TriThres.value(),
-            cmap=self.select_map_style.tri().colors_255,
-            filtering=self.gpBox_HillshadeGauss.isChecked(),
-            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
-        )
-        return options
-
-    def get_hillshade_options(self) -> HillshadeOptions:
-        """
-        Hillshade に関するオプションを取得
-        Returns:
-            HillshadeOptions: Hillshade に関するオプション
-                hillshade_type(str): Hillshade の種類
-                azimuth(int): 方位角
-                altitude(int): 高度
-                z_factor(float): Z_Factor
-                combined(bool): Slope と Hillshade を合成するかどうか
-                cmap: カラーマップ
-                filtering(bool): フィルタリングを行うかどうか
-                gaussian_sigma(float): ガウシアンフィルタの標準偏差
-        """
-        options = HillshadeOptions(
-            checked=self.gpBox_Hillshade.isChecked(),
-            hillshade_type=self.cmbBox_HillshadeType.currentText(),
-            azimuth=self.spinBoxInt_HillshadeAzimuth.value(),
-            altitude=self.spinBoxInt_HillshadeHight.value(),
-            z_factor=self.spinBoxF_HillshadeHighlight.value(),
-            combined=self.checkBox_CombinedSlope.isChecked(),
-            cmap=self.select_map_style.hillshade().colors_255,
-            filtering=self.gpBox_HillshadeGauss.isChecked(),
-            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
-        )
-        return options
-
-    def make_input_dlg(self) -> None:
-        """
-        入力ファイルのダイアログを設定
-        ファイルにチェックを入れている時はファイル選択ダイアログを表示し、レイヤー選択を非表示にする。レイヤーにチェックを入れている時はファイル選択ダイアログを非表示にし、レイヤー選択を表示する
-        """
-        self.file_filter()
-        if self.radioBtn_InputIsFile.isChecked():
-            self.label_InputFile.setVisible(True)
-            self.fileWgt_InputFile.setVisible(True)
-            self.label_InputLayer.setVisible(False)
-            self.lyrCombo_InputLyr.setVisible(False)
-        elif self.__in_raster():
-            self.label_InputFile.setVisible(False)
-            self.fileWgt_InputFile.setVisible(False)
-            self.label_InputLayer.setVisible(True)
-            self.lyrCombo_InputLyr.setVisible(True)
-        else:
-            self.radioBtn_InputIsFile.setChecked(True)
-            self.make_input_dlg()
-        
-    def __in_raster(self) -> bool:
-        """Raster データが存在するか確認"""
-        lyrs = QgsProject.instance().mapLayers().values()
-        rasters = False
-        fmts = ['.tif', '.tiff']
-        for lyr in lyrs:
-            source = lyr.source().lower()
-            for fmt in fmts:
-                if source.endswith(fmt):
-                    rasters = True
-                    break
-            if rasters:
-                break
-        return rasters
-    
-    def file_filter(self) -> None:
-        """tif ファイルのみを選択できるようにする"""
-        self.fileWgt_InputFile.setFilter("GeoTiff (*.tif *.tiff *.TIF *.TIFF);;")
-        self.lyrCombo_InputLyr.setFilters(QgsMapLayerProxyModel.RasterLayer)
-        self.fileWgt_OutputFile.setFilter("GeoTiff (*.tif);;")
-
-    def make_output_dlg(self) -> None:
-        """出力ファイルのダイアログを設定"""
-        if self.checkBox_Sample.isChecked():
-            self.checkBox_AddProject.setVisible(False)
-            self.label_OutputFile.setVisible(False)
-            self.fileWgt_OutputFile.setVisible(False)
-        else:
-            self.checkBox_AddProject.setVisible(True)
-            self.label_OutputFile.setVisible(True)
-            self.fileWgt_OutputFile.setVisible(True)
-        
-    def make_resample_dlg(self) -> None:
-        """リサンプルのダイアログを設定"""
-        if self.checkBox_StartResample.isChecked():
-            self.rarioBtn_ResolIsAbs.setVisible(True)
-            self.radioBtn_ResolIsRel.setVisible(True)
-            if self.rarioBtn_ResolIsAbs.isChecked():
-                self.l_19.setVisible(True)
-                self.l_21.setVisible(False)
-                self.spinBoxF_StartResampleResol.setVisible(True)
-                self.spinBoxInt_StartResampleResol.setVisible(False)
-            else:
-                self.l_19.setVisible(False)
-                self.l_21.setVisible(True)
-                self.spinBoxF_StartResampleResol.setVisible(False)
-                self.spinBoxInt_StartResampleResol.setVisible(True)
-            self.l_20.setVisible(True)
-            self.comboBox_StartResampleAlg.setVisible(True)
-        else:
-            self.rarioBtn_ResolIsAbs.setVisible(False)
-            self.radioBtn_ResolIsRel.setVisible(False)
-            self.l_19.setVisible(False)
-            self.l_20.setVisible(False)
-            self.l_21.setVisible(False)
-            self.spinBoxF_StartResampleResol.setVisible(False)
-            self.spinBoxInt_StartResampleResol.setVisible(False)
-            self.comboBox_StartResampleAlg.setVisible(False)
-
     def make_tpi_dlg_gaussian(self) -> None:
         """TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示"""
         self._make_dlg_gaussian_param()
@@ -554,26 +412,300 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.cmbBox_Kernel.setVisible(False)
         self.spinBoxF_KernelSize.setVisible(False)
 
-    def change_slope_alpha_param_from_slider(self) -> None:
-        # 透過率のスライダーの値を変更
-        alpha = self.hSlider_SlopeAlpha.value()
-        self.spinBoxInt_SlopeAlpha.setValue(alpha)
-    
-    def change_slope_alpha_param_from_spinbox(self) -> None:
-        # 透過率のスピンボックスの値を変更
-        alpha = self.spinBoxInt_SlopeAlpha.value()
-        self.hSlider_SlopeAlpha.setValue(alpha)
-
-    def change_tpi_alpha_param_from_slider(self) -> None:
+    def _change_tpi_alpha_param_from_slider(self) -> None:
         # 透過率のスライダーの値を変更
         alpha = self.hSlider_TpiAlpha.value()
         self.spinBoxInt_TpiAlpha.setValue(alpha)
 
-    def change_tpi_alpha_param_from_spinbox(self) -> None:
+    def _change_tpi_alpha_param_from_spinbox(self) -> None:
         # 透過率のスピンボックスの値を変更
         alpha = self.spinBoxInt_TpiAlpha.value()
         self.hSlider_TpiAlpha.setValue(alpha)
 
+    def show_kernel_help(self) -> None:
+        """カーネルのヘルプを表示"""
+        self.help_kernels_dialog = KernelHelpDialog(self)
+        self.help_kernels_dialog.show()
+
+
+
+class TriTab(object):
+    def get_tri_options(self) -> TriOptions:
+        """TRI に関するオプションを取得
+        Returns:
+            TriOptions: TRI に関するオプション
+                outlier_treatment(bool): 外れ値処理を行うかどうか
+                threshold(int): 外れ値の閾値
+                cmap: カラーマップ
+        """
+        options = TriOptions(
+            checked=self.gpBox_Tri.isChecked(),
+            outlier_treatment=self.checkBox_TriOutTreatment.isChecked(),
+            threshold=self.spinBoxF_TriThres.value(),
+            cmap=self.select_map_style.tri().colors_255,
+            filtering=self.gpBox_HillshadeGauss.isChecked(),
+            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
+        )
+        return options
+
+
+
+class HillshadeTab(object):
+    def get_hillshade_options(self) -> HillshadeOptions:
+        """
+        Hillshade に関するオプションを取得
+        Returns:
+            HillshadeOptions: Hillshade に関するオプション
+                hillshade_type(str): Hillshade の種類
+                azimuth(int): 方位角
+                altitude(int): 高度
+                z_factor(float): Z_Factor
+                combined(bool): Slope と Hillshade を合成するかどうか
+                cmap: カラーマップ
+                filtering(bool): フィルタリングを行うかどうか
+                gaussian_sigma(float): ガウシアンフィルタの標準偏差
+        """
+        options = HillshadeOptions(
+            checked=self.gpBox_Hillshade.isChecked(),
+            hillshade_type=self.cmbBox_HillshadeType.currentText(),
+            azimuth=self.spinBoxInt_HillshadeAzimuth.value(),
+            altitude=self.spinBoxInt_HillshadeHight.value(),
+            z_factor=self.spinBoxF_HillshadeHighlight.value(),
+            combined=self.checkBox_CombinedSlope.isChecked(),
+            cmap=self.select_map_style.hillshade().colors_255,
+            filtering=self.gpBox_HillshadeGauss.isChecked(),
+            gaussian_sigma=self.spinBoxF_HillshadeGaussSigma.value()
+        )
+        return options
+
+
+
+class OthersTab(object):
+    def get_contrast_options(self) -> ContrastOptions:
+        """コントラストの設定を取得"""
+        contrast = ContrastOptions(
+            checked=self.gpBox_Contrast.isChecked(),
+            contrast=self.spinBoxF_Contrast.value()
+        )
+        return contrast
+
+    def _change_contrast_param_from_slider(self) -> None:
+        # コントラストのスライダーの値を変更
+        int_value = self.hSlider_Contrast.value()
+        contrast = int_value * 0.01
+        self.spinBoxF_Contrast.setValue(contrast)
+    
+    def _change_contrast_param_from_spinbox(self) -> None:
+        # コントラストのスピンボックスの値を変更
+        float_value = self.spinBoxF_Contrast.value()
+        contrast = int(float_value * 100)
+        self.hSlider_Contrast.setValue(contrast)
+    
+    def get_unsharpn_options(self) -> UnsharpnOptions:
+        """アンシャープマスキングの設定を取得"""
+        unsharpn = UnsharpnOptions(
+            checked=self.gpBox_Unsharpn.isChecked(),
+            radius=self.spinBoxInt_UnsharpnRads.value(),
+            percent=self.spinBoxInt_UnsharpnPer.value(),
+            threshold=self.spinBoxInt_UnsharpnThres.value()
+        )
+        return unsharpn
+    
+    def get_edge_options(self) -> EdgeOptions:
+        """エッジ検出の設定を取得"""
+        unsharpn = UnsharpnOptions(
+            checked=self.checkBox_EdgeUnsharpn.isChecked(),
+            radius=self.spinBoxInt_EdgeUnsharpnRads.value(),
+            percent=self.spinBoxInt_EdgeUnsharpnPer.value(),
+            threshold=self.spinBoxInt_EdgeUnsharpnThres.value()
+        )
+        gaussian = GaussianOptions(
+            checked=self.checkBox_EdgeGauss.isChecked(),
+            sigma=self.spinBoxF_EdgeUnsharpnSigma.value()
+        )
+        edge = EdgeOptions(
+            checked=self.gpBox_Edge.isChecked(),
+            unsharpn=unsharpn,
+            gaussian=gaussian,
+            min_area_iqr=self.spinBoxF_EdgeUnsharpn_IQR.value()
+        )
+        return edge
+    
+    def make_other_tab(self) -> None:
+        """Others Tab の設定"""
+        self._make_edge_unsharpn_dlg()
+        self._make_edge_gauss_dlg()
+
+    def _make_edge_unsharpn_dlg(self) -> None:
+        objs = [
+            self.l_6.setVisible,
+            self.spinBoxInt_EdgeUnsharpnRads.setVisible,
+            self.l_7.setVisible,
+            self.spinBoxInt_EdgeUnsharpnPer.setVisible,
+            self.l_8.setVisible,
+            self.spinBoxInt_EdgeUnsharpnThres.setVisible
+        ]
+        if self.checkBox_EdgeUnsharpn.isChecked():
+            for obj in objs:
+                obj(True)
+        else:
+            for obj in objs:
+                obj(False)
+    
+    def _make_edge_gauss_dlg(self) -> None:
+        objs = [
+            self.l_22.setVisible,
+            self.spinBoxF_EdgeUnsharpnSigma.setVisible
+        ]
+        if self.checkBox_EdgeGauss.isChecked():
+            for obj in objs:
+                obj(True)
+        else:
+            for obj in objs:
+                obj(False)
+
+
+
+class TopoMapsDialog(
+    QtWidgets.QDialog, FORM_CLASS, InputTab, OutputTab, 
+    OthersTab, SlopeTab, TpiTab, TriTab, HillshadeTab
+):
+    def __init__(self, parent=None):
+        """Constructor."""
+        super(TopoMapsDialog, self).__init__(parent)
+        # Set up the user interface from Designer through FORM_CLASS.
+        # After self.setupUi() you can access any designer object by doing
+        # self.<objectname>, and you can use autoconnect slots - see
+        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
+        # #widgets-and-dialogs-with-auto-connect
+        self.setupUi(self)
+        self._error_font = "QLabel {color: red; font-weight: bold;}"
+        self._success_font = "QLabel {color: black;}"
+
+        # Set the help dialog to None
+        # ファイルの読み書きを設定
+        self.make_input_dlg()
+        self.radioBtn_InputIsFile.toggled.connect(self.make_input_dlg)
+        self.radioBtn_InputIsLayer.toggled.connect(self.make_input_dlg)
+        self.checkBox_Sample.stateChanged.connect(self.make_output_dlg)
+        
+        # ログの初期化
+        self.textBrowser_Log.clear()
+
+        # Resampleのダイアログ設定
+        self.make_resample_dlg()
+        self.checkBox_StartResample.stateChanged.connect(self.make_resample_dlg)
+        self.rarioBtn_ResolIsAbs.toggled.connect(self.make_resample_dlg)
+        self.radioBtn_ResolIsRel.toggled.connect(self.make_resample_dlg)
+        
+        # Slope のダイアログ設定
+        self.hSlider_SlopeAlpha.valueChanged.connect(
+            self._change_slope_alpha_param_from_slider)
+        self.spinBoxInt_SlopeAlpha.valueChanged.connect(
+            self._change_slope_alpha_param_from_spinbox)
+
+        # TPI のダイアログ設定
+        self._erase_dlg_gaussian_param()
+        self.make_tpi_dlg_distance_param()
+        self.cmbBox_Kernel.currentIndexChanged.connect(self.make_tpi_dlg_distance_param)
+        self.radioBtn_OrgKernel.toggled.connect(self.make_tpi_dlg_original)
+        self.radioBtn_DoughnutKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_MeanKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_GaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
+        self.radioBtn_InvGaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
+        self.radioBtn_4DirecKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.radioBtn_8DirecKernel.toggled.connect(self.make_tpi_dlg_other)
+        self.hSlider_TpiAlpha.valueChanged.connect(
+            self._change_tpi_alpha_param_from_slider)
+        self.spinBoxInt_TpiAlpha.valueChanged.connect(
+            self._change_tpi_alpha_param_from_spinbox)
+        
+        # マップスタイルのプレビューを表示
+        self.btn_ShowStyles.clicked.connect(self.show_map_styles)
+        self.pushBtn_GaussHint.clicked.connect(self.show_gaussian_hint)
+        self.pushBtn_GaussHint_.clicked.connect(self.show_gaussian_hint)
+
+        # KernelHelpDialogの表示
+        self.btn_ShowTpiHint.clicked.connect(self.show_kernel_help)
+        self.pushBtn_Cancel.clicked.connect(self.close_dlg)
+        self.btn_CustomDlg.clicked.connect(self.show_custom_color_dlg)
+        self.make_your_styling()
+        self.mapSelectRadioBtn_YourStyle.toggled.connect(self.make_your_styling)
+
+        # Othres Tab
+        self.make_other_tab()
+        self.hSlider_Contrast.valueChanged.connect(
+            self._change_contrast_param_from_slider
+        )
+        self.spinBoxF_Contrast.valueChanged.connect(
+            self._change_contrast_param_from_spinbox
+        )
+        self.checkBox_EdgeUnsharpn.stateChanged.connect(self._make_edge_unsharpn_dlg)
+        self.checkBox_EdgeGauss.stateChanged.connect(self._make_edge_gauss_dlg)
+
+    def tr(self, message):
+        """
+        Args:
+            message(str): 翻訳するメッセージ
+        Returns:
+            str: 翻訳されたメッセージ
+        """
+        return QCoreApplication.translate("TopoMapsDialog", message)
+
+    def file_filter(self) -> None:
+        """tif ファイルのみを選択できるようにする"""
+        self.fileWgt_InputFile.setFilter("GeoTiff (*.tif *.tiff *.TIF *.TIFF);;")
+        self.lyrCombo_InputLyr.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.fileWgt_OutputFile.setFilter("GeoTiff (*.tif);;")
+
+    def show_gaussian_hint(self) -> None:
+        """ガウシアンカーネルのヒントを表示"""
+        one_side = 7
+        sigma_lst = [round(v, 2) for v in np.arange(1.0, 4.01, 0.01)]
+        distance_list = np.arange(0, one_side) + 1
+        distance_list = (distance_list[::-1] * -1).tolist() + [0] + distance_list.tolist()
+        cmap = plt.get_cmap('cool', len(sigma_lst))
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.set_title("Sigma values of Gaussian Kernel", fontsize=15, fontweight='bold')
+        for i, sigma in enumerate(sigma_lst):
+            kernel = Kernels.gaussian(one_side * 2, sigma)[:, one_side + 1]
+            ax.plot(distance_list, kernel, c=cmap(i))
+        plt.text(1.15, 0.45, 'sigma', rotation=270, transform=ax.transAxes, fontsize=13)
+        ax.vlines(0, 0.0, 0.1, ls='dashed', lw=3, color='black', label='Target Cell')
+        ax.legend()
+        ax.set_xlabel('Distance', fontsize=12)
+        ax.set_ylabel('Weight', fontsize=12)
+        sm = plt.cm.ScalarMappable(
+            norm=plt.Normalize(vmin=min(sigma_lst), vmax=max(sigma_lst)), 
+            cmap=cmap)
+        fig.colorbar(sm, ticks=np.arange(min(sigma_lst), max(sigma_lst) + 1, 1), ax=ax)
+        plt.show()
+
+    def write_options(self) -> None:
+        """設定をTextBrowserに書き込む"""
+        log_board = self.textBrowser_Log
+        log_board.clear()
+        log_board.append('\n')
+        log_board.append('___________________________________________\n')
+        log_board.append("<<< Set options >>>\n")
+        log_board.append(f"Input File: {self.get_input_file_path}\n")
+        log_board.append(f"Output File: {self.get_output_file_path}\n")
+        log_board.append(f"Color: {CsColorMaps.__qualname__}\n")
+        log_board.append(f"Resampling: {self.checkBox_StartResample.isChecked()}\n")
+        if self.checkBox_StartResample.isChecked():
+            log_board.append(f"Resolution: {self.spinBoxF_StartResampleResol.value()}\n")
+            log_board.append(f"Algorithm: {self.comboBox_StartResampleAlg.currentText()}\n")
+        log_board.append(f"Slope: {self.__del_cmap(self.get_slope_options())}\n")
+        log_board.append(f"TPI: {self.__del_cmap(self.get_tpi_options())}\n")
+        log_board.append(f"TRI: {self.__del_cmap(self.get_tri_options())}\n")
+        log_board.append(f"Hillshade: {self.__del_cmap(self.get_hillshade_options())}\n")
+    
+    def __del_cmap(self, options: OptionsType) -> Dict[str, Any]:
+        """カラーマップを削除"""
+        options_dict = options.__dict__.copy()
+        options_dict.pop('cmap')
+        return options_dict
+                       
     def change_alpha(self, img: Image.Image, alpha: float) -> Image.Image:
         """
         画像の透過率を変更
@@ -589,16 +721,7 @@ class TopoMapsDialog(QtWidgets.QDialog, FORM_CLASS):
         ary[:,:,3] = new_alpha_band
         new_img = Image.fromarray(ary)
         return new_img
-    
-    def add_lyr(self) -> None:
-        """プロジェクトにレイヤーを追加"""
-        if self.checkBox_AddProject.isChecked():
-            self.textBrowser_Log.append("Add a raster layer to project\n")
-            file_path = self.get_output_file_path
-            lyr_name = os.path.basename(file_path).split('.')[0]
-            lyr = QgsRasterLayer(file_path, lyr_name, 'gdal')
-            QgsProject.instance().addMapLayer(lyr)
-    
+        
     def close_dlg(self) -> None:
         self.close()
 
