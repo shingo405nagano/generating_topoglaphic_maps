@@ -172,7 +172,7 @@ class MyLogger(object):
         self.log_board.append('Hillshade calculation is completed\n')
         return result
 
-    def composite_log(self, func: Callable, *args, **kwargs) -> Image.Image:
+    def composite_log(self, func: Callable, dlg, *args, **kwargs) -> Image.Image:
         """
         画像の合成のログを表示する
         Args:
@@ -186,7 +186,7 @@ class MyLogger(object):
         self._new_line
         self.title('Start to composite images')
         self.log_board.append('Composite images ...\n')
-        result = func(*args, **kwargs)
+        result = func(dlg, *args, **kwargs)
         self.log_board.append('Composite images is completed\n')
         return result
 

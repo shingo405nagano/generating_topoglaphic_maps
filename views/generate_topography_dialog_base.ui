@@ -26,7 +26,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_InputTab">
       <attribute name="title">
@@ -512,6 +512,9 @@
               </property>
               <property name="fullUrl">
                <bool>false</bool>
+              </property>
+              <property name="storageMode">
+               <enum>QgsFileWidget::SaveFile</enum>
               </property>
              </widget>
             </item>
@@ -1976,6 +1979,9 @@ QCheckBox {
               <property name="text">
                <string>Unsharpn</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item row="0" column="5">
@@ -2030,6 +2036,9 @@ QCheckBox {
              <widget class="QCheckBox" name="checkBox_EdgeGauss">
               <property name="text">
                <string>Gaussian</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>

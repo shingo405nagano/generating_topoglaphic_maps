@@ -41,9 +41,7 @@ from .apps.my_log import MyLogger
 from .apps.mapper import composite_images
 from .apps.mapper import save_image_rgba
 from .apps.parts import process
-# Initialize Qt resources from file resources.py
 from .resources import *
-# Import the code for the dialog
 from .topo_maps_dialog import TopoMapsDialog
 coloring = Coloring()
 
@@ -285,6 +283,7 @@ class Worker(QThread):
         # 画像の合成
         composited_img = my_log.composite_log(
             composite_images,
+            dlg,
             slope_img,
             tpi_img,
             tri_img,

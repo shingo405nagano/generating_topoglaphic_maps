@@ -653,9 +653,10 @@ class TopoMapsDialog(
         return QCoreApplication.translate("TopoMapsDialog", message)
 
     def file_filter(self) -> None:
-        """tif ファイルのみを選択できるようにする"""
+        """RasterData のみを選択できるようにする"""
         self.fileWgt_InputFile.setFilter("GeoTiff (*.tif *.tiff *.TIF *.TIFF);;")
         self.lyrCombo_InputLyr.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.lyrCombo_InputLyr.setExcludedProviders(['wms', 'other_provider'])
         self.fileWgt_OutputFile.setFilter("GeoTiff (*.tif);;")
 
     def show_gaussian_hint(self) -> None:
