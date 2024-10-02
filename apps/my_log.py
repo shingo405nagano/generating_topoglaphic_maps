@@ -43,20 +43,17 @@ class MyLogger(object):
         """ログにタイトルを追加する"""
         self.log_board.append(f'<<< {title} >>>\n')
 
-    @property
     def stop_process(self) -> None:
         """処理を中止する際にログを表示する"""
         self.log_label.setText(self._stop_process)
         self.log_board.append('Process is stopped\n')
 
-    @property
     def start_log(self) -> None:
         """処理を開始する際にログを表示する"""
         self.log_label.setText('Starting process ...')
         self.log_board.append("Start process ...\n")
         self.log_board.append("Reading raster data ...\n")
 
-    @property
     def input_raster_size(self) -> None:
         """入力ラスタのサイズをログに表示する"""
         self._new_line

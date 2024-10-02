@@ -609,6 +609,7 @@ class EdgeOptions:
     unsharpn: UnsharpnOptions
     gaussian: GaussianOptions
     min_area_iqr: float
+    color: Tuple[int]
 
     def to_edge_img(self, img: Image.Image) -> Image.Image:
         """
@@ -677,4 +678,22 @@ class EdgeOptions:
     
     def gray_to_rgba(self, ary: np.array) -> np.array:
         # 2値化されたエッジは白になっているので、そのままRGBAに変換する
-        return np.dstack([ary, ary, ary, ary])
+        def colorize(ary: np.array, color: int) -> np.array:
+            return np.where(ary == 255, color, 0).astype('uint8')
+        
+        red_band = colorize(ary, self.red)
+        green_band = colorize(ary, self.green)
+        blue_band = colorize(ary, self.blue)
+        return np.dstack([red_band, green_band, blue_band, ary])
+    
+    @property
+    def red(self):
+        return self.color[0]
+    
+    @property
+    def green(self):
+        return self.color[1]
+    
+    @property
+    def blue(self):
+        return self.color[2]

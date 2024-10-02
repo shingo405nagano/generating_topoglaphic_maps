@@ -26,6 +26,7 @@ import os
 from typing import Any, Dict, NewType, Union
 from pathlib import Path
 from PIL import Image
+import webbrowser
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -36,13 +37,14 @@ from qgis.core import QgsRasterLayer
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtWidgets import QMessageBox
 
 from .apps.colors import CsColorMaps
 from .apps.colors import RgbColorMaps
 from .apps.colors import VintageColorMaps
 from .apps.kernels import Kernels
 from .apps.kernels import KernelTypes
-
 from .apps.mapper import ContrastOptions
 from .apps.mapper import EdgeOptions
 from .apps.mapper import GaussianOptions
@@ -51,9 +53,7 @@ from .apps.mapper import HillshadeOptions
 from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
 from .apps.mapper import UnsharpnOptions
-
 from .apps.parts import process
-from .apps.exeptions import ExeptionMessage
 from .custom_color_dialog import CustomColorDialog
 
 OptionsType = NewType('OptionsType', Union[SlopeOptions, TpiOptions, TriOptions, HillshadeOptions])
@@ -81,11 +81,13 @@ HELP_KERNELS, _ = (
 
 
 global CS_MAP_IMG
-CS_MAP_IMG = plt.imread('./views/CS-Map__Img.jpg')
+CS_MAP_IMG = plt.imread('.\\views\\CS-Map__Img.jpg')
 global VINTAGE_MAP_IMG
-VINTAGE_MAP_IMG = plt.imread('./views/Vintage-Map__Img.jpg')
+VINTAGE_MAP_IMG = plt.imread('.\\views\\Vintage-Map__Img.jpg')
 global RGB_MAP_IMG
-RGB_MAP_IMG = plt.imread('./views/RGB-Map__Img.jpg')
+RGB_MAP_IMG = plt.imread('.\\views\\RGB-Map__Img.jpg')
+global CONFIG_FILE
+CONFIG_FILE = '.\\apps\\config.json'
 
 
 class InputTab(object):
@@ -505,7 +507,7 @@ class OthersTab(object):
         """アンシャープマスキングの設定を取得"""
         unsharpn = UnsharpnOptions(
             checked=self.gpBox_Unsharpn.isChecked(),
-            radius=self.spinBoxInt_UnsharpnRads.value(),
+            radius=self.spinBoxF_UnsharpnRads.value(),
             percent=self.spinBoxInt_UnsharpnPer.value(),
             threshold=self.spinBoxInt_UnsharpnThres.value()
         )
@@ -515,7 +517,7 @@ class OthersTab(object):
         """エッジ検出の設定を取得"""
         unsharpn = UnsharpnOptions(
             checked=self.checkBox_EdgeUnsharpn.isChecked(),
-            radius=self.spinBoxInt_EdgeUnsharpnRads.value(),
+            radius=self.spinBoxF_EdgeUnsharpnRads.value(),
             percent=self.spinBoxInt_EdgeUnsharpnPer.value(),
             threshold=self.spinBoxInt_EdgeUnsharpnThres.value()
         )
@@ -527,7 +529,8 @@ class OthersTab(object):
             checked=self.gpBox_Edge.isChecked(),
             unsharpn=unsharpn,
             gaussian=gaussian,
-            min_area_iqr=self.spinBoxF_EdgeUnsharpn_IQR.value()
+            min_area_iqr=self.spinBoxF_EdgeUnsharpn_IQR.value(),
+            color=self.clrBtn_EdgeColor.color().getRgb()
         )
         return edge
     
@@ -539,7 +542,7 @@ class OthersTab(object):
     def _make_edge_unsharpn_dlg(self) -> None:
         objs = [
             self.l_6.setVisible,
-            self.spinBoxInt_EdgeUnsharpnRads.setVisible,
+            self.spinBoxF_EdgeUnsharpnRads.setVisible,
             self.l_7.setVisible,
             self.spinBoxInt_EdgeUnsharpnPer.setVisible,
             self.l_8.setVisible,
@@ -566,6 +569,43 @@ class OthersTab(object):
 
 
 
+class OpenWeb(object):
+    def __init__(self):
+        locale = QSettings().value('locale/userLocale')[0:2]
+        if locale == 'ja':
+            self.lang = 'ja'
+        else:
+            self.lang = 'en'
+        
+        with open(CONFIG_FILE, mode='r') as f:
+            self.urls = json.load(f).get('Documents').get(self.lang)
+
+    def open_web(self, tab_name: str) -> None:
+        """GitHub にあるドキュメントを開く"""
+        reply = QMessageBox.question(
+            None,
+            'Message ...',
+            'Open the document in the browser?',
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            webbrowser.open(self.urls.get(tab_name))
+
+    def open_slope_doc(self) -> None:
+        self.open_web('SLOPE')
+    
+    def open_tpi_doc(self) -> None:
+        self.open_web('TPI')
+    
+    def open_hillshade_doc(self) -> None:
+        self.open_web('HILLSHADE')
+    
+    def open_others_doc(self) -> None:
+        self.open_web('OTHERS')
+
+
+
 class TopoMapsDialog(
     QtWidgets.QDialog, FORM_CLASS, InputTab, OutputTab, 
     OthersTab, SlopeTab, TpiTab, TriTab, HillshadeTab
@@ -581,6 +621,7 @@ class TopoMapsDialog(
         self.setupUi(self)
         self._error_font = "QLabel {color: red; font-weight: bold;}"
         self._success_font = "QLabel {color: black;}"
+        self.web = OpenWeb()
 
         # Set the help dialog to None
         # ファイルの読み書きを設定
@@ -603,6 +644,7 @@ class TopoMapsDialog(
             self._change_slope_alpha_param_from_slider)
         self.spinBoxInt_SlopeAlpha.valueChanged.connect(
             self._change_slope_alpha_param_from_spinbox)
+        self.btn_OpenDocSlope.clicked.connect(self.web.open_slope_doc)
 
         # TPI のダイアログ設定
         self._erase_dlg_gaussian_param()
@@ -619,6 +661,10 @@ class TopoMapsDialog(
             self._change_tpi_alpha_param_from_slider)
         self.spinBoxInt_TpiAlpha.valueChanged.connect(
             self._change_tpi_alpha_param_from_spinbox)
+        self.btn_OpenDocTpi.clicked.connect(self.web.open_tpi_doc)
+
+        # Hillshade のダイアログ設定
+        self.btn_OpenDocHillshade.clicked.connect(self.web.open_hillshade_doc)
         
         # マップスタイルのプレビューを表示
         self.btn_ShowStyles.clicked.connect(self.show_map_styles)
@@ -642,6 +688,7 @@ class TopoMapsDialog(
         )
         self.checkBox_EdgeUnsharpn.stateChanged.connect(self._make_edge_unsharpn_dlg)
         self.checkBox_EdgeGauss.stateChanged.connect(self._make_edge_gauss_dlg)
+        self.btn_OpenDocOthers.clicked.connect(self.web.open_others_doc)
 
     def tr(self, message):
         """

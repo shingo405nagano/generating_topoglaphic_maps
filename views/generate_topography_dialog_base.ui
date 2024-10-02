@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>696</width>
-    <height>605</height>
+    <height>638</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -842,6 +842,35 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <layout class="QGridLayout" name="gL_12">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="btn_OpenDocSlope">
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+	padding: 5 10 5px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Open document page</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <spacer name="hS_16">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -877,6 +906,143 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="gpBox_TpiOutTreatment">
+            <property name="title">
+             <string>外れ値処理</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMaximumSize</enum>
+             </property>
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="l_9">
+               <property name="text">
+                <string>IQR × </string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QgsDoubleSpinBox" name="spinBoxF_TpiThres">
+               <property name="focusPolicy">
+                <enum>Qt::StrongFocus</enum>
+               </property>
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="minimum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>5.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.500000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.500000000000000</double>
+               </property>
+               <property name="showClearButton">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="hS_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QGroupBox" name="gpBox_TpiAlpha">
+            <property name="title">
+             <string>相対的な透過率の変更</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_5" columnstretch="4,1">
+             <property name="leftMargin">
+              <number>9</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item row="0" column="1">
+              <widget class="QgsSpinBox" name="spinBoxInt_TpiAlpha">
+               <property name="suffix">
+                <string>%</string>
+               </property>
+               <property name="maximum">
+                <number>200</number>
+               </property>
+               <property name="value">
+                <number>100</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QSlider" name="hSlider_TpiAlpha">
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="maximum">
+                <number>200</number>
+               </property>
+               <property name="value">
+                <number>100</number>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="label_2">
             <property name="font">
@@ -988,7 +1154,7 @@
                  <item row="1" column="1" colspan="6">
                   <widget class="QLabel" name="l_17">
                    <property name="text">
-                    <string>　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　</string>
+                    <string/>
                    </property>
                   </widget>
                  </item>
@@ -1132,143 +1298,6 @@
             </layout>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QGroupBox" name="gpBox_TpiOutTreatment">
-            <property name="title">
-             <string>外れ値処理</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetMaximumSize</enum>
-             </property>
-             <property name="leftMargin">
-              <number>9</number>
-             </property>
-             <property name="topMargin">
-              <number>5</number>
-             </property>
-             <property name="rightMargin">
-              <number>5</number>
-             </property>
-             <property name="bottomMargin">
-              <number>5</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="l_9">
-               <property name="text">
-                <string>IQR × </string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QgsDoubleSpinBox" name="spinBoxF_TpiThres">
-               <property name="focusPolicy">
-                <enum>Qt::StrongFocus</enum>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="minimum">
-                <double>1.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>5.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.500000000000000</double>
-               </property>
-               <property name="value">
-                <double>1.500000000000000</double>
-               </property>
-               <property name="showClearButton">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="hS_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QGroupBox" name="gpBox_TpiAlpha">
-            <property name="title">
-             <string>相対的な透過率の変更</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_5" columnstretch="4,1">
-             <property name="leftMargin">
-              <number>9</number>
-             </property>
-             <property name="topMargin">
-              <number>5</number>
-             </property>
-             <property name="rightMargin">
-              <number>5</number>
-             </property>
-             <property name="bottomMargin">
-              <number>5</number>
-             </property>
-             <item row="0" column="1">
-              <widget class="QgsSpinBox" name="spinBoxInt_TpiAlpha">
-               <property name="suffix">
-                <string>%</string>
-               </property>
-               <property name="maximum">
-                <number>200</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QSlider" name="hSlider_TpiAlpha">
-               <property name="styleSheet">
-                <string notr="true"/>
-               </property>
-               <property name="maximum">
-                <number>200</number>
-               </property>
-               <property name="value">
-                <number>100</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="5" column="0">
            <spacer name="vS_3">
             <property name="orientation">
@@ -1281,6 +1310,35 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="6" column="0">
+           <layout class="QGridLayout" name="gL_13">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="btn_OpenDocTpi">
+              <property name="styleSheet">
+               <string notr="true">QPushButton{
+	padding: 5 10 5px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Open document page</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <spacer name="hS_17">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -1433,225 +1491,137 @@ p, li { white-space: pre-wrap; }
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <widget class="QGroupBox" name="gpBox_Hillshade">
-         <property name="title">
-          <string>Hillshade （陰影起伏図） </string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <property name="leftMargin">
-           <number>9</number>
-          </property>
-          <property name="topMargin">
-           <number>9</number>
-          </property>
-          <property name="rightMargin">
-           <number>9</number>
-          </property>
-          <item>
-           <widget class="QGroupBox" name="gB">
-            <property name="title">
-             <string/>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="gpBox_Hillshade">
+           <property name="title">
+            <string>Hillshade （陰影起伏図） </string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="leftMargin">
+             <number>9</number>
             </property>
-            <layout class="QGridLayout" name="gridLayout_7">
-             <item row="1" column="0">
-              <widget class="QLabel" name="l_14">
-               <property name="text">
-                <string>強調係数</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeHighlight">
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="minimum">
-                <double>1.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>5.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.500000000000000</double>
-               </property>
-               <property name="value">
-                <double>2.500000000000000</double>
-               </property>
-               <property name="showClearButton">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="l_12">
-               <property name="text">
-                <string>光源タイプ</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="margin">
-                <number>0</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="5">
-              <widget class="QgsSpinBox" name="spinBoxInt_HillshadeHight">
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="maximum">
-                <number>90</number>
-               </property>
-               <property name="singleStep">
-                <number>5</number>
-               </property>
-               <property name="value">
-                <number>90</number>
-               </property>
-               <property name="showClearButton">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="4">
-              <widget class="QLabel" name="l_13">
-               <property name="text">
-                <string>高度</string>
-               </property>
-               <property name="indent">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="l_11">
-               <property name="text">
-                <string>方位</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="margin">
-                <number>0</number>
-               </property>
-               <property name="indent">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QgsSpinBox" name="spinBoxInt_HillshadeAzimuth">
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="maximum">
-                <number>359</number>
-               </property>
-               <property name="singleStep">
-                <number>5</number>
-               </property>
-               <property name="value">
-                <number>315</number>
-               </property>
-               <property name="showClearButton">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="cmbBox_HillshadeType">
-               <property name="currentText">
-                <string>Single</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Single</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Multiple</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="QCheckBox" name="checkBox_CombinedSlope">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>傾斜も使用する</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="gpBox_HillshadeGauss">
-            <property name="title">
-             <string>ガウシアンフィルターを適用する</string>
+            <property name="topMargin">
+             <number>9</number>
             </property>
-            <property name="checkable">
-             <bool>true</bool>
+            <property name="rightMargin">
+             <number>9</number>
             </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_9">
-             <item>
-              <layout class="QGridLayout" name="gL_10">
-               <item row="0" column="3">
-                <spacer name="hS_11">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+            <item>
+             <widget class="QGroupBox" name="gB">
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="1" column="0">
+                <widget class="QLabel" name="l_14">
+                 <property name="text">
+                  <string>強調係数</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
+                </widget>
                </item>
-               <item row="0" column="2">
-                <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeGaussSigma">
+               <item row="1" column="1">
+                <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeHighlight">
                  <property name="alignment">
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                  </property>
                  <property name="decimals">
                   <number>1</number>
                  </property>
+                 <property name="minimum">
+                  <double>1.000000000000000</double>
+                 </property>
                  <property name="maximum">
                   <double>5.000000000000000</double>
                  </property>
                  <property name="singleStep">
-                  <double>0.100000000000000</double>
+                  <double>0.500000000000000</double>
                  </property>
                  <property name="value">
-                  <double>2.000000000000000</double>
+                  <double>2.500000000000000</double>
+                 </property>
+                 <property name="showClearButton">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="l_12">
+                 <property name="text">
+                  <string>光源タイプ</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QgsSpinBox" name="spinBoxInt_HillshadeHight">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="maximum">
+                  <number>90</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>5</number>
+                 </property>
+                 <property name="value">
+                  <number>90</number>
+                 </property>
+                 <property name="showClearButton">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QLabel" name="l_13">
+                 <property name="text">
+                  <string>高度</string>
+                 </property>
+                 <property name="indent">
+                  <number>20</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="l_11">
+                 <property name="text">
+                  <string>方位</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <property name="indent">
+                  <number>20</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QgsSpinBox" name="spinBoxInt_HillshadeAzimuth">
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="maximum">
+                  <number>359</number>
+                 </property>
+                 <property name="singleStep">
+                  <number>5</number>
+                 </property>
+                 <property name="value">
+                  <number>315</number>
                  </property>
                  <property name="showClearButton">
                   <bool>false</bool>
@@ -1659,42 +1629,163 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLabel" name="l_23">
-                 <property name="text">
-                  <string>Sigma</string>
+                <widget class="QComboBox" name="cmbBox_HillshadeType">
+                 <property name="currentText">
+                  <string>Single</string>
                  </property>
+                 <item>
+                  <property name="text">
+                   <string>Single</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Multiple</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
-               <item row="0" column="4">
-                <widget class="QPushButton" name="pushBtn_GaussHint_">
+               <item row="1" column="3">
+                <widget class="QCheckBox" name="checkBox_CombinedSlope">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="layoutDirection">
+                  <enum>Qt::LeftToRight</enum>
+                 </property>
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
-                  <string>Hint</string>
+                  <string>傾斜も使用する</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <spacer name="vS_1">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="gpBox_HillshadeGauss">
+              <property name="title">
+               <string>ガウシアンフィルターを適用する</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <layout class="QGridLayout" name="gL_10">
+                 <item row="0" column="3">
+                  <spacer name="hS_11">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QgsDoubleSpinBox" name="spinBoxF_HillshadeGaussSigma">
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <double>5.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>2.000000000000000</double>
+                   </property>
+                   <property name="showClearButton">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="l_23">
+                   <property name="text">
+                    <string>Sigma</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QPushButton" name="pushBtn_GaussHint_">
+                   <property name="text">
+                    <string>Hint</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="vS_1">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gL_14">
+              <item row="0" column="0">
+               <spacer name="hS_18">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="btn_OpenDocHillshade">
+                <property name="styleSheet">
+                 <string notr="true">QPushButton{
+	padding: 5 10 5px;
+}</string>
+                </property>
+                <property name="text">
+                 <string>Open document page</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <spacer name="hS_6">
+        <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -1732,47 +1823,15 @@ p, li { white-space: pre-wrap; }
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <layout class="QGridLayout" name="gL_7">
-            <item row="0" column="3">
-             <widget class="QgsSpinBox" name="spinBoxInt_UnsharpnPer">
-              <property name="maximum">
-               <number>500</number>
-              </property>
-              <property name="singleStep">
-               <number>10</number>
-              </property>
-              <property name="value">
-               <number>200</number>
-              </property>
-              <property name="showClearButton">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QLabel" name="l_2">
+            <item row="0" column="4">
+             <widget class="QLabel" name="l_3">
               <property name="styleSheet">
                <string notr="true">QLabel {
 	padding-left: 25px
 }</string>
               </property>
               <property name="text">
-               <string>Percent</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QgsSpinBox" name="spinBoxInt_UnsharpnRads">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>10</number>
-              </property>
-              <property name="value">
-               <number>4</number>
-              </property>
-              <property name="showClearButton">
-               <bool>false</bool>
+               <string>Threshold</string>
               </property>
              </widget>
             </item>
@@ -1799,15 +1858,47 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="0" column="4">
-             <widget class="QLabel" name="l_3">
+            <item row="0" column="2">
+             <widget class="QLabel" name="l_2">
               <property name="styleSheet">
                <string notr="true">QLabel {
 	padding-left: 25px
 }</string>
               </property>
               <property name="text">
-               <string>Threshold</string>
+               <string>Percent</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QgsSpinBox" name="spinBoxInt_UnsharpnPer">
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="singleStep">
+               <number>10</number>
+              </property>
+              <property name="value">
+               <number>200</number>
+              </property>
+              <property name="showClearButton">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QgsDoubleSpinBox" name="spinBoxF_UnsharpnRads">
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <double>10.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="value">
+               <double>2.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -1942,60 +2033,6 @@ QCheckBox {
               </property>
              </widget>
             </item>
-            <item row="0" column="3">
-             <widget class="QLabel" name="l_6">
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-	padding-left: 20px
-}</string>
-              </property>
-              <property name="text">
-               <string>Percent</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="7">
-             <spacer name="hS_13">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="l_7">
-              <property name="text">
-               <string>Radius</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="checkBox_EdgeUnsharpn">
-              <property name="text">
-               <string>Unsharpn</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="5">
-             <widget class="QLabel" name="l_8">
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-	padding-left: 20px
-}</string>
-              </property>
-              <property name="text">
-               <string>Threshold</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="6">
              <widget class="QgsSpinBox" name="spinBoxInt_EdgeUnsharpnThres">
               <property name="minimum">
@@ -2012,19 +2049,73 @@ QCheckBox {
               </property>
              </widget>
             </item>
+            <item row="0" column="5">
+             <widget class="QLabel" name="l_8">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px
+}</string>
+              </property>
+              <property name="text">
+               <string>Threshold</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="l_7">
+              <property name="text">
+               <string>Radius</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="2">
-             <widget class="QgsSpinBox" name="spinBoxInt_EdgeUnsharpnRads">
-              <property name="minimum">
+             <widget class="QgsDoubleSpinBox" name="spinBoxF_EdgeUnsharpnRads">
+              <property name="decimals">
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>10</number>
+               <double>10.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
               </property>
               <property name="value">
-               <number>4</number>
+               <double>2.000000000000000</double>
               </property>
-              <property name="showClearButton">
-               <bool>false</bool>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="checkBox_EdgeUnsharpn">
+              <property name="text">
+               <string>Unsharpn</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="7">
+             <spacer name="hS_13">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="l_6">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-left: 20px
+}</string>
+              </property>
+              <property name="text">
+               <string>Percent</string>
               </property>
              </widget>
             </item>
@@ -2144,6 +2235,56 @@ QCheckBox {
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QGridLayout" name="gL_16">
+            <item row="0" column="1">
+             <widget class="QgsColorButton" name="clrBtn_EdgeColor">
+              <property name="color">
+               <color>
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </property>
+              <property name="defaultColor">
+               <color>
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </property>
+              <property name="showNoColor">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="l_26">
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+	padding-right: 20px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Set edge color</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <spacer name="hS_6">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -2159,6 +2300,35 @@ QCheckBox {
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gL_15">
+         <item row="0" column="1">
+          <widget class="QPushButton" name="btn_OpenDocOthers">
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+	padding: 5 10 5px;
+}</string>
+           </property>
+           <property name="text">
+            <string>Open document page</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <spacer name="hS_19">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -2184,6 +2354,11 @@ QCheckBox {
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QgsColorButton</class>
+   <extends>QToolButton</extends>
+   <header>qgscolorbutton.h</header>
+  </customwidget>
   <customwidget>
    <class>QgsDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
@@ -2227,12 +2402,6 @@ QCheckBox {
   <tabstop>spinBoxF_TpiThres</tabstop>
   <tabstop>gpBox_Tri</tabstop>
   <tabstop>tB_2</tabstop>
-  <tabstop>gpBox_Hillshade</tabstop>
-  <tabstop>cmbBox_HillshadeType</tabstop>
-  <tabstop>spinBoxInt_HillshadeAzimuth</tabstop>
-  <tabstop>spinBoxF_HillshadeHighlight</tabstop>
-  <tabstop>checkBox_CombinedSlope</tabstop>
-  <tabstop>spinBoxInt_HillshadeHight</tabstop>
   <tabstop>textBrowser_Log</tabstop>
   <tabstop>gpBox_TpiAlpha</tabstop>
   <tabstop>hSlider_TpiAlpha</tabstop>
@@ -2241,12 +2410,7 @@ QCheckBox {
   <tabstop>hSlider_SlopeAlpha</tabstop>
   <tabstop>spinBoxInt_SlopeAlpha</tabstop>
   <tabstop>spinBoxF_SlopeGaussSigma</tabstop>
-  <tabstop>pushBtn_GaussHint_</tabstop>
   <tabstop>spinBoxF_SlopeGaussSigma</tabstop>
-  <tabstop>pushBtn_GaussHint_</tabstop>
-  <tabstop>gpBox_HillshadeGauss</tabstop>
-  <tabstop>spinBoxF_HillshadeGaussSigma</tabstop>
-  <tabstop>pushBtn_GaussHint_</tabstop>
  </tabstops>
  <resources/>
  <connections/>
