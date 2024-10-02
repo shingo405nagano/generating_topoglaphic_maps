@@ -41,9 +41,7 @@ from .apps.my_log import MyLogger
 from .apps.mapper import composite_images
 from .apps.mapper import save_image_rgba
 from .apps.parts import process
-# Initialize Qt resources from file resources.py
 from .resources import *
-# Import the code for the dialog
 from .topo_maps_dialog import TopoMapsDialog
 coloring = Coloring()
 
@@ -172,13 +170,13 @@ class TopoMaps:
         # 問題がある場合は処理を中止
         msg = ExeptionMessage(self.dlg)
         if not msg.check_input_file_path:
-            self.my_log.stop_process
+            self.my_log.stop_process()
             return 
         if not msg.check_output_file_path:
-            self.my_log.stop_process
+            self.my_log.stop_process()
             return
         if not msg.check_raster_band:
-            self.my_log.stop_process
+            self.my_log.stop_process()
             return
         
         # Rasterのサイズによっては処理が重くなるため、QThreadで処理を行う
@@ -186,7 +184,11 @@ class TopoMaps:
         worker.progress.connect(self.dlg.progressBar.setValue)
         worker.start()
         composited_img, org_dst = worker.run(self.dlg, self.my_log)
-
+        if composited_img is None:
+            self.my_log.stop_process()
+            a = 100
+            return
+        
         if self.dlg.checkBox_Sample.isChecked():
             # Sampleにチェックが入っている場合は、画像を表示し、保存しない
             self.my_log.show_sample_img
@@ -212,13 +214,13 @@ class Worker(QThread):
 
     def run(self, dlg, my_log):
         """微地形図計算のメイン処理"""
-        my_log.start_log
+        my_log.start_log()
         dlg.write_options()
         self.progress.emit(0)
         # Rasterの読み込み
         org_dst = gdal.Open(dlg.get_input_file_path)
         # RasterSizeをLogに書き込む
-        my_log.input_raster_size
+        my_log.input_raster_size()
         my_log.show_input_data(org_dst)
         self.progress.emit(2)
 
@@ -230,7 +232,7 @@ class Worker(QThread):
         msg = ExeptionMessage(dlg)
         if not msg.yes_no(org_dst):
             # ファイルサイズが大きい場合は処理を続けるか確認
-            return 
+            return None, None
         
         if dlg.checkBox_StartResample.isChecked():
             # リサンプルした場合はもう一度RasterSizeをLogに書き込む
@@ -285,6 +287,7 @@ class Worker(QThread):
         # 画像の合成
         composited_img = my_log.composite_log(
             composite_images,
+            dlg,
             slope_img,
             tpi_img,
             tri_img,

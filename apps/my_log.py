@@ -43,20 +43,17 @@ class MyLogger(object):
         """ログにタイトルを追加する"""
         self.log_board.append(f'<<< {title} >>>\n')
 
-    @property
     def stop_process(self) -> None:
         """処理を中止する際にログを表示する"""
         self.log_label.setText(self._stop_process)
         self.log_board.append('Process is stopped\n')
 
-    @property
     def start_log(self) -> None:
         """処理を開始する際にログを表示する"""
         self.log_label.setText('Starting process ...')
         self.log_board.append("Start process ...\n")
         self.log_board.append("Reading raster data ...\n")
 
-    @property
     def input_raster_size(self) -> None:
         """入力ラスタのサイズをログに表示する"""
         self._new_line
@@ -172,7 +169,7 @@ class MyLogger(object):
         self.log_board.append('Hillshade calculation is completed\n')
         return result
 
-    def composite_log(self, func: Callable, *args, **kwargs) -> Image.Image:
+    def composite_log(self, func: Callable, dlg, *args, **kwargs) -> Image.Image:
         """
         画像の合成のログを表示する
         Args:
@@ -186,7 +183,7 @@ class MyLogger(object):
         self._new_line
         self.title('Start to composite images')
         self.log_board.append('Composite images ...\n')
-        result = func(*args, **kwargs)
+        result = func(dlg, *args, **kwargs)
         self.log_board.append('Composite images is completed\n')
         return result
 

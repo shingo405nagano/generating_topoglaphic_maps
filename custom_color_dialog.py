@@ -1,8 +1,10 @@
 import json
 import os
 from PIL import Image
-from typing import Dict, List
+from typing import Dict
+from typing import List
 
+from matplotlib.colors import to_hex
 from osgeo import gdal
 from qgis.core import QgsGradientColorRamp
 from qgis.core import QgsGradientStop
@@ -44,6 +46,7 @@ UI , _= (
 class CustomColorDialog(QtWidgets.QDialog, UI):
     def __init__(self, parent=None):
         super(CustomColorDialog, self).__init__(parent)
+        self._init_name = 'RGB-Map'
         self.COLOR_RAMP = self.read_config_color_ramp()
         self.setupUi(self)
         self.color_ramp_slope = QgsColorRampButton()
@@ -54,6 +57,8 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         self.make_tpi_color_ramp()
         self.make_tri_color_ramp()
         self.make_hillshade_color_ramp()
+        # カラーランプの設定
+        self.your_color = self._generate_color_sentence()
         # リセットボタンの表示と非表示
         self.make_reset_btn()
         self.checkBox_Reset.stateChanged.connect(self.make_reset_btn)
@@ -63,7 +68,7 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         # サンプル作成
         self.btn_Show.clicked.connect(self.create_sample)
         # ダイアログを閉じる
-        self.btn_Cancel.clicked.connect(self.close)
+        self.btn_Cancel.clicked.connect(self.close_dlg)
     
     def tr(self, message: str):
         return QCoreApplication.translate('CustomColorDialog', message)
@@ -97,7 +102,15 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
             config = json.load(f)
             custom_dict = config['CUSTOM-Map']
         return custom_dict
-    
+
+    def _generate_color_sentence(self) -> str:
+        sentence = ''
+        for _, rgba_lst in self.color_ramps().items():
+            for rgba in rgba_lst:
+                sentence += to_hex(rgba[: 3])
+                sentence += hex(int(rgba[-1] * 255))
+        return sentence
+
     def _make_color_ramp(self, 
         gpBox: QBoxLayout, 
         color_ramp: QgsColorRampButton, 
@@ -212,6 +225,15 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         """設定した Hillshade のカラーランプを取得"""
         return self._get_color_ramp("HILLSHADE")
     
+    def color_ramps(self) -> Dict[str, List[List[float]]]:
+        """設定したカラーランプを取得"""
+        return {
+            "SLOPE": self.get_slope_color_ramp(),
+            "TPI": self.get_tpi_color_ramp(),
+            "TRI": self.get_tri_color_ramp(),
+            "HILLSHADE": self.get_hillshade_color_ramp()
+        }
+
     def make_reset_btn(self) -> None:
         """リセットボタンを作成"""
         if self.checkBox_Reset.isChecked():
@@ -227,10 +249,11 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
             'HILLSHADE': self.get_hillshade_color_ramp()
         }
 
-    def registration_color_ramp(self) -> None:
+    def registration_color_ramp(self, ok: bool=False) -> None:
         """カラーランプをjsonファイルに登録"""
-        if self.registration_yes_no() is False:
-            return
+        if not ok:
+            if self.registration_yes_no() is False:
+                return
 
         with open(CONFIG_FILE, 'r') as f:
             config = json.load(f)
@@ -244,6 +267,8 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
             config['CUSTOM-Map'] = custom_dict
             json_str = self._json_encoder(config)
             f.write(json_str)
+            self.your_color = self._generate_color_sentence()
+        
         self.COLOR_RAMP = self.read_config_color_ramp()
 
     def _json_encoder(self, dictionary: dict) -> str:
@@ -264,11 +289,13 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         
         with open(CONFIG_FILE, 'r') as f:
             config = json.load(f)
-            cs_dict = config['CS-Map']
+            cs_dict = config[self._init_name]
             config['CUSTOM-Map'] = cs_dict
         with open(CONFIG_FILE, 'w') as f:
             json_str = self._json_encoder(config)
             f.write(json_str)
+        
+        self.your_color = self._generate_color_sentence()
         self.COLOR_RAMP = self.read_config_color_ramp()
         self.make_slope_color_ramp()
         self.make_tpi_color_ramp()
@@ -302,3 +329,11 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
                 composited_img = Image.alpha_composite(composited_img, img)
         composited_img.show()
 
+    def close_dlg(self):
+        sentence = self._generate_color_sentence()
+        if sentence != self.your_color:
+            if self.registration_yes_no():
+                self.registration_color_ramp(True)
+            else:
+                self.close()
+        self.close()

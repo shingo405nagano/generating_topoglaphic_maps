@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 from PIL import Image
+from PIL import ImageEnhance
+from PIL import ImageFilter
 from typing import Any
 from typing import Dict
 from typing import List
@@ -464,6 +466,7 @@ class HillshadeOptions:
 
 
 def composite_images(
+    dlg,
     slope_img: Image.Image,
     tpi_img: Image.Image,
     tri_img: Image.Image,
@@ -472,6 +475,7 @@ def composite_images(
     """
     画像を合成する
     Args:
+        dlg: ダイアログ
         slope_img(Image.Image): 傾斜画像
         tpi_img(Image.Image): TPI画像
         tri_img(Image.Image): TRI画像
@@ -479,10 +483,24 @@ def composite_images(
     Returns:
         Image.Image: 微地形図のRGBA画像
     """
-    composited_img = Image.alpha_composite(hillshade_img, tri_img)
-    composited_img = Image.alpha_composite(composited_img, tpi_img)
-    composited_img = Image.alpha_composite(composited_img, slope_img)
-    return composited_img
+    # Edgeを強調した画像を生成
+    edge_options = dlg.get_edge_options()
+    if edge_options.checked:
+        edge_img = edge_options.to_edge_img(hillshade_img)
+        imgs = [edge_img, tpi_img, slope_img]
+    else:
+        imgs = [tpi_img, slope_img]
+    # 画像を合成
+    result = Image.alpha_composite(hillshade_img, tri_img)
+    for img in imgs:
+        result = Image.alpha_composite(result, img)
+    # Contrastを適用
+    contrast_options = dlg.get_contrast_options()
+    result = contrast_options.to_contrast_img(result)
+    # Unsharpn Maskを適用
+    unsharpn_options = dlg.get_unsharpn_options()
+    result = unsharpn_options.to_unsharpn_img(result)
+    return result
     
 
 def save_image_rgba(out_file_path: Path, img: Image.Image, org_dst: gdal.Dataset) -> None:
@@ -517,3 +535,165 @@ def save_image_rgba(out_file_path: Path, img: Image.Image, org_dst: gdal.Dataset
         band.SetColorInterpretation(color)
     new_dst.FlushCache()
     new_dst = None
+
+
+
+@dataclass
+class ContrastOptions:
+    checked: bool
+    contrast: float
+
+    def to_contrast_img(self, img: Image.Image) -> Image.Image:
+        """
+        Contrastを適用する
+        Args:
+            img(Image.Image): 画像
+        Returns:
+            Image.Image
+        """
+        if self.checked:
+            enhancer = ImageEnhance.Contrast(img)
+            return enhancer.enhance(self.contrast)
+        return img
+
+
+
+@dataclass
+class UnsharpnOptions:
+    checked: bool
+    radius: int
+    percent: float
+    threshold: int
+
+    def to_unsharpn_img(self, img: Image.Image) -> Image.Image:
+        """
+        Unsharpn Maskを適用する
+        Args:
+            img(Image.Image): 画像
+        Returns:
+            Image.Image
+        """
+        if self.checked:
+            filter_ = ImageFilter.UnsharpMask(
+                radius=self.radius, 
+                percent=self.percent, 
+                threshold=self.threshold
+            )
+            return img.filter(filter_)
+        return img
+        
+
+
+@dataclass
+class GaussianOptions:
+    checked: bool
+    sigma: float
+
+    def to_gaussian_img(self, img: Image.Image) -> Image.Image:
+        """
+        Gaussian Filterを適用する
+        Args:
+            img(Image.Image): 画像
+        Returns:
+            Image.Image
+        """
+        if self.checked:
+            return img.filter(ImageFilter.GaussianBlur(radius=self.sigma))
+        return img
+
+
+
+@dataclass
+class EdgeOptions:
+    checked: bool
+    unsharpn: UnsharpnOptions
+    gaussian: GaussianOptions
+    min_area_iqr: float
+    color: Tuple[int]
+
+    def to_edge_img(self, img: Image.Image) -> Image.Image:
+        """
+        Edge Detectionを適用する
+        Args:
+            img(Image.Image): 画像
+        Returns:
+            Image.Image
+        """
+        if self.checked:
+            # 画像の前処理
+            img = self.unsharpn.to_unsharpn_img(img)
+            img = img.convert('L')
+            img = self.gaussian.to_gaussian_img(img)
+            # エッジ検出
+            edge_img = img.filter(ImageFilter.FIND_EDGES)
+            # 2値化
+            binary_edge_ary = self.binarization(edge_img)
+            # ゴミを除去
+            cleaned_edge_ary = self.garbage_disposal(binary_edge_ary)
+            # 画像に変換
+            cleaned_edge_img = self.gray_to_rgba(cleaned_edge_ary)
+            return Image.fromarray(cleaned_edge_img)
+        return img
+
+    def binarization(self, img: Image.Image) -> np.array:
+        """
+        2値化を行う
+        Args:
+            img(Image.Image): 画像
+        Returns:
+            Image.Image
+        """
+        edge_ary = np.array(img)
+        threshold = 1.5
+        q1 = np.quantile(edge_ary, 0.25)
+        q3 = np.quantile(edge_ary, 0.75)
+        iqr = q3 - q1
+        up_thres = int(q3 + threshold * iqr)
+        binary_edge = img.point(lambda p: p > up_thres and 255)
+        return np.array(binary_edge)
+    
+    def garbage_disposal(self, binary_edge: np.array) -> np.array:
+        """
+        小さなエッジを削除する
+        Args:
+            binary_edge(np.array): 2値化されたエッジ画像
+        Returns:
+            np.array: ゴミを除去したエッジ画像
+        """
+        # ラベル付け
+        labeled_array, _ = scipy.ndimage.label(binary_edge)
+        # 各オブジェクトの面積を計算
+        object_areas = np.bincount(labeled_array.ravel())
+        # 0番目は背景なので除外
+        counts = object_areas[1:]
+        # 小さなオブジェクトを削除
+        q1 = np.quantile(counts, 0.25)
+        q3 = np.quantile(counts, 0.75)
+        iqr = q3 - q1
+        min_area = q3 + self.min_area_iqr *iqr
+        small_objects = np.where(object_areas < min_area)[0]
+        mask = np.isin(labeled_array, small_objects)
+        binary_edge[mask] = 0
+        return binary_edge
+    
+    def gray_to_rgba(self, ary: np.array) -> np.array:
+        # 2値化されたエッジは白になっているので、そのままRGBAに変換する
+        def colorize(ary: np.array, color: int) -> np.array:
+            return np.where(ary == 255, color, 0).astype('uint8')
+        
+        red_band = colorize(ary, self.red)
+        green_band = colorize(ary, self.green)
+        blue_band = colorize(ary, self.blue)
+        return np.dstack([red_band, green_band, blue_band, ary])
+    
+    @property
+    def red(self):
+        return self.color[0]
+    
+    @property
+    def green(self):
+        return self.color[1]
+    
+    @property
+    def blue(self):
+        return self.color[2]
