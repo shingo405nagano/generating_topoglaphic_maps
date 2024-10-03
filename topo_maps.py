@@ -21,7 +21,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from glob import glob
 import os
+import tempfile
 os.chdir(os.path.dirname(__file__))
 
 from matplotlib import pyplot as plt
@@ -156,6 +158,7 @@ class TopoMaps:
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
+            self.deletes_temp_files()
             self.first_start = False
         else:
             self.dlg = None
@@ -208,6 +211,19 @@ class TopoMaps:
             )
             self.my_log.add_lyr_log(self.dlg.add_lyr, output_file_path)
             self.dlg.progressBar.setValue(100)
+
+    def deletes_temp_files(self) -> None:
+        """一時ファイルの削除"""
+        temp_dir = tempfile.gettempdir()
+        temp_files = glob(os.path.join(temp_dir, '*.tif'))
+        for temp_file in temp_files:
+            if '_topoMaps' in temp_file:
+                try:
+                    os.remove(temp_file)
+                    print(f'{temp_file} is deleted.')
+                except:
+                    pass
+
 
 
 class Worker(QThread):

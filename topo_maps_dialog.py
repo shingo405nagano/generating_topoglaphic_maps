@@ -225,6 +225,9 @@ class InputTab(object):
 
 
 class OutputTab(object):
+    def __init__(self):
+        self.temp_file = False
+
     def tr(self, message):
         """Get the translation for a string using Qt translation API."""
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
@@ -279,19 +282,23 @@ class OutputTab(object):
         path = self.fileWgt_OutputFile.filePath()
         if path == '':
             # ファイルパスが空の場合、一時ファイルを作成
-            with tempfile.NamedTemporaryFile(suffix='.tif') as tf:
-                path = tf.name
+            with tempfile.NamedTemporaryFile(suffix='_topoMaps.tif') as tf:
+                path = tf.name   
             # レイヤーも強制的に追加
             self.checkBox_AddProject.setChecked(True)
+            self.temp_file = True
+            return path
+        self.temp_file = False
         return path
 
     def add_lyr(self, output_file_path: Path) -> None:
         """プロジェクトにレイヤーを追加"""
         if self.checkBox_AddProject.isChecked():
             self.textBrowser_Log.append("Add a raster layer to project\n")
-            lyr_name = self.str_time(
-                suffix=os.path.basename(output_file_path).split('.')[0]
-            )
+            if self.temp_file:    
+                lyr_name = self.str_time()
+            else:
+                lyr_name = os.path.basename(output_file_path).split('.')[0]
             lyr = QgsRasterLayer(output_file_path, lyr_name, 'gdal')
             QgsProject.instance().addMapLayer(lyr)
     
@@ -300,7 +307,8 @@ class OutputTab(object):
         st = now.strftime('%H:%M:%S')
         prefix = prefix if prefix == '' else f"{prefix}_"
         suffix = suffix if suffix == '' else f"_{suffix}"
-        return f'{prefix}TempFile_{st}{suffix}'
+        c = self.select_map_style.NAME
+        return f'{prefix}TempFile_{c}_{st}{suffix}'
 
 
 
