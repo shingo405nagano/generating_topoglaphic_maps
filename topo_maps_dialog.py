@@ -21,8 +21,10 @@
  *                                                                         *
  ***************************************************************************/
 """
+import datetime
 import json
 import os
+import tempfile
 from typing import Any, Dict, NewType, Union
 from pathlib import Path
 from PIL import Image
@@ -223,6 +225,11 @@ class InputTab(object):
 
 
 class OutputTab(object):
+    def tr(self, message):
+        """Get the translation for a string using Qt translation API."""
+        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
+        return QCoreApplication.translate('OutputTab', message)
+
     @property
     def select_map_style(self) -> Union[CsColorMaps, VintageColorMaps]:
         """
@@ -257,6 +264,10 @@ class OutputTab(object):
             self.checkBox_AddProject.setVisible(True)
             self.label_OutputFile.setVisible(True)
             self.fileWgt_OutputFile.setVisible(True)
+    
+    def set_placeholder(self) -> None:
+        fwgt = self.fileWgt_OutputFile
+        fwgt.lineEdit().setPlaceholderText(self.tr('[一時ファイルに保存]'))
 
     @property
     def get_output_file_path(self) -> Path:
@@ -265,16 +276,31 @@ class OutputTab(object):
         Returns:
             Path: ファイルパス
         """
-        return self.fileWgt_OutputFile.filePath()
+        path = self.fileWgt_OutputFile.filePath()
+        if path == '':
+            # ファイルパスが空の場合、一時ファイルを作成
+            with tempfile.NamedTemporaryFile(suffix='.tif') as tf:
+                path = tf.name
+            # レイヤーも強制的に追加
+            self.checkBox_AddProject.setChecked(True)
+        return path
 
-    def add_lyr(self) -> None:
+    def add_lyr(self, output_file_path: Path) -> None:
         """プロジェクトにレイヤーを追加"""
         if self.checkBox_AddProject.isChecked():
             self.textBrowser_Log.append("Add a raster layer to project\n")
-            file_path = self.get_output_file_path
-            lyr_name = os.path.basename(file_path).split('.')[0]
-            lyr = QgsRasterLayer(file_path, lyr_name, 'gdal')
+            lyr_name = self.str_time(
+                suffix=os.path.basename(output_file_path).split('.')[0]
+            )
+            lyr = QgsRasterLayer(output_file_path, lyr_name, 'gdal')
             QgsProject.instance().addMapLayer(lyr)
+    
+    def str_time(self, prefix: str='', suffix: str=''):
+        now = datetime.datetime.now()
+        st = now.strftime('%H:%M:%S')
+        prefix = prefix if prefix == '' else f"{prefix}_"
+        suffix = suffix if suffix == '' else f"_{suffix}"
+        return f'{prefix}TempFile_{st}{suffix}'
 
 
 
@@ -625,6 +651,7 @@ class TopoMapsDialog(
 
         # Set the help dialog to None
         # ファイルの読み書きを設定
+        self.set_placeholder()
         self.make_input_dlg()
         self.radioBtn_InputIsFile.toggled.connect(self.make_input_dlg)
         self.radioBtn_InputIsLayer.toggled.connect(self.make_input_dlg)

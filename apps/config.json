@@ -16,16 +16,16 @@
     },
     "Documents": {
         "ja": {
-            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps"
+            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/slope_options_ja.md",
+            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/tpi_options_ja.md",
+            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/hillshade_options_ja.md",
+            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/others_options_ja.md"
         },
         "en": {
-            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps"
+            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/slope_options_en.md",
+            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/tpi_options_en.md",
+            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/hillshade_options_en.md",
+            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/docs/others_options_en.md"
         }
     },
     "CS-Map": {

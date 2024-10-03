@@ -199,13 +199,14 @@ class TopoMaps:
             plt.show()
         else:
             # Rasterの保存
+            output_file_path = self.dlg.get_output_file_path
             self.my_log.write_raster_log(
                 save_image_rgba,
-                self.dlg.get_output_file_path,
+                output_file_path,
                 composited_img,
                 org_dst
             )
-            self.my_log.add_lyr_log(self.dlg.add_lyr)
+            self.my_log.add_lyr_log(self.dlg.add_lyr, output_file_path)
             self.dlg.progressBar.setValue(100)
 
 

@@ -1,4 +1,5 @@
 # **- coding: utf-8 -**
+from pathlib import Path
 from PIL import Image
 from typing import Callable
 
@@ -85,8 +86,8 @@ class MyLogger(object):
         """
         crs = pyproj.CRS(dst.GetProjection())
         proj = crs.to_json_dict()
-        self.log_board.append(f"Name: {proj['name']}\n")
-        self.log_board.append(f"EPSG: {proj['id']['code']}\n")
+        self.log_board.append(f"Name: {proj.get('name')}\n")
+        self.log_board.append(f"EPSG: {proj.get('id').get('code')}\n")
         transform = dst.GetGeoTransform()
         x_min = transform[0]
         y_max = transform[3]
@@ -206,8 +207,8 @@ class MyLogger(object):
         self.log_label.setText(self._completed)
         self.title('Process is completed')
     
-    def add_lyr_log(self, func: Callable):
+    def add_lyr_log(self, func: Callable, output_file_path: Path):
         """QGISのMapにRasterを追加する際のログを表示する"""
         self.log_board.append('Add layer to Project\n')
-        func()
+        func(output_file_path)
         self.log_board.append('Add layer is completed\n')
