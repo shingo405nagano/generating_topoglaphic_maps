@@ -116,23 +116,27 @@ class ColorMaps(object):
 class CsColorMaps(ColorMaps):
     def __init__(self):
         super().__init__(CS_COLORS)
+        self.NAME = 'CS-Styled'
 
 
 
 class VintageColorMaps(ColorMaps):
     def __init__(self):
         super().__init__(VINRAGE_COLORS)
+        self.NAME = 'Vintage-Styled'
 
 
 
 class RgbColorMaps(ColorMaps):
     def __init__(self):
         super().__init__(RGB_COLORS)
+        self.NAME = 'RGB-Styled'
 
 
 class CustomColorMaps(ColorMaps):
     def __init__(self):
         super().__init__(CUSTOM_COLORS)
+        self.NAME = 'Your-Styled'
 
 
 class Coloring(object):
