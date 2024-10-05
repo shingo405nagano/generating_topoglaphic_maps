@@ -456,4 +456,12 @@ p, li { white-space: pre-wrap; }
         <translation>Cancel</translation>
     </message>
 </context>
+<context>
+    <name>OutputTab</name>
+    <message>
+        <location filename="topo_maps_dialog.py" line="273"/>
+        <source>[一時ファイルに保存]</source>
+        <translation>[Saving temporaly file]</translation>
+    </message>
+</context>
 </TS>
