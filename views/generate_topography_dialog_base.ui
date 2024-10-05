@@ -483,6 +483,9 @@
               <property name="text">
                <string>プロジェクトにレイヤーを追加</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item row="0" column="2">
@@ -606,7 +609,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -1711,7 +1714,7 @@ p, li { white-space: pre-wrap; }
                     <double>0.100000000000000</double>
                    </property>
                    <property name="value">
-                    <double>2.000000000000000</double>
+                    <double>1.300000000000000</double>
                    </property>
                    <property name="showClearButton">
                     <bool>false</bool>
@@ -1841,10 +1844,10 @@ p, li { white-space: pre-wrap; }
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>10</number>
+               <number>20</number>
               </property>
               <property name="value">
-               <number>3</number>
+               <number>6</number>
               </property>
               <property name="showClearButton">
                <bool>false</bool>
@@ -1879,7 +1882,7 @@ p, li { white-space: pre-wrap; }
                <number>10</number>
               </property>
               <property name="value">
-               <number>200</number>
+               <number>150</number>
               </property>
               <property name="showClearButton">
                <bool>false</bool>
@@ -1898,7 +1901,7 @@ p, li { white-space: pre-wrap; }
                <double>0.100000000000000</double>
               </property>
               <property name="value">
-               <double>2.000000000000000</double>
+               <double>1.800000000000000</double>
               </property>
              </widget>
             </item>
@@ -2026,7 +2029,7 @@ QCheckBox {
                <number>10</number>
               </property>
               <property name="value">
-               <number>200</number>
+               <number>150</number>
               </property>
               <property name="showClearButton">
                <bool>false</bool>
@@ -2039,10 +2042,10 @@ QCheckBox {
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>10</number>
+               <number>20</number>
               </property>
               <property name="value">
-               <number>3</number>
+               <number>5</number>
               </property>
               <property name="showClearButton">
                <bool>false</bool>
@@ -2080,7 +2083,7 @@ QCheckBox {
                <double>0.100000000000000</double>
               </property>
               <property name="value">
-               <double>2.000000000000000</double>
+               <double>1.800000000000000</double>
               </property>
              </widget>
             </item>

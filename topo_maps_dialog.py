@@ -117,7 +117,7 @@ class InputTab(object):
         """Raster データが存在するか確認"""
         lyrs = QgsProject.instance().mapLayers().values()
         rasters = False
-        fmts = ['.tif', '.tiff']
+        fmts = ['.tif', '.tiff', '']
         for lyr in lyrs:
             source = lyr.source().lower()
             for fmt in fmts:
@@ -346,6 +346,17 @@ class SlopeTab(object):
 
 
 class TpiTab(object):
+    def _distance_kernel(self) -> True:
+        """カーネルサイズを距離で指定するかどうか"""
+        texts = [
+            'カーネルサイズを距離で指定', 
+            'Kernel size specified by distance'
+        ]
+        if self.cmbBox_Kernel.currentText() in texts:
+            return True
+        return False
+    
+    
     def get_tpi_options(self) -> TpiOptions:
         """TPI に関するオプションを取得
         Returns:
@@ -398,55 +409,54 @@ class TpiTab(object):
             cmap=self.select_map_style.tpi().colors_255
         )
         return options
+    
+    def _make_tpi_dlg(self):
+        if self.radioBtn_OrgKernel.isChecked():
+            self.make_dlg_by_org_kernel()
+        elif self.radioBtn_DoughnutKernel.isChecked():
+            self.make_dlg_by_others_kernel()
+        elif self.radioBtn_MeanKernel.isChecked():
+            self.make_dlg_by_others_kernel()
+        elif self.radioBtn_GaussKernel.isChecked():
+            self.make_dlg_by_gauss_kernel()
+        elif self.radioBtn_InvGaussKernel.isChecked():
+            self.make_dlg_by_gauss_kernel()
+        elif self.radioBtn_4DirecKernel.isChecked():
+            self.make_dlg_by_others_kernel()
+        elif self.radioBtn_8DirecKernel.isChecked():
+            self.make_dlg_by_others_kernel()
+    
+    def make_dlg_by_org_kernel(self) -> None:
+        self.cmbBox_Kernel.setVisible(False)
+        self.l_15.setVisible(False)
+        self.spinBoxF_KernelSize.setVisible(False)
+        self.spinBoxInt_KernelSize.setVisible(False)
+        self.l_4.setVisible(False)
+        self.spinBoxF_GaussSigma.setVisible(False)
 
-    def make_tpi_dlg_gaussian(self) -> None:
-        """TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示"""
-        self._make_dlg_gaussian_param()
-        self._make_dlg_kernel_param()
-
-    def make_tpi_dlg_distance_param(self) -> None:
-        distance_type = [
-            'カーネルサイズを距離で指定', 
-            'Kernel size specified by distance'
-        ]
-        if self.cmbBox_Kernel.currentText() in distance_type:
+    def make_dlg_by_gauss_kernel(self) -> None:
+        self.cmbBox_Kernel.setVisible(True)
+        self.l_15.setVisible(True)
+        if self._distance_kernel():
             self.spinBoxF_KernelSize.setVisible(True)
             self.spinBoxInt_KernelSize.setVisible(False)
         else:
             self.spinBoxF_KernelSize.setVisible(False)
             self.spinBoxInt_KernelSize.setVisible(True)
-
-    def make_tpi_dlg_original(self) -> None:
-        """TPI の設定で隣接セルを使用した場合に、パラメータを非表示にする"""
-        self._erase_dlg_gaussian_param()
-        self._erase_dlg_kernel_param()
-
-    def make_tpi_dlg_other(self) -> None:
-        """TPi の設定でガウシアンカーネル以外を選択した場合、パラメータを表示する"""
-        self._erase_dlg_gaussian_param()
-        self._make_dlg_kernel_param()
-    
-    def _make_dlg_gaussian_param(self) -> None:
-        # TPI の設定でガウシアンカーネルを選択した場合、ガウシアンカーネルのパラメータを表示
         self.l_4.setVisible(True)
         self.spinBoxF_GaussSigma.setVisible(True)
-    
-    def _erase_dlg_gaussian_param(self) -> None:
-        # TPI の設定でガウシアンカーネル以外を選択した場合、ガウシアンカーネルのパラメータを非表示
+
+    def make_dlg_by_others_kernel(self) -> None:
+        self.cmbBox_Kernel.setVisible(True)
+        self.l_15.setVisible(True)
+        if self._distance_kernel():
+            self.spinBoxF_KernelSize.setVisible(True)
+            self.spinBoxInt_KernelSize.setVisible(False)
+        else:
+            self.spinBoxF_KernelSize.setVisible(False)
+            self.spinBoxInt_KernelSize.setVisible(True)
         self.l_4.setVisible(False)
         self.spinBoxF_GaussSigma.setVisible(False)
-
-    def _make_dlg_kernel_param(self) -> None:
-        # TPI の設定でカーネルサイズを選択した場合、カーネルサイズのパラメータを表示
-        self.l_15.setVisible(True)
-        self.cmbBox_Kernel.setVisible(True)
-        self.spinBoxF_KernelSize.setVisible(True)
-    
-    def _erase_dlg_kernel_param(self) -> None:
-        # TPI の設定でカーネルサイズ以外を選択した場合、カーネルサイズのパラメータを非表示
-        self.l_15.setVisible(False)
-        self.cmbBox_Kernel.setVisible(False)
-        self.spinBoxF_KernelSize.setVisible(False)
 
     def _change_tpi_alpha_param_from_slider(self) -> None:
         # 透過率のスライダーの値を変更
@@ -682,16 +692,15 @@ class TopoMapsDialog(
         self.btn_OpenDocSlope.clicked.connect(self.web.open_slope_doc)
 
         # TPI のダイアログ設定
-        self._erase_dlg_gaussian_param()
-        self.make_tpi_dlg_distance_param()
-        self.cmbBox_Kernel.currentIndexChanged.connect(self.make_tpi_dlg_distance_param)
-        self.radioBtn_OrgKernel.toggled.connect(self.make_tpi_dlg_original)
-        self.radioBtn_DoughnutKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_MeanKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_GaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
-        self.radioBtn_InvGaussKernel.toggled.connect(self.make_tpi_dlg_gaussian)
-        self.radioBtn_4DirecKernel.toggled.connect(self.make_tpi_dlg_other)
-        self.radioBtn_8DirecKernel.toggled.connect(self.make_tpi_dlg_other)
+        self._make_tpi_dlg()
+        self.cmbBox_Kernel.currentIndexChanged.connect(self._make_tpi_dlg)
+        self.radioBtn_OrgKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_DoughnutKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_MeanKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_GaussKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_InvGaussKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_4DirecKernel.toggled.connect(self._make_tpi_dlg)
+        self.radioBtn_8DirecKernel.toggled.connect(self._make_tpi_dlg)
         self.hSlider_TpiAlpha.valueChanged.connect(
             self._change_tpi_alpha_param_from_slider)
         self.spinBoxInt_TpiAlpha.valueChanged.connect(
