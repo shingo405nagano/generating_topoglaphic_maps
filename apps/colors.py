@@ -1,13 +1,14 @@
 # **- coding: utf-8 -**
 import json
+import os
 from typing import Dict, List, NamedTuple, Tuple
 
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 
 
-conf_path = r"./apps/config.json"
-with open(conf_path, mode='r') as file:
+CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'config.json')
+with open(CONFIG_FILE, mode='r') as file:
     config = json.load(file)
     global CS_COLORS
     CS_COLORS = config['CS-Map']

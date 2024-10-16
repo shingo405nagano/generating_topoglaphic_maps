@@ -24,7 +24,6 @@
 from glob import glob
 import os
 import tempfile
-os.chdir(os.path.dirname(__file__))
 
 from matplotlib import pyplot as plt
 import numpy as np

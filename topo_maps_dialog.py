@@ -56,40 +56,29 @@ from .apps.mapper import TpiOptions
 from .apps.mapper import TriOptions
 from .apps.mapper import UnsharpnOptions
 from .apps.parts import process
+from .config import CS_MAP_IMG_FILE
+from .config import CONFIG_FILE
+from .config import HELP_KERNEL_DLG_UI_FILE
+from .config import MAIN_DLG_UI_FILE
+from .config import RGB_MAP_IMG_FILE
+from .config import VINTAGE_IMG_FILE
 from .custom_color_dialog import CustomColorDialog
+
 
 OptionsType = NewType('OptionsType', Union[SlopeOptions, TpiOptions, TriOptions, HillshadeOptions])
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
-FORM_CLASS, _ = (
-    uic
-    .loadUiType(
-        os.path.join(
-            os.path.dirname(__file__), 
-            'views\generate_topography_dialog_base.ui'
-        )
-    )
-)
+FORM_CLASS, _ = uic.loadUiType(MAIN_DLG_UI_FILE)
+HELP_KERNELS, _ = uic.loadUiType(HELP_KERNEL_DLG_UI_FILE)
 
-HELP_KERNELS, _ = (
-    uic
-    .loadUiType(
-        os.path.join(
-            os.path.dirname(__file__),
-            'views\help_kernels.ui'
-        ),
-    )
-)
-
-
+# Sample画像の読み込み
 global CS_MAP_IMG
-CS_MAP_IMG = plt.imread('.\\views\\CS-Map__Img.jpg')
+CS_MAP_IMG = plt.imread(CS_MAP_IMG_FILE)
 global VINTAGE_MAP_IMG
-VINTAGE_MAP_IMG = plt.imread('.\\views\\Vintage-Map__Img.jpg')
+VINTAGE_MAP_IMG = plt.imread(VINTAGE_IMG_FILE)
 global RGB_MAP_IMG
-RGB_MAP_IMG = plt.imread('.\\views\\RGB-Map__Img.jpg')
-global CONFIG_FILE
-CONFIG_FILE = '.\\apps\\config.json'
+RGB_MAP_IMG = plt.imread(RGB_MAP_IMG_FILE)
+
 
 
 class InputTab(object):
@@ -249,8 +238,7 @@ class OutputTab(object):
         else:
             # 設定したカスタムカラーマップを取得
             from .apps.colors import CustomColorMaps
-            file = '.\\apps\\config.json'
-            with open(file, mode='r') as f:
+            with open(CONFIG_FILE, mode='r') as f:
                 config = json.load(f)
                 cmap = config.get('CUSTOM-Map')
             custom_color_maps = CustomColorMaps()
@@ -270,7 +258,7 @@ class OutputTab(object):
     
     def set_placeholder(self) -> None:
         fwgt = self.fileWgt_OutputFile
-        fwgt.lineEdit().setPlaceholderText(self.tr('[一時ファイルに保存]'))
+        fwgt.lineEdit().setPlaceholderText('Save to temporary file')
 
     @property
     def get_output_file_path(self) -> Path:

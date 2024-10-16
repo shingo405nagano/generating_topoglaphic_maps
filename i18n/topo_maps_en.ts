@@ -61,7 +61,7 @@
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="214"/>
         <source>絶対値で分解能を決める</source>
-        <translation type="unfinished">Resolution by absolute value</translation>
+        <translation>Resolution by absolute value</translation>
     </message>
     <message>
         <location filename="../views/generate_topography_dialog_base.ui" line="229"/>
@@ -459,9 +459,9 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>OutputTab</name>
     <message>
-        <location filename="topo_maps_dialog.py" line="273"/>
-        <source>[一時ファイルに保存]</source>
-        <translation>[Saving temporaly file]</translation>
+        <location filename="../topo_maps_dialog.py" line="261"/>
+        <source>一時ファイルに保存</source>
+        <translation>Save to temporary file</translation>
     </message>
 </context>
 </TS>

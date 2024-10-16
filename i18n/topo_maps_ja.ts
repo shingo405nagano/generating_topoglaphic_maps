@@ -459,8 +459,8 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>OutputTab</name>
     <message>
-        <location filename="topo_maps_dialog.py" line="273"/>
-        <source>[一時ファイルに保存]</source>
+        <location filename="../topo_maps_dialog.py" line="261"/>
+        <source>一時ファイルに保存</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -20,28 +20,13 @@ from qgis.PyQt.QtWidgets import QSizePolicy
 
 from .apps.colors import Coloring
 from .apps.colors import CustomColorMaps
-
-global CONFIG_FILE
-CONFIG_FILE = '.\\apps\\config.json'
-global SAMPLE_FILES
-sample_dir = '.\\views\\sample\\'
-SAMPLE_FILES = {
-    'SLOPE': os.path.join(sample_dir, 'SLOPE.tif'),
-    'TPI': os.path.join(sample_dir, 'TPI.tif'),
-    'TRI': os.path.join(sample_dir, 'TRI.tif'),
-    'HILLSHADE': os.path.join(sample_dir, 'HILLSHADE.tif')
-}
+from .config import CONFIG_FILE
+from .config import SAMPLE_FILES
+from .config import CUSTOM_UI_FILE
 
 
-UI , _= (
-    uic
-    .loadUiType(
-        os.path.join(
-            os.path.dirname(__file__),
-            'views\color_ramp_dlg.ui'
-        ),
-    )
-)
+UI , _= uic.loadUiType(CUSTOM_UI_FILE)
+
 
 class CustomColorDialog(QtWidgets.QDialog, UI):
     def __init__(self, parent=None):
