@@ -1,0 +1,3 @@
+[submodule "gdal_drawer"]
+	path = gdal_drawer
+	url = https://github.com/shingo405nagano/gdal_drawer.git
