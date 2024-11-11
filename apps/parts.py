@@ -7,6 +7,7 @@ from typing import Union
 
 import numpy as np
 from osgeo import gdal
+import pyproj
 import scipy.ndimage
 
 
@@ -254,6 +255,28 @@ class Process(object):
         band.WriteArray(new_ary)
         band.SetNoDataValue(nodata)
         return new_dst
+
+    def estimate_utm_crs(lon: float, lat: float, datum_name: str='WGS 84') -> str:
+        """
+        緯度経度からUTMゾーンを推定する
+        Args:
+            lon(float): 経度
+            lat(float): 緯度
+            datum_name(str): 測地系
+        Returns:
+            (str): WKT-CRS
+        """
+        aoi = pyproj.aoi.AreaOfInterest(
+            west_lon_degree=lon,
+            south_lat_degree=lat,
+            east_lon_degree=lon,
+            north_lat_degree=lat,
+        )
+        utm_crs_lst = pyproj.database.query_utm_crs_info(
+            datum_name=datum_name,
+            area_of_interest=aoi
+        )
+        return pyproj.CRS.from_epsg(utm_crs_lst[0]).to_wkt()
         
 
 
