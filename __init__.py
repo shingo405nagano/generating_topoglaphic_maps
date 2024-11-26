@@ -23,18 +23,18 @@
  This script initializes the plugin, making it known to QGIS.
 """
 # # Debugging in VSCode
-import debugpy
-import shutil
-import sys
+# import debugpy
+# import shutil
+# import sys
 
-sys.path.append('C:\\Users\\makis\\.vscode\\extensions\\ms-python.python-2024.14.1-win32-x64\\python_files\\lib\\python')
+# sys.path.append('C:\\Users\\makis\\.vscode\\extensions\\ms-python.python-2024.14.1-win32-x64\\python_files\\lib\\python')
 
-debugpy.configure(python=shutil.which("python"))
-try:
-	debugpy.listen(("localhost", 5678))
-except:
-	debugpy.connect(("localhost", 5678))
-# END Debugging in VSCode
+# debugpy.configure(python=shutil.which("python"))
+# try:
+# 	debugpy.listen(("localhost", 5678))
+# except:
+# 	debugpy.connect(("localhost", 5678))
+# # END Debugging in VSCode
 
 
 
