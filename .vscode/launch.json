@@ -5,7 +5,7 @@
             "name": "QGIS Remote Attach",
             "type": "debugpy",
             "request": "attach",
-            "port": 5678,
+            "port": 5656,
             "host": "localhost",
             "pathMappings": [
                 {

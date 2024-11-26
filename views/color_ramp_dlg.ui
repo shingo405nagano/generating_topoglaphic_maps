@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>581</width>
-    <height>438</height>
+    <height>507</height>
    </rect>
   </property>
   <property name="acceptDrops">
@@ -156,9 +156,9 @@
       </spacer>
      </item>
      <item row="0" column="5">
-      <widget class="QPushButton" name="btn_Cancel">
+      <widget class="QPushButton" name="btn_Close">
        <property name="text">
-        <string>キャンセル</string>
+        <string>閉じる</string>
        </property>
       </widget>
      </item>

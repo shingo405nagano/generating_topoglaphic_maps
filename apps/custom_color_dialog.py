@@ -1,15 +1,12 @@
 import json
-import os
 from PIL import Image
 from typing import Dict
 from typing import List
 
 from matplotlib.colors import to_hex
-from osgeo import gdal
 from qgis.core import QgsGradientColorRamp
 from qgis.core import QgsGradientStop
 from qgis.gui import QgsColorRampButton
-from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QColor
@@ -17,36 +14,20 @@ from qgis.PyQt.QtWidgets import QBoxLayout
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.PyQt.QtWidgets import QSizePolicy
 
-
-from .apps.colors import Coloring
-from .apps.colors import CustomColorMaps
-
-global CONFIG_FILE
-CONFIG_FILE = '.\\apps\\config.json'
-global SAMPLE_FILES
-sample_dir = '.\\views\\sample\\'
-SAMPLE_FILES = {
-    'SLOPE': os.path.join(sample_dir, 'SLOPE.tif'),
-    'TPI': os.path.join(sample_dir, 'TPI.tif'),
-    'TRI': os.path.join(sample_dir, 'TRI.tif'),
-    'HILLSHADE': os.path.join(sample_dir, 'HILLSHADE.tif')
-}
+from .config import Configs
+from .config import CONFIG_FILE_PATH
+from .config import CustomMapColors
+from ..gdal_drawer.utils.colors import CustomCmap
+custom_cmap = CustomCmap()
+custom_map_colors = CustomMapColors()
+configs = Configs()
 
 
-UI , _= (
-    uic
-    .loadUiType(
-        os.path.join(
-            os.path.dirname(__file__),
-            'views\color_ramp_dlg.ui'
-        ),
-    )
-)
 
-class CustomColorDialog(QtWidgets.QDialog, UI):
+class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
     def __init__(self, parent=None):
         super(CustomColorDialog, self).__init__(parent)
-        self._init_name = 'RGB-Map'
+        self._init_name = 'Original-Map'
         self.COLOR_RAMP = self.read_config_color_ramp()
         self.setupUi(self)
         self.color_ramp_slope = QgsColorRampButton()
@@ -68,7 +49,7 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         # サンプル作成
         self.btn_Show.clicked.connect(self.create_sample)
         # ダイアログを閉じる
-        self.btn_Cancel.clicked.connect(self.close_dlg)
+        self.btn_Close.clicked.connect(self.close_dlg)
     
     def tr(self, message: str):
         return QCoreApplication.translate('CustomColorDialog', message)
@@ -98,7 +79,7 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         return False
 
     def read_config_color_ramp(self) -> Dict[str, List[List[float]]]:
-        with open(CONFIG_FILE, 'r') as f:
+        with open(CONFIG_FILE_PATH, 'r') as f:
             config = json.load(f)
             custom_dict = config['CUSTOM-Map']
         return custom_dict
@@ -107,8 +88,8 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         sentence = ''
         for _, rgba_lst in self.color_ramps().items():
             for rgba in rgba_lst:
-                sentence += to_hex(rgba[: 3])
-                sentence += hex(int(rgba[-1] * 255))
+                sentence += to_hex(rgba[:3])
+                sentence += hex(int(rgba[-1]))
         return sentence
 
     def _make_color_ramp(self, 
@@ -192,7 +173,10 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         offset_lst = [round(unit * i, 3) for i in range(len(colors))]
         return offset_lst
 
-    def _get_color_ramp(self, name: str) -> QgsGradientColorRamp:
+    def _get_color_ramp(self, 
+        name: str, 
+        get_positions: bool=False
+    ) -> QgsGradientColorRamp:
         colors = {
             "SLOPE": self.color_ramp_slope,
             "TPI": self.color_ramp_tpi,
@@ -201,10 +185,20 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         }
         color_ramp = colors.get(name).colorRamp()
         qcolors = [color_ramp.color1()]
+        positions = [0.0]
         for stop in color_ramp.stops():
             qcolors.append(stop.color)
+            positions.append(stop.offset)
         qcolors.append(color_ramp.color2())
-        return [self._round(color.getRgbF()) for color in qcolors]
+        positions.append(1.0)
+        if get_positions:
+            # Colorの位置を指定する場合に使用
+            return [self._round(color.getRgbF()) for color in qcolors]  
+        colors = []
+        for color in qcolors:
+            rgba = [color.red(), color.green(), color.blue(), color.alpha()]
+            colors.append([c / 255 for c in rgba])
+        return colors
     
     def _round(self, nums: List[float]) -> float:
         return [round(num, 4) for num in nums]
@@ -255,11 +249,11 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
             if self.registration_yes_no() is False:
                 return
 
-        with open(CONFIG_FILE, 'r') as f:
+        with open(CONFIG_FILE_PATH, 'r') as f:
             config = json.load(f)
             custom_dict = config['CUSTOM-Map']
         
-        with open(CONFIG_FILE, 'w') as f:
+        with open(CONFIG_FILE_PATH, 'w') as f:
             custom_dict['SLOPE'] = self.get_slope_color_ramp()
             custom_dict['TPI'] = self.get_tpi_color_ramp()
             custom_dict['TRI'] = self.get_tri_color_ramp()
@@ -287,11 +281,11 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
         if self.initialization_yes_no() is False:
             return
         
-        with open(CONFIG_FILE, 'r') as f:
+        with open(CONFIG_FILE_PATH, 'r') as f:
             config = json.load(f)
             cs_dict = config[self._init_name]
             config['CUSTOM-Map'] = cs_dict
-        with open(CONFIG_FILE, 'w') as f:
+        with open(CONFIG_FILE_PATH, 'w') as f:
             json_str = self._json_encoder(config)
             f.write(json_str)
         
@@ -304,21 +298,16 @@ class CustomColorDialog(QtWidgets.QDialog, UI):
 
     def create_sample(self):
         self.registration_temp_color_ramp()
-        coloring = Coloring()
-        custom_cmaps = CustomColorMaps()
-        custom_cmaps.COLORS_DICT = self.COLOR_RAMP
-        cmaps = {
-            'SLOPE': custom_cmaps.slope().colors_255,
-            'TPI': custom_cmaps.tpi().colors_255,
-            'TRI': custom_cmaps.tri().colors_255,
-            'HILLSHADE': custom_cmaps.hillshade().colors_255
-        }
-        names = ['SLOPE', 'TPI', 'TRI', 'HILLSHADE']
+        rasters = [
+            configs.sample_slope_raster,
+            configs.sample_tpi_raster,
+            configs.sample_tri_raster,
+            configs.sample_hillshade_raster
+        ]
         imgs = []
-        for name in names:
-            _dst = gdal.Open(SAMPLE_FILES.get(name))
-            ary = _dst.ReadAsArray()
-            img = coloring.styling(ary, cmaps.get(name))
+        for raster, colors in zip(rasters, self.COLOR_RAMP.values()):
+            cmap = custom_cmap.color_list_to_linear_cmap(colors)
+            img = cmap.values_to_img(raster, 'inta').astype('uint8')
             img = Image.fromarray(img)
             imgs.append(img)
         composited_img = None
