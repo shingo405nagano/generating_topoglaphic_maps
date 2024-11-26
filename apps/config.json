@@ -1,19 +1,4 @@
 {
-    "Maps": {
-        "CS-Map": 0,
-        "Vintage": 1,
-        "I-land": 2,
-        "Monocro": 3
-    },
-    "Kernels": {
-        "Normal": 0,
-        "Doughnut": 1,
-        "Mean": 2,
-        "Gaussian": 3,
-        "InverseGaussian": 4,
-        "4-Direction": 5,
-        "8-Direction": 6
-    },
     "Documents": {
         "ja": {
             "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
