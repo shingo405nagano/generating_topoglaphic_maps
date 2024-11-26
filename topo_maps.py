@@ -42,16 +42,7 @@ class TopoMaps:
     MESSAGE_CATEGORY = 'TopoMaps Plugin'
 
     def __init__(self, iface):
-        """Constructor.
-
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
-        # Save reference to the QGIS interface
         self.iface = iface
-        # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
@@ -73,26 +64,12 @@ class TopoMaps:
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
 
-        # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&TopoMaps')
 
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
         self.first_start = None
 
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('TopoMaps', message)
 
     def add_action(
@@ -133,7 +110,8 @@ class TopoMaps:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        icon_path = ':/plugins/topo_maps/views/icon.png'
+        DIR_NAME = os.path.join(os.path.dirname(__file__), 'views')
+        icon_path = os.path.join(DIR_NAME, "icon.png")
         self.add_action(
             icon_path,
             text=self.tr(u'TopoMaps'),
