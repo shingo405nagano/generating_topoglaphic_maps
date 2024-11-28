@@ -31,9 +31,9 @@
 
 # debugpy.configure(python=shutil.which("python"))
 # try:
-# 	debugpy.listen(("localhost", 5678))
+# 	debugpy.listen(("localhost", 5656))
 # except:
-# 	debugpy.connect(("localhost", 5678))
+# 	debugpy.connect(("localhost", 5656))
 # # END Debugging in VSCode
 
 
