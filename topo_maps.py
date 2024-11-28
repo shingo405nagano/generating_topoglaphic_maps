@@ -42,16 +42,7 @@ class TopoMaps:
     MESSAGE_CATEGORY = 'TopoMaps Plugin'
 
     def __init__(self, iface):
-        """Constructor.
-
-        :param iface: An interface instance that will be passed to this class
-            which provides the hook by which you can manipulate the QGIS
-            application at run time.
-        :type iface: QgsInterface
-        """
-        # Save reference to the QGIS interface
         self.iface = iface
-        # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
@@ -73,26 +64,12 @@ class TopoMaps:
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
 
-        # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&TopoMaps')
 
-        # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
         self.first_start = None
 
     def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('TopoMaps', message)
 
     def add_action(
@@ -133,7 +110,8 @@ class TopoMaps:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        icon_path = ':/plugins/topo_maps/views/icon.png'
+        DIR_NAME = os.path.join(os.path.dirname(__file__), 'views')
+        icon_path = os.path.join(DIR_NAME, "icon.png")
         self.add_action(
             icon_path,
             text=self.tr(u'TopoMaps'),
@@ -176,6 +154,12 @@ class TopoMaps:
             pass
 
     def run_generate_topo_map(self):
+        """
+        ## Summary
+            微地形図を作成するタスクを実行する
+        Returns:
+            bool: タスクが実行されたかどうか
+        """
         input_file_path = self.dlg.get_input_file_path()
         output_spec = self.dlg.get_output_spec()
         input_is_ok = msg.check_input_file_path(input_file_path)
@@ -190,9 +174,16 @@ class TopoMaps:
             self.task = GenerateMapTask(self.dlg, self.generate_topo_map_completed)
             QgsApplication.taskManager().addTask(self.task)
             msg.run_task(self.MESSAGE_CATEGORY)
+            return True
         return False
     
     def generate_topo_map_completed(self, task):
+        """
+        ## Summary
+            微地形図の作成タスクが完了したときの処理
+        Args:
+            task : 微地形図の作成タスク
+        """
         if task.new_dst:
             self.new_dst = task.new_dst
             msg.created_infomation(self.MESSAGE_CATEGORY, self.new_dst)
@@ -205,7 +196,10 @@ class TopoMaps:
                 self.new_dst.save_dst(output_spec.output_file_path)
                 self.new_dst = None
                 if output_spec.add_project:
-                    self.dlg.add_lyr(output_spec.output_file_path)
+                    self.dlg.add_lyr(
+                        output_spec.output_file_path, 
+                        self.dlg.get_style_name()
+                    )
                 
             computing = round(time() - self.time, 3)
             msg.computing_time(self.MESSAGE_CATEGORY, computing)
@@ -213,4 +207,8 @@ class TopoMaps:
         self.dlg.setEnabled(True)
 
     def on_dialog_closed(self):
+        """
+        ## Summary
+            ダイアログが閉じられたときの処理
+        """
         self.first_start = True

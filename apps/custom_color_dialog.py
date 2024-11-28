@@ -4,6 +4,8 @@ from typing import Dict
 from typing import List
 
 from matplotlib.colors import to_hex
+import matplotlib.pyplot as plt
+import numpy as np
 from qgis.core import QgsGradientColorRamp
 from qgis.core import QgsGradientStop
 from qgis.gui import QgsColorRampButton
@@ -201,20 +203,31 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
         return colors
     
     def _round(self, nums: List[float]) -> float:
-        return [round(num, 4) for num in nums]
+        return [round(num, 5) for num in nums]
     
+    @staticmethod
+    def rounding(func):
+        def wrapper(self, *args, **kwargs):
+            colors = func(self, *args, **kwargs)
+            return [[round(c, 5) for c in rgba] for rgba in colors]
+        return wrapper
+    
+    @rounding
     def get_slope_color_ramp(self) -> List[List[float]]:
         """設定した Slope のカラーランプを取得"""
         return self._get_color_ramp("SLOPE")
 
+    @rounding
     def get_tpi_color_ramp(self) -> List[List[float]]:
         """設定した TPI のカラーランプを取得"""
         return self._get_color_ramp("TPI")
     
+    @rounding
     def get_tri_color_ramp(self) -> List[List[float]]:
         """設定した TRI のカラーランプを取得"""
         return self._get_color_ramp("TRI")
     
+    @rounding
     def get_hillshade_color_ramp(self) -> List[List[float]]:
         """設定した Hillshade のカラーランプを取得"""
         return self._get_color_ramp("HILLSHADE")
@@ -297,26 +310,35 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
         self.make_hillshade_color_ramp()
 
     def create_sample(self):
-        self.registration_temp_color_ramp()
-        rasters = [
-            configs.sample_slope_raster,
-            configs.sample_tpi_raster,
-            configs.sample_tri_raster,
-            configs.sample_hillshade_raster
-        ]
-        imgs = []
-        for raster, colors in zip(rasters, self.COLOR_RAMP.values()):
-            cmap = custom_cmap.color_list_to_linear_cmap(colors)
-            img = cmap.values_to_img(raster, 'inta').astype('uint8')
-            img = Image.fromarray(img)
-            imgs.append(img)
-        composited_img = None
-        for img in imgs[::-1]:
-            if composited_img is None:
-                composited_img = img
-            else:
-                composited_img = Image.alpha_composite(composited_img, img)
-        composited_img.show()
+        self.setEnabled(False)  # Disable the dialog
+        try:
+            self.registration_temp_color_ramp()
+            rasters = [
+                configs.sample_slope_raster,
+                configs.sample_tpi_raster,
+                configs.sample_tri_raster,
+                configs.sample_hillshade_raster
+            ]
+            imgs = []
+            for raster, colors in zip(rasters, self.COLOR_RAMP.values()):
+                cmap = custom_cmap.color_list_to_linear_cmap(colors)
+                img = cmap.values_to_img(raster, 'inta').astype('uint8')
+                img = Image.fromarray(img)
+                imgs.append(img)
+            composited_img = None
+            for img in imgs[::-1]:
+                if composited_img is None:
+                    composited_img = img
+                else:
+                    composited_img = Image.alpha_composite(composited_img, img)
+            image = np.array(composited_img)
+            # matplotlib で表示
+            plt.title('Resolution = 2.0m', fontsize=18, fontweight='bold')
+            plt.imshow(image)
+            plt.show()
+        finally:
+            self.setEnabled(True)  # Re-enable the dialog
+
 
     def close_dlg(self):
         sentence = self._generate_color_sentence()

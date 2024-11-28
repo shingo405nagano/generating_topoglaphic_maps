@@ -41,7 +41,7 @@ class InputTab(object):
     def get_input_file_path(self) -> Path:
         """
         ## Summary
-            Get the file path of the input raster data.
+            入力設定タブから入力Rasterのファイルパスを取得する。
         Returns:
             Path[str]: The file path of the input raster data.
         """
@@ -53,10 +53,10 @@ class InputTab(object):
     def get_first_resample_spec(self):
         """
         ## Summary
-            Get the resample specification.
+            データを読み込んだ後に、最初にリサンプルを行うかどうかの設定を取得する。
         Returns:
             FirstResampleSpec: The resample specification.
-                - execute: Whether to resample the input raster data.
+                - execute(bool): Whether to resample the raster data.
                 - metre_spec: Whether to specify the resolution in meters.
                 - resolution: The resolution of the resampled raster data.
                 - denominator: The denominator of the resampled raster data. 
@@ -186,7 +186,7 @@ class OutputSpec:
 class OutputTab(object):
     """
     ## Summary
-        This class is used to get the output data from the output tab.
+        出力設定タブから出力設定を取得するためのクラス。
     """
     def __init__(self):
         self.temp_file = False
@@ -230,14 +230,16 @@ class OutputTab(object):
         imgs = [configs.org_map_img, configs.vintage_map_img, configs.rgb_map_img]
         titles = ['Original-Map Styled', 'Vintage-Map Styled', 'RGB-Map Styled']
         _ax = None
-        fig = plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(12, 8))
         for i, (img, title) in enumerate(zip(imgs, titles), start=1):
             ax = fig.add_subplot(2, 2, i, sharex=_ax, sharey=_ax)
-            ax.set_title(title, fontsize=15, fontweight='bold')
+            ax.set_title(title, fontsize=17, fontweight='bold')
             ax.imshow(img)
             ax.axis('off')
             _ax = ax
-        plt.subplots_adjust(wspace=0.05, hspace=0.15)
+        plt.subplots_adjust(left=0.05, right=0.95, 
+                            top=0.95, bottom=0.05, 
+                            wspace=0.05, hspace=0.08)
         plt.show()
 
     def show_custom_color_dlg(self) -> None:
@@ -275,6 +277,22 @@ class OutputTab(object):
             tri_cmap=self.get_cmaps()['tri'],
             hillshade_cmap=self.get_cmaps()['hillshade']
         )
+    
+    def get_style_name(self) -> str:
+        """
+        ## Summary
+            Get the style name.
+        Returns:
+            str: The style name.
+        """
+        if self.mapSelectRadioBtn_Org.isChecked():
+            return 'Original-Map'
+        elif self.mapSelectRadioBtn_RGB.isChecked():
+            return 'RGB-Map'
+        elif self.mapSelectRadioBtn_Vintage.isChecked():
+            return 'Vintage-Map'
+        else:
+            return 'CUSTOM-Map'
 
     def get_cmaps(self) -> Dict[str, LinearColorMap]:
         """
@@ -283,14 +301,7 @@ class OutputTab(object):
         Returns:
             Dict[str, LinearColorMap]: The color maps for the 'slope', 'tpi', 'tri', and 'hillshade'.
         """
-        if self.mapSelectRadioBtn_Org.isChecked():
-            map_name = 'Original-Map'
-        elif self.mapSelectRadioBtn_RGB.isChecked():
-            map_name = 'RGB-Map'
-        elif self.mapSelectRadioBtn_Vintage.isChecked():
-            map_name = 'Vintage-Map'
-        else:
-            map_name = 'CUSTOM-Map'
+        map_name = self.get_style_name()
         map_colors = MapColors(map_name)
         return {
             "slope": map_colors.slope_cmap(), 
@@ -332,7 +343,7 @@ class OutputTab(object):
         self.temp_file = False
         return path
     
-    def add_lyr(self, output_file_path: Path) -> None:
+    def add_lyr(self, output_file_path: Path, prefix: str='') -> None:
         """
         ## Summary
             Add the output raster data to the project.
@@ -341,7 +352,7 @@ class OutputTab(object):
         """
         if self.checkBox_AddProject.isChecked():
             if self.temp_file:    
-                lyr_name = self.str_time()
+                lyr_name = self.str_time(prefix=prefix)
             else:
                 lyr_name = os.path.basename(output_file_path).split('.')[0]
             lyr = QgsRasterLayer(output_file_path, lyr_name, 'gdal')

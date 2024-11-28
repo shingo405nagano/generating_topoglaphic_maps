@@ -7,7 +7,7 @@ from ..gdal_drawer.custom import CustomGdalDataset
 class SamplingRaster(object):
     """
     ## Summary
-        This class is used to sample a raster dataset to a smaller size.
+        RasterDataから指定したサイズのサンプルを取得するクラス。
     Args:
         dst (CustomGdalDataset): The raster dataset.
         max_rows (int): The maximum number of rows.
@@ -47,7 +47,7 @@ class SamplingRaster(object):
     ) -> CustomGdalDataset:
         """
         ## Summary
-            Get the upper left corner raster.
+            左上のRasterを取得する。
         Args:
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
@@ -70,7 +70,7 @@ class SamplingRaster(object):
     ) -> CustomGdalDataset:
         """
         ## Summary
-            Get the upper right corner raster.
+            右上のRasterを取得する。
         Args:
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
@@ -93,7 +93,7 @@ class SamplingRaster(object):
     ) -> CustomGdalDataset:
         """
         ## Summary
-            Get the lower left corner raster.
+            左下のRasterを取得する。
         Args:
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
@@ -116,7 +116,7 @@ class SamplingRaster(object):
     ) -> CustomGdalDataset:
         """
         ## Summary
-            Get the lower right corner raster.
+            右下のRasterを取得する。
         Args:   
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
@@ -139,7 +139,7 @@ class SamplingRaster(object):
     ) -> CustomGdalDataset:
         """
         ## Summary
-            Get the center raster.
+            中央のRasterを取得する。
         Args:
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
