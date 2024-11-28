@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 
 from qgis.PyQt import uic
 
+from ..gdal_drawer.custom import gdal_open
 from ..gdal_drawer.utils.colors import CustomCmap
 from ..gdal_drawer.utils.colors import LinearColorMap
 custom_cmap = CustomCmap()
@@ -171,33 +172,43 @@ class CustomMapColors(MapColors):
 #----------------------------------- Configs ----------------------------------#
 class Configs(object):
     def __init__(self):
+        # TopoMapsのメインフォーム
         self.main_form, _ = self.load(
             os.path.join(DIR_NAME, CONFIG['Form']['Main'])
         )
+        # TopoMapsのCustomColorフォーム
         self.custom_color_form, _ = self.load(
             os.path.join(DIR_NAME, CONFIG['Form']['CustomColor'])
         )
+        # Originalの色設定が適用された微地形図のサンプル画像
         self.org_map_img = plt.imread(
             os.path.join(DIR_NAME, CONFIG['IMG_PATH']['ORIGINAL_MAP_IMG'])
         )
+        # Vintageの色設定が適用された微地形図のサンプル画像
         self.vintage_map_img = plt.imread(
             os.path.join(DIR_NAME, CONFIG['IMG_PATH']['VINTAGE_MAP_IMG'])
         )
+        # RGBの色設定が適用された微地形図のサンプル画像
         self.rgb_map_img = plt.imread(
             os.path.join(DIR_NAME, CONFIG['IMG_PATH']['RGB_MAP_IMG'])
         )
-        self.sample_slope_raster = plt.imread(
-            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_SLOPE_IMG'])
-        )
-        self.sample_tpi_raster = plt.imread(
-            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_TPI_IMG'])
-        )
-        self.sample_tri_raster = plt.imread(
-            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_TRI_IMG'])
-        )
-        self.sample_hillshade_raster = plt.imread(
-            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_HILLSHADE_IMG'])
-        )
+        # ユーザーが設定した色設定を確かめる為のサンプル画像
+        slope_dst = gdal_open(
+            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_SLOPE_IMG']))
+        self.sample_slope_raster = slope_dst.array()
+        slope_dst = None
+        tpi_dst = gdal_open(
+            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_TPI_IMG']))
+        self.sample_tpi_raster = tpi_dst.array()
+        tpi_dst = None
+        tri_dst = gdal_open(
+            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_TRI_IMG']))
+        self.sample_tri_raster = tri_dst.array()
+        tri_dst = None
+        hillshade_dst = gdal_open(
+            os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_HILLSHADE_IMG']))
+        self.sample_hillshade_raster = hillshade_dst.array()
+        hillshade_dst = None
 
     def load(self, path: Path):
         return uic.loadUiType(path)
