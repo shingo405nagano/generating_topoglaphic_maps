@@ -154,6 +154,12 @@ class TopoMaps:
             pass
 
     def run_generate_topo_map(self):
+        """
+        ## Summary
+            微地形図を作成するタスクを実行する
+        Returns:
+            bool: タスクが実行されたかどうか
+        """
         input_file_path = self.dlg.get_input_file_path()
         output_spec = self.dlg.get_output_spec()
         input_is_ok = msg.check_input_file_path(input_file_path)
@@ -168,9 +174,16 @@ class TopoMaps:
             self.task = GenerateMapTask(self.dlg, self.generate_topo_map_completed)
             QgsApplication.taskManager().addTask(self.task)
             msg.run_task(self.MESSAGE_CATEGORY)
+            return True
         return False
     
     def generate_topo_map_completed(self, task):
+        """
+        ## Summary
+            微地形図の作成タスクが完了したときの処理
+        Args:
+            task : 微地形図の作成タスク
+        """
         if task.new_dst:
             self.new_dst = task.new_dst
             msg.created_infomation(self.MESSAGE_CATEGORY, self.new_dst)
@@ -183,7 +196,10 @@ class TopoMaps:
                 self.new_dst.save_dst(output_spec.output_file_path)
                 self.new_dst = None
                 if output_spec.add_project:
-                    self.dlg.add_lyr(output_spec.output_file_path)
+                    self.dlg.add_lyr(
+                        output_spec.output_file_path, 
+                        self.dlg.get_style_name()
+                    )
                 
             computing = round(time() - self.time, 3)
             msg.computing_time(self.MESSAGE_CATEGORY, computing)
@@ -191,4 +207,8 @@ class TopoMaps:
         self.dlg.setEnabled(True)
 
     def on_dialog_closed(self):
+        """
+        ## Summary
+            ダイアログが閉じられたときの処理
+        """
         self.first_start = True
