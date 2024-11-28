@@ -148,7 +148,7 @@ class TopoMapsDialog(
     def read_raster(self) -> CustomGdalDataset:
         """
         ## Summary:
-            RasterDataの読み込み。
+            Rasterの読み込み。
         Returns:
             CustomGdalDataset: gdal.Dataset のラッパークラス。
         """
@@ -163,7 +163,7 @@ class TopoMapsDialog(
     def resampling(self) -> CustomGdalDataset:
         """
         ## Summary:
-            RasterDataのリサンプリング。
+            Rasterのリサンプリング。
         Returns:
             CustomGdalDataset: リサンプリング後のgdal.Dataset のラッパークラス。
         """
@@ -261,7 +261,16 @@ class TopoMapsDialog(
         cmap: LinearColorMap, 
         multiples: bool=False
     ) -> np.ndarray:
-        """TPIを計算する。"""
+        """
+        ## Summary:
+            TPIを計算する。
+        Args:
+            dst (CustomGdalDataset): TPIが入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
+            multiples (bool): 2枚目のTPIを計算するかどうか。
+        Returns:
+            np.ndarray: TPIの画像データ。
+        """
         options = self.get_tpi_options()
         msg.tpi_spec(MESSAGE_CATEGORY, options)
         if multiples:
@@ -290,7 +299,15 @@ class TopoMapsDialog(
         return tpi_img
         
     def tri(self, dst: CustomGdalDataset, cmap: LinearColorMap) -> np.ndarray:
-        """TRIを計算する。"""
+        """
+        ## Summary:
+            TRIを計算する。
+        Args:
+            dst (CustomGdalDataset): TRIが入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
+        Returns:
+            np.ndarray: TRIの画像データ。
+        """
         options = self.get_tri_options()
         if not options.execute:
             # TRIを計算しない場合
@@ -317,7 +334,15 @@ class TopoMapsDialog(
         return tri_img
 
     def hillshade(self, dst: CustomGdalDataset, cmap: LinearColorMap) -> np.ndarray:
-        """陰影図を作成する。"""
+        """
+        ## Summary:
+            陰影起伏図を計算する。
+        Args:
+            dst (CustomGdalDataset): 陰影起伏図が入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
+        Returns:
+            np.ndarray: 陰影起伏図の画像データ
+        """
         options = self.get_hillshade_options()
         msg.hillshade_spec(MESSAGE_CATEGORY, options)
         kwargs = {
@@ -350,6 +375,18 @@ class TopoMapsDialog(
         tri_img: np.ndarray, 
         hillshade_img: np.ndarray
     ) -> np.ndarray:
+        """
+        ## Summary:
+            画像を合成する。
+        Args:
+            slope_img (np.ndarray): 傾斜の画像データ。
+            tpi_img (np.ndarray): TPIの画像データ。
+            mtpi_img (np.ndarray): 2枚目のTPIの画像データ。
+            tri_img (np.ndarray): TRIの画像データ。
+            hillshade_img (np.ndarray): 陰影起伏図の画像データ。
+        Returns:
+            np.ndarray: 合成された画像データ。
+        """
         msg.start_composite_image(MESSAGE_CATEGORY)
         """画像を合成する。"""
         slope_img = Image.fromarray(slope_img.astype('uint8'))
@@ -373,7 +410,10 @@ class TopoMapsDialog(
         return composited
         
     def show_convolution_kernel(self) -> None:
-        """カーネルの表示"""
+        """
+        ## Summary:
+            設定したカーネルをmatplotlibで表示する。
+        """
         self._dst = self.read_raster()
         if self.get_first_resample_spec().execute:
             reply = QMessageBox.question(
@@ -389,13 +429,28 @@ class TopoMapsDialog(
         self._dst = None
     
     def cell_size_in_metre(self) -> float:
+        """
+        ## Summary:
+            Rasterのセルサイズをメートル単位で取得する。
+        Returns:
+            float: ラスタのセルサイズ。
+        """
         dst = self.read_raster()
         if dst is not None:
             return dst.cell_size_in_metre().x_size
         else:
             return self.unit
 
-    def relative_alpha_change(self, cmap: LinearColorMap, coef: float):
+    def relative_alpha_change(self, cmap: LinearColorMap, coef: float) -> LinearColorMap:
+        """
+        ## Summary:
+            カラーマップの透過率を変更する。
+        Args:
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
+            coef (float): 透過率の係数。
+        Returns:
+            LinearColorMap: 透過率を変更したカラーマップ。
+        """
         new_colors = []
         for color in cmap.get_registered_color('rgba'):
             alpha = color[-1] * coef
@@ -408,7 +463,14 @@ class TopoMapsDialog(
         return new_cmap
     
     def unsharpn_mask(self, img: Image.Image) -> Image.Image:
-        """画像をシャープにする。"""
+        """
+        ## Summary:
+            unsharpn maskを適用して画像をシャープにする。
+        Args:
+            img (Image.Image): 画像データ。
+        Returns:
+            Image.Image: unsharpn maskを適用した画像データ。
+        """
         options = self.get_others_options()
         if not options.execute_unsharpn_mask:
             return img
@@ -420,7 +482,14 @@ class TopoMapsDialog(
         return img.filter(filter_)
     
     def change_contrast(self, img: Image.Image) -> Image.Image:
-        """コントラストを変更する。"""
+        """
+        ## Summary:
+            画像のコントラストを変更する。
+        Args:
+            img (Image.Image): 画像データ。
+        Returns:
+            Image.Image: コントラストを変更した画像データ。
+        """
         options = self.get_others_options()
         if not options.execute_contrast:
             return img
@@ -431,7 +500,15 @@ class TopoMapsDialog(
         img: np.ndarray, 
         dst: CustomGdalDataset
     ) -> CustomGdalDataset:
-        """画像をGDALデータセットに変換する。"""
+        """
+        ## Summary:
+            画像をGDALデータセットに変換する。
+        Args:
+            img (np.ndarray): 画像データ。
+            dst (CustomGdalDataset): gdal.Dataset のラッパークラス。
+        Returns:
+            CustomGdalDataset: 画像をGDALデータセットに変換したもの。
+        """
         raster = np.array([img[:, :, i] for i in range(img.shape[-1])])
         new_dst = dst.write_ary_to_mem(
             raster,
@@ -442,7 +519,12 @@ class TopoMapsDialog(
         return new_dst
 
     def show_sample_dst(self, dst: CustomGdalDataset) -> None:
-        """リサンプリング後のラスタを表示する。"""
+        """
+        ## Summary:
+            サンプルのチェックボックスが選択された場合、一部の範囲を表示する。
+        Args:
+            dst (CustomGdalDataset): gdal.Dataset のラッパークラス。
+        """
         msg.show_raster(MESSAGE_CATEGORY)
         fig, ax = plt.subplots()
         dst.plot_raster(fig, ax)
@@ -465,6 +547,10 @@ class GenerateMapTask(QgsTask):
     
     @staticmethod
     def start_to_end(func):
+        """
+        ## Summary:
+            タスクの実行時間をログに出力するデコレータ。
+        """
         def wrapper(self, *args, **kwargs):
             QgsMessageLog.logMessage(
                 f"Start {MESSAGE_CATEGORY} Task",
@@ -482,6 +568,10 @@ class GenerateMapTask(QgsTask):
     
     @start_to_end
     def run(self):
+        """
+        ## Summary:
+            タスクの実行。
+        """
         self.setProgress(self.progress)
         self.dlg._dst = gdal_open(self.dlg.get_input_file_path())
         if not self.dlg._dst.check_crs_is_metre():
@@ -577,6 +667,9 @@ class GenerateMapTask(QgsTask):
         """
         ## Summary:
             Task内で傾斜を計算する。
+        Args:
+            dst (CustomGdalDataset): 傾斜が入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
         """
         msg.start_slope_calculation(MESSAGE_CATEGORY)
         slope_img = self.dlg.slope(dst, cmap)
@@ -592,6 +685,9 @@ class GenerateMapTask(QgsTask):
         """
         ## Summary:
             Task内でTPIを計算する。
+        Args:
+            dst (CustomGdalDataset): TPIが入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
         """
         msg.start_tpi_calculation(MESSAGE_CATEGORY)
         tpi_img = self.dlg.tpi(dst, cmap, multiples=False)
@@ -607,6 +703,9 @@ class GenerateMapTask(QgsTask):
         """
         ## Summary:
             Task内で2枚目のTPIを計算する。
+        Args:
+            dst (CustomGdalDataset): 2枚目のTPIが入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
         """
         mtpi_img = self.dlg.tpi(dst, cmap, multiples=True)
         self.progress += 25
@@ -620,6 +719,9 @@ class GenerateMapTask(QgsTask):
         """
         ## Summary:
             Task内でTRIを計算する。
+        Args:
+            dst (CustomGdalDataset): TRIが入力された gdal.Dataset のラッパークス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap
         """
         msg.start_tri_calculation(MESSAGE_CATEGORY)
         tri_img = self.dlg.tri(dst, cmap)
@@ -635,6 +737,9 @@ class GenerateMapTask(QgsTask):
         """
         ## Summary:
             Task内で陰影図を計算する。
+        Args:
+            dst (CustomGdalDataset): 陰影図が入力された gdal.Dataset のラッパークラス。
+            cmap (LinearColorMap): matplotlib.colors.LinearSegmentedColormap のラッパークラス。
         """
         msg.start_hillshade_calculation(MESSAGE_CATEGORY)
         hillshade_img = self.dlg.hillshade(dst, cmap)
@@ -644,6 +749,12 @@ class GenerateMapTask(QgsTask):
         return hillshade_img 
     
     def finished(self, result):
+        """
+        ## Summary:
+            タスクが終了したときの処理。
+        Args:
+            result (bool): タスクが正常に終了したかどうか。
+        """
         super().finished(result)
         self.taskCompleted.emit(result)
         if result:
@@ -665,6 +776,10 @@ class GenerateMapTask(QgsTask):
         self.taskCompleted.emit(result)
 
     def cancel(self):
+        """
+        ## Summary:
+            タスクがキャンセルされたときの処理。
+        """
         msg.user_cancel_msg(self.MESSAGE_CATEGORY)
         self.dlg.setEnabled(True)
         super().cancel()
