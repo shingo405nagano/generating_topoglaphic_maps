@@ -36,7 +36,7 @@ The plugin can generate microtopographic maps in a variety of colors, in three d
 ### Vintage-Map Style
 ![](./views/Vintage-Map__Img.jpg)
 
-### Vintage-Map Style
+### RGB-Map Style
 ![](./views/RGB-Map__Img.jpg)
 
 > 😁 **Note:** This microtopographic map was created using a DTM with a resolution of 50 cm.

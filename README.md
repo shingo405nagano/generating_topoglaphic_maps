@@ -35,7 +35,7 @@ QGISのプラグインとして公開しているので、プラグイン管理�
 ### Vintage-Map Style
 ![](./views/Vintage-Map__Img.jpg)
 
-### Vintage-Map Style
+### RGB-Map Style
 ![](./views/RGB-Map__Img.jpg)
 
 > 😁 **Note:** この微地形図は分解能 50cmの DTMを使用して作成されています。

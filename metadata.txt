@@ -4,13 +4,14 @@
 
 [general]
 name=Topo Maps
-qgisMinimumVersion=3.0
+qgisMinimumVersion=3.2
 description=微地形図の生成。Generate Topographic Maps.
 version=1.2
 author=Shingo Nagano
 email=shingosnaganon@gmail.com
 
-about=TopoMapsプラグインは、デジタル地形モデルから詳細地形図を生成します。詳細地形図には3つのタイプがあります：「CS-Map Styled」、「Vintage-Map Styled」、「RGB-Map Styled」「Your-Map Styled」の4種類があり、ユーザーの好みに応じて選択することができます。これは山林の詳細な地形を把握する為のものであり、市街地の為のものではありません。The TopoMaps plug-in generates detailed topographic maps from digital terrain models. There are four types of detailed topographic maps: "CS-Map Styled", "Vintage-Map Styled", "RGB-Map Styled", and "Your-Map Styled", which can be selected according to user preference. This is for detailed topography of mountainous forests, not for urban areas.
+about=TopoMapsは、DTMから微地形図を作成する為のプラグインです。微地形図は傾斜や地形の変化（尾根や谷、または凹凸）をわかりやすく表した図の事です。ユーザーは「Original」「Vintage」「RGB」の 3つのスタイルから選択するか、あるいは自分で各材料のカラーマップを独自に調整し、自分だけの微地形図を作成する事ができます。これは山林の詳細な地形を把握する為のものであり、市街地の為のものではありません。現在は地理座標系のデータを使用するのはおススメできませんが、将来的には対応するつもりです。TopoMaps is a plug-in for creating microtopographic maps from DTM. A microtopographic map is a map that shows the slope and topographic changes (ridges, valleys, or unevenness) in an easy-to-understand manner. Users can choose from three styles (Original, Vintage, or RGB) or create their own microtopography maps by adjusting the color map of each material. This is for detailed topographic mapping of mountainous forests, not for urban areas. We do not recommend using geographic coordinate system data at this time, but we intend to support it in the future.
+
 
 tracker=https://github.com/shingo405nagano/generating_topoglaphic_maps/issues
 repository=https://github.com/shingo405nagano/generating_topoglaphic_maps
@@ -21,9 +22,23 @@ repository=https://github.com/shingo405nagano/generating_topoglaphic_maps
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 # changelog=
+    Version 1.2
+    - Allows parameters to be specified in meters for any projection method.
+    - Adjusted style color.
+    - Allows users to create their own color maps.
+    - Add UnsharpMaks option.
+    - Add Contrast option.
+    - Add button to open GitHub documentation.
+    - Multi-threading reduces computation time.
+    - Tasks are executed behind the scenes so that QGIS can be touched while calculations are in progress.
+    - A second TPI can be added.
+    - Enable outlier treatment in Hillshade.
+    - Output of TempFile.
+    - Distance can be specified in slope calculation.
+
 
 # Tags are comma separated with spaces allowed
-tags=python, DEM, DTM, Topographic, CS, Visualize, GeoTiff, Tiff, Raster
+tags=DEM, DTM, Topographic, Visualize, GeoTiff, Tiff, Raster, Slope, TPI, TRI, Hillshade
 
 homepage=https://github.com/shingo405nagano/generating_topoglaphic_maps
 category=Plugins
@@ -40,7 +55,7 @@ deprecated=False
 # plugin_dependencies=
 
 Category of the plugin: Raster, Vector, Database or Web
-# category=
+# category=Raster
 
 # If the plugin can run on QGIS Server.
 server=False
