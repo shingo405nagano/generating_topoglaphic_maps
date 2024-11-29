@@ -30,6 +30,7 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
     def __init__(self, parent=None):
         super(CustomColorDialog, self).__init__(parent)
         self._init_name = 'Original-Map'
+        self.style_name = 'CUSTOM-Map'
         self.COLOR_RAMP = self.read_config_color_ramp()
         self.setupUi(self)
         self.color_ramp_slope = QgsColorRampButton()
@@ -83,7 +84,7 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
     def read_config_color_ramp(self) -> Dict[str, List[List[float]]]:
         with open(CONFIG_FILE_PATH, 'r') as f:
             config = json.load(f)
-            custom_dict = config['CUSTOM-Map']
+            custom_dict = config[self.style_name]
         return custom_dict
 
     def _generate_color_sentence(self) -> str:
@@ -264,7 +265,7 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
 
         with open(CONFIG_FILE_PATH, 'r') as f:
             config = json.load(f)
-            custom_dict = config['CUSTOM-Map']
+            custom_dict = config[self.style_name]
         
         with open(CONFIG_FILE_PATH, 'w') as f:
             custom_dict['SLOPE'] = self.get_slope_color_ramp()
@@ -338,7 +339,6 @@ class CustomColorDialog(QtWidgets.QDialog, configs.custom_color_form):
             plt.show()
         finally:
             self.setEnabled(True)  # Re-enable the dialog
-
 
     def close_dlg(self):
         sentence = self._generate_color_sentence()
