@@ -1,81 +1,154 @@
 ![](./views/Contour.jpg)
 <img src="https://img.shields.io/badge/-Python-ffdc00.svg?logo=python&style=flat-square"><img src="https://img.shields.io/badge/-QGIS-cee4ae.svg?logo=qgis&style=flat-square">
 
-## **Overview**
-This QGIS plugin is designed to create RGB images of micro-topographic maps from DTM (DEM).
+# **Overview**
+This QGIS plugin is for creating RGB images of microtopographic maps from DTM (DEM).
 
-## **Install**
-Clone this repository into the Plugin directory. There is no need to install external packages. It works in the default QGIS environment.
+<br>
 
-## **Layers**
-The following layers are used in the order from top to bottom:
 
-<ul>
-    <li>Slope</li>
-    <li>Topographic Position Index (TPI)</li>
-    <li>Terrain Ruggedness Index (TRI)</li>
-    <li>Hillshade</li>
-</ul>
+# **Install**
+Since it is published as a plugin for QGIS, it can be found by searching for “Topo Maps” in the plugin management screen.
 
-## **Styles**
+![](./views/Install.jpg)
+
+<br>
+
+
+# **Layers**
+The following order is used, layered from the top.
+ - Slope
+ - TPI (Topographic Position Index)
+ - TRI (Terrain Ruggedness Index)
+ - Hillshade
+
+<br>
+
+
+# **Styles**
 ![](./views/Styles.jpg)
+The plugin can generate microtopographic maps in a variety of colors, in three different styles, or the user can create his or her own style.
 
-## **Resampling**
-This plugin allows resampling of the DTM before calculating the micro-topographic map. A DTM with a resolution of about 1m can create a beautiful micro-topographic map, but using a 5m or 10m DTM will not produce a very clear map. Therefore, it is recommended to resample the DTM to about 1m if the resolution is low. However, for geographic coordinate systems, determine the resolution with relative numbers such as `1/2`.
+### Original-Map Style
 
-## **Options**
-The default settings can be used, but the details of each calculation can be changed according to the resolution.
+![](./views/ORIGINAL-Map__Img.jpg)
 
-### Slope Options
-The slope is calculated using `gdal.DEMProcessing`.
-<dl>
-    <dt>Resampling</dt>
-    <dd>Resample the DTM before calculating the slope. This option is effective if the resolution is low (e.g., resampling to 10m if it is less than 10m).</dd>
-    <dt>Change relative transparency</dt>
-    <dd>Depending on the data, the colors may appear too dark, so adjust the relative transparency with this slider.</dd>
-</dl>
+### Vintage-Map Style
+![](./views/Vintage-Map__Img.jpg)
 
-### TPI Options
-TPI calculates the difference between the original DTM and the convolved DTM. Positive values indicate that the cell is higher than the surrounding area, while negative values indicate that it is lower.
-<dl>
-    <dt>Kernel size</dt>
-    <dd>The kernel size can be specified by "distance" or "number of cells", but for geographic coordinate system data, set it by "number of cells". A smaller kernel size will represent more detailed features (e.g., small bumps), but larger features (e.g., ridges and valleys) will be less noticeable. Since micro-topographic maps are often targeted at forests, it is recommended to set it to about 10-20m.</dd>
-    <dt>Kernel type</dt>
-    <dd>When calculating TPI, it is easier to see changes by comparing with a somewhat distant location rather than using adjacent cells. The default "donut" is recommended.</dd>
-    <dt>Outlier processing</dt>
-    <dd>In TPI calculations, extreme values may appear in some areas. If drawn as is, it will not be visualized nicely due to these outliers. It is better to round off the outliers before drawing.</dd>
-    <dt>Change relative transparency</dt>
-    <dd>Depending on the data, the colors may appear too dark, so adjust the relative transparency with this slider.</dd>
-</dl>
+### Vintage-Map Style
+![](./views/RGB-Map__Img.jpg)
 
-### Hillshade Options
-The base of the micro-topographic map created by this plugin uses hillshade. There are various parameters for creating hillshade, but the default settings can be used without any problems.
-<dl>
-    <dt>Light source type</dt>
-    <dd>"Single" creates a hillshade with light from one direction, and "Multiple" creates a hillshade with light from 225°, 270°, 315°, and 360° directions.</dd>
-    <dt>Azimuth</dt>
-    <dd>If "Single" is selected for the light source type, light is applied from this direction.</dd>
-    <dt>Altitude</dt>
-    <dd>Altitude is the tilt angle of the light source. 0° represents horizontal, and 90° represents directly overhead. If anything other than 90° is selected, slopes with and without shadows will be represented, so it is recommended to set it to 90°.</dd>
-    <dt>Exaggeration factor</dt>
-    <dd>The factor used to multiply the elevation in advance.</dd>
-    <dt>Apply Gaussian filter</dt>
-    <dd>If using a high-resolution DTM, it may be easier to see if the changes are slightly suppressed by passing through a filter. Use as needed.</dd>
-</dl>
+> 😁 **Note:** This microtopographic map was created using a DTM with a resolution of 50 cm.
 
-## **Preview composited image**
-Creating a micro-topographic map from a high-resolution DTM with this plugin takes time. If the DTM is large, you can check the "Preview sample" box to the left of the `Run` button to calculate and check a part of the area instead of the whole.
+<br>
+
+# **Resampling**
+This plug-in can resample DTMs before calculating microtopography. 1m resolution DTMs can produce beautiful microtopography, but 5m or 10m resolution DTMs will not produce very beautiful microtopography. Therefore, it is recommended to first resample to a resolution of about 1m for low-resolution DTMs.
+
+>🧐 **Note:**
+> This plug-in assumes the use of DTMs with projected coordinate systems. It also works with geographic coordinate system data, but it may not produce a clean microtopographic map. When using geographic coordinate system data, each parameter can be specified in meters.
+
+<br>
+
+# **Options**
+Basically, the default settings can be used, but the details of each calculation can be changed to suit the resolution.
+
+## **Slope Options**
+The slope is calculated by `gdal.DEMProcessing`.
+
+#### *Distance for slope calculation (Specify Distance(m))*
+Calculates the slope to and from a location a specified distance away in meters.
+
+#### *Distance for slope calculation (Specify Cells)*
+Calculates the slope of a cell to a location a specified distance away. Use this to calculate slopes with adjacent cells.
+
+#### *Gaussian Filter*
+After calculating the tilt, a Gaussian filter can be used to add blur. The larger the `Sigma` parameter, the larger the kernel size and the stronger the blur.
+
+#### *Relative alpha adjustment*
+Some data may make colors appear darker than necessary, so use this slider to adjust the relative transparency.
+
+
+## **TPI Options**
+TPI calculates the difference between the original DTM and the convolved DTM. A positive value indicates that the cell is higher than the neighborhood, while a negative value indicates that the cell is lower than the neighborhood.
+#### *Specify kernel size*
+Kernel size can be specified by “distance” and “number of cells”.
+
+#### *Kernel Types*
+There are five kernel types: “Donut,” “Average,” “Use Adjacent Cells,” “Gaussian,” and “Inverse Gaussian,” so choose the kernel you prefer.
+
+#### *Outlier Treatment*
+In the TPI calculation, some extreme values may appear. If you draw them as they are, they will be pulled by the outliers and will not be visualized cleanly. It is better to outlier treatment before drawing.
+
+#### *Relative alpha adjustment*
+Some data may make colors appear darker than necessary, so use this slider to adjust the relative transparency.
+
+#### *Multiple TPI*
+Two TPI images can be stacked. This is done by setting the multiplier of the distance set in the first TPI image to 10 meters for the first image, 50 meters for the second image, and so on, so that small and large topographic changes can be represented on the same microtopographic map.
+
+
+> 🧐 **Note:** The TPI is an index that calculates the position of the target compared to the surrounding height. Rather than choosing an `average` or `Gaussian`, a `doughnut` or `inverse Gaussian` kernel can be used to calculate the index by weighting the surrounding information.
+![](./views/ShowKernel.png)
+
+> 🧐 **Note:** Smaller kernel sizes will show more detailed features (e.g., small bumps), but will make large features (e.g., ridges and streams) more difficult to recognize. Since most microtopographic maps are expected to cover forests, it is recommended to set the kernel size at approximately 10 to 20 meters.
+![](./views/ChangeKernelSize.png)
+
+<br>
+
+
+## TRI Options
+TRI is calculated using `gdal.DEMProcessing`. The default setting is not to use it, but you can overlay it on top of the shade undulation diagram by checking the checkbox.
+<br>
+
+
+## Hillshade Options
+Hillshade is calculated using `gdal.DEMProcessing`. Shaded undulation maps are used as the base for the microtopographic maps produced by this plugin.
+
+#### *Shading*
+`Single` produces a shading undulation diagram illuminated from one direction, while `Multiple` produces a shading undulation diagram illuminated from 225°, 270°, 315°, and 360° directions.
+#### *方位*
+If “Single” is selected for the light source type, light is applied from this direction.
+
+#### *Altitude*
+The altitude is the slope angle of the light source; 0° represents horizontal and 90° represents directly above; selecting anything other than 90° will result in the representation of slopes with and without shadow, so it is recommended to set it at 90°.
+
+#### *Z Factor*
+Factor used to pre-multiply elevation.
+
+#### *Gaussian Filter*
+When using a high-resolution DTM, it may be easier to see a little less variation through the filter. Use as necessary.
+
+#### *Outlier Treatment*
+By processing outliers after creating a "Hillshade", it is possible to create a "Hillshade" with clear contours.
+
+
+## Others Options
+#### *Unsharp Mask*
+Sharpen the image with UnsharpMask. See Wikipedia for more information.
+
+[Wikipedia: UnsharpMask](https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking)
+
+#### *Contrast*
+Adjust the contrast.
+
+
+<br>
+
+# **Preview composited image**
+Creating microtopographic maps from high-resolution DTMs with this plugin can be time consuming. For large size DTMs, you can check the `Check sample' checkbox and run the plugin to calculate and check a portion of the area instead of the whole area.
+
+
 
 ## **Styled images by resolution**
 
-### Resolution = 0.5m
+> Resolution = 0.5m
 ![](./views/Sample__CS-Map__R0_5.jpg)
 
-### Resolution = 5.0m (resampled = 1.0m)
+> Resolution = 5.0m (resampled = 1.0m)
 ![](./views/Sample__CS-Map__R5.jpg)
 
-### Resolution = 10.0m (resampled = 1.0m)
-![](./views/Sample__CS-Map__R10.jpg)
+
 
 ## **UI Image**
 ![](./views/UI_en.png)

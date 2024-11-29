@@ -360,7 +360,7 @@
     </message>
     <message>
         <location filename="views/topo_maps_dlg.ui" line="2260"/>
-        <source>画像をシャープに</source>
+        <source>アンシャープマスク</source>
         <translation>Unsharpn</translation>
     </message>
     <message>
