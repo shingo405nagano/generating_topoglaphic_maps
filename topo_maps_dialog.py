@@ -25,6 +25,7 @@ import concurrent.futures
 from PIL import Image
 from PIL import ImageEnhance
 from PIL import ImageFilter
+import webbrowser
 
 from matplotlib import pyplot as plt
 import numpy as np
@@ -32,6 +33,7 @@ from osgeo import gdal
 from PyQt5.QtCore import pyqtSignal
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import QgsMessageLog
 from qgis.core import Qgis
@@ -134,10 +136,7 @@ class TopoMapsDialog(
         self.hSlider_Contrast.valueChanged.connect(self.make_others_tab_change_slider)
         
         # Open document
-        self.btn_OpenDocSlope.setVisible(False)
-        self.btn_OpenDocTpi.setVisible(False)
-        self.btn_OpenDocHillshade.setVisible(False)
-        self.btn_OpenDocOthers.setVisible(False)
+        self.btn_OpenDoc.clicked.connect(self.open_document)
 
         # Close daialog
         self.pushBtn_Close.clicked.connect(self.close)
@@ -529,6 +528,27 @@ class TopoMapsDialog(
         fig, ax = plt.subplots()
         dst.plot_raster(fig, ax)
         plt.show()
+
+    def open_document(self):
+        """
+        ## Summary:
+            ドキュメントを開く。
+        """
+        reply = QMessageBox.question(
+            None,
+            'Message ...',
+            'Do you want to open a web page?',
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.No:
+            return
+        local = QSettings().value('locale/userLocale')[0:2]
+        if local == 'ja':
+            webbrowser.open(config.doc_jp)
+        else:
+            webbrowser.open(config.doc_en)
+
 
 
 class GenerateMapTask(QgsTask):
