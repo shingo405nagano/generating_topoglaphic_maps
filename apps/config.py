@@ -19,9 +19,12 @@ DIR_NAME = os.path.abspath(os.path.join(current_dir, os.pardir))
 
 global CONFIG_FILE_PATH
 CONFIG_FILE_PATH = os.path.join(DIR_NAME, 'apps\\config.json')
-with open(CONFIG_FILE_PATH, 'r', encoding='UTF-8') as f:
-    global CONFIG
-    CONFIG = json.load(f)
+
+
+def read_config(config_path: str) -> dict:
+    with open(config_path, 'r', encoding='UTF-8') as f:
+        return json.load(f)
+
 
 ################################################################################
 #----------------------------------- Colors -----------------------------------#
@@ -32,7 +35,7 @@ class MapColors(object):
         'map_name' is Original-Map or Vintage-Map or RGB-Map or CUSTOM-Map.
     """
     def __init__(self, map_name: str):
-        self.colors = CONFIG[map_name]
+        self.colors = read_config(CONFIG_FILE_PATH).get(map_name)
 
     @property
     def slope_colors(self) -> List[List[float]]:
@@ -172,6 +175,7 @@ class CustomMapColors(MapColors):
 #----------------------------------- Configs ----------------------------------#
 class Configs(object):
     def __init__(self):
+        CONFIG = read_config(CONFIG_FILE_PATH)
         # TopoMapsのメインフォーム
         self.main_form, _ = self.load(
             os.path.join(DIR_NAME, CONFIG['Form']['Main'])
@@ -209,6 +213,9 @@ class Configs(object):
             os.path.join(DIR_NAME, CONFIG['IMG_PATH']['SAMPLE_HILLSHADE_IMG']))
         self.sample_hillshade_raster = hillshade_dst.array()
         hillshade_dst = None
+        # GitHubにあるREADMEのURL
+        self.doc_jp = CONFIG['Documents']['ja']
+        self.doc_en = CONFIG['Documents']['en']
 
     def load(self, path: Path):
         return uic.loadUiType(path)

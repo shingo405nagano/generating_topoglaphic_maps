@@ -15,18 +15,8 @@
         "8-Direction": 6
     },
     "Documents": {
-        "ja": {
-            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps"
-        },
-        "en": {
-            "SLOPE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "TPI": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "HILLSHADE": "https://github.com/shingo405nagano/generating_topoglaphic_maps",
-            "OTHERS": "https://github.com/shingo405nagano/generating_topoglaphic_maps"
-        }
+        "ja": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/README.md",
+        "en": "https://github.com/shingo405nagano/generating_topoglaphic_maps/blob/main/README_en.md"
     },
     "Form": {
         "Main": "views\\topo_maps_dlg.ui",

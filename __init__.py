@@ -22,6 +22,10 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+import glob
+import os
+import tempfile
+
 # # Debugging in VSCode
 # import debugpy
 # import shutil
@@ -48,3 +52,15 @@ def classFactory(iface):  # pylint: disable=invalid-name
     #
     from .topo_maps import TopoMaps
     return TopoMaps(iface)
+
+
+def clean_temp_topomaps():
+    temp_dir = tempfile.gettempdir()
+    topo_maps_files = glob.glob(os.path.join(temp_dir, "*_topoMaps.tif"))
+    for file_path in topo_maps_files:
+        try:
+            os.remove(file_path)
+        except OSError as e:
+            print(f"Error deleting file {file_path}: {e}")
+
+clean_temp_topomaps()
