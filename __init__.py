@@ -22,10 +22,12 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
-import glob
+import subprocess
 import os
 import tempfile
 
+import glob
+from qgis.core import QgsMessageLog
 # # Debugging in VSCode
 # import debugpy
 # import shutil
@@ -40,7 +42,42 @@ import tempfile
 # 	debugpy.connect(("localhost", 5656))
 # # END Debugging in VSCode
 
-
+# Install packages
+install_packages = []
+try:
+	import shapely
+except Exception:
+	install_lst.append('shapely')
+try:
+	import pandas
+except Exception:
+	install_lst.append('pandas')
+try:
+	import geopandas
+except Exception:
+	install_lst.append('geopandas')
+reply = QMessageBox.question(
+	None,
+	'Message',
+	f"{str(install_packages)} is not installed.Do you want to install ?\nIt may take some time, but do not touch it until the message appears after completion.",
+	QMessageBox.Yes | QMessageBox.No,
+	QMessageBox.No
+)
+if reply:
+	for package in install_packages:
+		result = subprocess.run(
+            ['python', '-m', 'pip', 'install', package], \
+            capture_output=True, 
+            text=True
+        )
+		install_process = result.stdout
+		success = "Successfully installed" in install_process
+		if success:
+			QgsMessageLog.logMessage(f"{package} is successfully installed.", MESSAGE_CATEGORY, Qgis.Info)
+		else:
+			QgsMessageLog.logMessage(f"Failed to install {package}. Please install manually.", MESSAGE_CATEGORY, Qgis.Critical)
+else:
+	QgsMessageLog.logMessage(f"Failed to install {str(packages)}. Please install manually.", MESSAGE_CATEGORY, Qgis.Critical)
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
