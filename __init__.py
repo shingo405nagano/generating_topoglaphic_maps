@@ -27,11 +27,12 @@ import os
 import tempfile
 
 import glob
-from qgis.core import QgsMessageLog
-# # Debugging in VSCode
-# import debugpy
-# import shutil
-# import sys
+from qgis.core import QgsMessageLog, Qgis
+from qgis.PyQt.QtWidgets import QMessageBox
+# Debugging in VSCode
+import debugpy
+import shutil
+import sys
 
 # sys.path.append('C:\\Users\\makis\\.vscode\\extensions\\ms-python.python-2024.14.1-win32-x64\\python_files\\lib\\python')
 
@@ -42,42 +43,68 @@ from qgis.core import QgsMessageLog
 # 	debugpy.connect(("localhost", 5656))
 # # END Debugging in VSCode
 
-# Install packages
+# -- Install packages --#
 install_packages = []
 try:
 	import shapely
 except Exception:
-	install_lst.append('shapely')
+	install_packages.append('shapely')
 try:
 	import pandas
 except Exception:
-	install_lst.append('pandas')
+	install_packages.append('pandas')
 try:
 	import geopandas
 except Exception:
-	install_lst.append('geopandas')
-reply = QMessageBox.question(
-	None,
-	'Message',
-	f"{str(install_packages)} is not installed.Do you want to install ?\nIt may take some time, but do not touch it until the message appears after completion.",
-	QMessageBox.Yes | QMessageBox.No,
-	QMessageBox.No
-)
-if reply:
-	for package in install_packages:
-		result = subprocess.run(
-            ['python', '-m', 'pip', 'install', package], \
-            capture_output=True, 
-            text=True
-        )
-		install_process = result.stdout
-		success = "Successfully installed" in install_process
-		if success:
-			QgsMessageLog.logMessage(f"{package} is successfully installed.", MESSAGE_CATEGORY, Qgis.Info)
-		else:
-			QgsMessageLog.logMessage(f"Failed to install {package}. Please install manually.", MESSAGE_CATEGORY, Qgis.Critical)
-else:
-	QgsMessageLog.logMessage(f"Failed to install {str(packages)}. Please install manually.", MESSAGE_CATEGORY, Qgis.Critical)
+	install_packages.append('geopandas')
+
+if install_packages:
+    front = "<p style='font-size: 15px;'>"
+    back = "</p>"
+    msg_txt = (
+        f"{front}"
+        f"This plugin requires {str(install_packages)} to work. Do you want to install it?<br><br>" 
+        "The installation will take some time, so please do not touch it and wait. <br><br>"
+        "If not, launch 'osgeo shell' and install it manually."
+        f"{back}"
+    )
+    reply = QMessageBox.question(
+        None,
+        'Message',
+        msg_txt,
+        QMessageBox.Yes | QMessageBox.No,
+        QMessageBox.No
+    )
+    if reply:
+        success_packages = []
+        error_packages = []
+        for package in install_packages:
+            result = subprocess.run(
+                ['python', '-m', 'pip', 'install', package], \
+                capture_output=True, 
+                text=True
+            )
+            install_process = result.stdout
+            success = "Successfully installed" in install_process
+            if success:
+                success_packages.append(package)
+            else:
+                error_packages.append(package)
+        if len(success_packages) == len(install_packages):
+            msg_txt = (
+                f"{front}"
+                f"Successfully installed {str(install_packages)}."
+                f"{back}"
+            )
+            QMessageBox.information(None, 'OK !', msg_txt)
+        else:
+            msg_txt = (
+                f"{front}"
+                f"Failed to install {str(error_packages)}. Please install manually."
+                f"{back}"
+            )
+            QMessageBox.critical(None, 'Error', msg_txt)
+
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
