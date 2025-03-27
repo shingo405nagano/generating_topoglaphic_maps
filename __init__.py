@@ -31,11 +31,11 @@ import tempfile
 import debugpy
 import shutil
 
-debugpy.configure(python=shutil.which("python"))
-try:
-    debugpy.listen(("localhost", 5656))
-except:
-    debugpy.connect(("localhost", 5656))
+# debugpy.configure(python=shutil.which("python"))
+# try:
+#     debugpy.listen(("localhost", 5656))
+# except:
+#     debugpy.connect(("localhost", 5656))
 # END Debugging in VSCode
 
 
