@@ -1,20 +1,20 @@
 import json
-from PIL import Image
 from typing import Dict
 from typing import List
 
-from matplotlib.colors import to_hex
-import matplotlib.pyplot as plt
-import numpy as np
-from qgis.core import QgsGradientColorRamp
-from qgis.core import QgsGradientStop
-from qgis.gui import QgsColorRampButton
-from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtWidgets import QBoxLayout
-from qgis.PyQt.QtWidgets import QMessageBox
-from qgis.PyQt.QtWidgets import QSizePolicy
+from matplotlib.colors import to_hex  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
+import numpy as np  # type: ignore
+from PIL import Image  # type: ignore
+from qgis.core import QgsGradientColorRamp  # type: ignore
+from qgis.core import QgsGradientStop  # type: ignore
+from qgis.gui import QgsColorRampButton  # type: ignore
+from qgis.PyQt import QtWidgets  # type: ignore
+from qgis.PyQt.QtCore import QCoreApplication  # type: ignore
+from qgis.PyQt.QtGui import QColor  # type: ignore
+from qgis.PyQt.QtWidgets import QBoxLayout  # type: ignore
+from qgis.PyQt.QtWidgets import QMessageBox  # type: ignore
+from qgis.PyQt.QtWidgets import QSizePolicy  # type: ignore
 
 from .config import Configs
 from .config import CONFIG_FILE_PATH
