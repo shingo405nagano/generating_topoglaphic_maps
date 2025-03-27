@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import concurrent.futures
 from PIL import Image
 from PIL import ImageEnhance
@@ -55,24 +56,26 @@ from .apps.tabs import OutputTab
 from .apps.tabs import SlopeTab
 from .apps.tabs import TpiTab
 from .apps.tabs import TriTab
+
 config = Configs()
 custom_cmap = CustomCmap()
 
-MESSAGE_CATEGORY = 'TopoMaps Plugin'
+MESSAGE_CATEGORY = "TopoMaps Plugin"
+
 
 ################################################################################
 #################### Main Dialog ###############################################
 class TopoMapsDialog(
-    QtWidgets.QDialog, 
-    config.main_form, 
+    QtWidgets.QDialog,
+    config.main_form,
     InputTab,
     OutputTab,
     SlopeTab,
     TpiTab,
     TriTab,
     HillshadeTab,
-    OthersTab
-    ):
+    OthersTab,
+):
     def __init__(self, parent=None):
         """Constructor."""
         super(TopoMapsDialog, self).__init__(parent)
@@ -100,8 +103,7 @@ class TopoMapsDialog(
         self.checkBox_Sample.stateChanged.connect(self.make_output_tab)
         self.btn_ShowStyles.clicked.connect(self.show_map_styles)
         self.btn_CustomDlg.clicked.connect(self.show_custom_color_dlg)
-        
-        
+
         # Make slope tab
         self.make_slope_tab()
         self.cmbBox_SlopeDistanceSpec.currentIndexChanged.connect(self.make_slope_tab)
@@ -134,15 +136,15 @@ class TopoMapsDialog(
 
         # Make others tab
         self.hSlider_Contrast.valueChanged.connect(self.make_others_tab_change_slider)
-        
+
         # Open document
         self.btn_OpenDoc.clicked.connect(self.open_document)
 
         # Close daialog
         self.pushBtn_Close.clicked.connect(self.close)
-        
+
     def tr(self, message: str):
-        return QCoreApplication.translate('TopoMapsDialog', message)
+        return QCoreApplication.translate("TopoMapsDialog", message)
 
     def read_raster(self) -> CustomGdalDataset:
         """
@@ -158,7 +160,7 @@ class TopoMapsDialog(
             dst = dst.estimate_utm_and_reprojected_dataset()
         msg.end_read_raster(MESSAGE_CATEGORY)
         return dst
-    
+
     def resampling(self) -> CustomGdalDataset:
         """
         ## Summary:
@@ -167,17 +169,17 @@ class TopoMapsDialog(
             CustomGdalDataset: リサンプリング後のgdal.Dataset のラッパークラス。
         """
         algs = {
-            'Nearest Neighbour': gdal.GRA_NearestNeighbour,
-            'Bilinear': gdal.GRA_Bilinear,
-            'Cubic': gdal.GRA_Cubic,
-            'Cubic Spline': gdal.GRA_CubicSpline,
+            "Nearest Neighbour": gdal.GRA_NearestNeighbour,
+            "Bilinear": gdal.GRA_Bilinear,
+            "Cubic": gdal.GRA_Cubic,
+            "Cubic Spline": gdal.GRA_CubicSpline,
         }
-        
+
         spec = self.get_first_resample_spec()
         if not spec.execute:
             # リサンプリングを行わない場合はそのまま返す
             return self._dst
-        
+
         msg.start_resampling_raster(MESSAGE_CATEGORY)
         msg.resampling_spec(MESSAGE_CATEGORY, spec)
         if spec.metre_spec:
@@ -185,7 +187,7 @@ class TopoMapsDialog(
             new_dst = self._dst.resample_with_resol_spec(
                 x_resolution=spec.resolution,
                 y_resolution=spec.resolution,
-                resample_algorithm=algs.get(spec.smooth_alg)
+                resample_algorithm=algs.get(spec.smooth_alg),
             )
         else:
             # セル数でリサンプリング
@@ -194,7 +196,7 @@ class TopoMapsDialog(
             new_dst = self._dst.resample_with_cells_spec(
                 x_cells=x_size,
                 y_cells=y_size,
-                resample_algorithm=algs.get(spec.smooth_alg)
+                resample_algorithm=algs.get(spec.smooth_alg),
             )
         msg.end_resampling_raster(MESSAGE_CATEGORY)
         return new_dst
@@ -244,7 +246,7 @@ class TopoMapsDialog(
             # ガウシアンフィルタを適用
             kernel = kernels.gaussian_kernel(sigma=options.sigma)
             slope_ary = scipy.signal.convolve(
-                slope_ary, kernel, mode='same', method='fft'
+                slope_ary, kernel, mode="same", method="fft"
             )
             if 1 <= nan_idx.size:
                 # np.nanが含まれていた場合は、元に戻す
@@ -255,10 +257,8 @@ class TopoMapsDialog(
         slope_img = cmap.values_to_img(slope_ary)
         return slope_img
 
-    def tpi(self, 
-        dst: CustomGdalDataset, 
-        cmap: LinearColorMap, 
-        multiples: bool=False
+    def tpi(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap, multiples: bool = False
     ) -> np.ndarray:
         """
         ## Summary:
@@ -282,9 +282,7 @@ class TopoMapsDialog(
             tpi_ary = dst.tpi(return_array=True)
         else:
             # 作成したカーネルを使ってTPIを計算
-            tpi_ary = dst.tpi(
-                kernel=kernel, return_array=True, outlier_treatment=False
-            )
+            tpi_ary = dst.tpi(kernel=kernel, return_array=True, outlier_treatment=False)
         if options.execute_outlier_treatment:
             tpi_ary = dst.outlier_treatment_array_by_iqr(
                 threshold=options.iqr, raster_ary=tpi_ary
@@ -294,9 +292,9 @@ class TopoMapsDialog(
             cmap = self.relative_alpha_change(cmap, options.alpha)
         tpi_img = cmap.values_to_img(tpi_ary)
         if multiples:
-            tpi_img[:, :, -1] = (tpi_img[:, :, -1] * 0.6).astype('uint8')
+            tpi_img[:, :, -1] = (tpi_img[:, :, -1] * 0.6).astype("uint8")
         return tpi_img
-        
+
     def tri(self, dst: CustomGdalDataset, cmap: LinearColorMap) -> np.ndarray:
         """
         ## Summary:
@@ -318,9 +316,7 @@ class TopoMapsDialog(
         if options.execute_gaussian_filter:
             # ガウシアンフィルタを適用
             kernel = kernels.gaussian_kernel(options.sigma)
-            tri_ary = scipy.signal.convolve(
-                tri_ary, kernel, mode='same', method='fft'
-            )
+            tri_ary = scipy.signal.convolve(tri_ary, kernel, mode="same", method="fft")
         if options.execute_outlier_treatment:
             # 外れ値処理を実行
             tri_ary = dst.outlier_treatment_array_by_iqr(
@@ -345,19 +341,19 @@ class TopoMapsDialog(
         options = self.get_hillshade_options()
         msg.hillshade_spec(MESSAGE_CATEGORY, options)
         kwargs = {
-            'azimuth': options.azimuth,
-            'altitude': options.altitude,
-            'z_factor': options.z_factor,
-            'combined': options.combined,
-            'multiDirectional': options.hillshade_type == 'multiple',
-            'return_array': True,
+            "azimuth": options.azimuth,
+            "altitude": options.altitude,
+            "z_factor": options.z_factor,
+            "combined": options.combined,
+            "multiDirectional": options.hillshade_type == "multiple",
+            "return_array": True,
         }
         hillshade_ary = dst.hillshade(**kwargs)
         if options.execute_gaussian_filter:
             # ガウシアンフィルタを適用
             kernel = kernels.gaussian_kernel(options.sigma)
             hillshade_ary = scipy.signal.convolve(
-                hillshade_ary, kernel, mode='same', method='fft'
+                hillshade_ary, kernel, mode="same", method="fft"
             )
         if options.execute_outlier_treatment:
             # 外れ値処理を実行
@@ -367,12 +363,13 @@ class TopoMapsDialog(
         hillshade_img = cmap.values_to_img(hillshade_ary)
         return hillshade_img
 
-    def composite_images(self, 
-        slope_img: np.ndarray, 
-        tpi_img: np.ndarray, 
+    def composite_images(
+        self,
+        slope_img: np.ndarray,
+        tpi_img: np.ndarray,
         mtpi_img: np.ndarray,
-        tri_img: np.ndarray, 
-        hillshade_img: np.ndarray
+        tri_img: np.ndarray,
+        hillshade_img: np.ndarray,
     ) -> np.ndarray:
         """
         ## Summary:
@@ -388,26 +385,26 @@ class TopoMapsDialog(
         """
         msg.start_composite_image(MESSAGE_CATEGORY)
         """画像を合成する。"""
-        slope_img = Image.fromarray(slope_img.astype('uint8'))
-        tpi_img = Image.fromarray(tpi_img.astype('uint8'))
-        hillshade_img = Image.fromarray(hillshade_img.astype('uint8'))
+        slope_img = Image.fromarray(slope_img.astype("uint8"))
+        tpi_img = Image.fromarray(tpi_img.astype("uint8"))
+        hillshade_img = Image.fromarray(hillshade_img.astype("uint8"))
         if tri_img is not None:
             # TRIの画像がある場合は陰影起伏図の上に合成
-            tri_img = Image.fromarray(tri_img.astype('uint8'))
+            tri_img = Image.fromarray(tri_img.astype("uint8"))
             composited = Image.alpha_composite(hillshade_img, tri_img)
         else:
             composited = hillshade_img
 
         if mtpi_img is not None:
             # 2枚目のTPIの画像がある場合は陰影起伏図かTRIの上に合成
-            mtpi_img = Image.fromarray(mtpi_img.astype('uint8'))
+            mtpi_img = Image.fromarray(mtpi_img.astype("uint8"))
             composited = Image.alpha_composite(composited, mtpi_img)
         # 残りのTPIと傾斜を合成
         composited = Image.alpha_composite(composited, tpi_img)
         composited = Image.alpha_composite(composited, slope_img)
         msg.end_composite_image(MESSAGE_CATEGORY)
         return composited
-        
+
     def show_convolution_kernel(self) -> None:
         """
         ## Summary:
@@ -416,17 +413,17 @@ class TopoMapsDialog(
         self._dst = self.read_raster()
         if self.get_first_resample_spec().execute:
             reply = QMessageBox.question(
-                None, 
-                'Message ...', 
-                self.tr('リサンプルを行いますか？'), 
-                QMessageBox.Yes | QMessageBox.No, 
-                QMessageBox.No
+                None,
+                "Message ...",
+                self.tr("リサンプルを行いますか？"),
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
             )
             if reply == QMessageBox.Yes:
                 self._dst = self.resampling()
         self.show_kernel(self._dst)
         self._dst = None
-    
+
     def cell_size_in_metre(self) -> float:
         """
         ## Summary:
@@ -440,7 +437,9 @@ class TopoMapsDialog(
         else:
             return self.unit
 
-    def relative_alpha_change(self, cmap: LinearColorMap, coef: float) -> LinearColorMap:
+    def relative_alpha_change(
+        self, cmap: LinearColorMap, coef: float
+    ) -> LinearColorMap:
         """
         ## Summary:
             カラーマップの透過率を変更する。
@@ -451,7 +450,7 @@ class TopoMapsDialog(
             LinearColorMap: 透過率を変更したカラーマップ。
         """
         new_colors = []
-        for color in cmap.get_registered_color('rgba'):
+        for color in cmap.get_registered_color("rgba"):
             alpha = color[-1] * coef
             if 1.0 < alpha:
                 alpha = 1.0
@@ -460,7 +459,7 @@ class TopoMapsDialog(
             new_colors.append([color[0], color[1], color[2], alpha])
         new_cmap = custom_cmap.color_list_to_linear_cmap(new_colors)
         return new_cmap
-    
+
     def unsharpn_mask(self, img: Image.Image) -> Image.Image:
         """
         ## Summary:
@@ -474,12 +473,12 @@ class TopoMapsDialog(
         if not options.execute_unsharpn_mask:
             return img
         filter_ = ImageFilter.UnsharpMask(
-            radius=options.unsharpn_radius, 
-            percent=options.unsharpn_percent, 
-            threshold=options.unsharpn_threshold
+            radius=options.unsharpn_radius,
+            percent=options.unsharpn_percent,
+            threshold=options.unsharpn_threshold,
         )
         return img.filter(filter_)
-    
+
     def change_contrast(self, img: Image.Image) -> Image.Image:
         """
         ## Summary:
@@ -495,9 +494,8 @@ class TopoMapsDialog(
         enhancer = ImageEnhance.Contrast(img)
         return enhancer.enhance(options.contrast_value)
 
-    def image_to_gdal_dataset(self, 
-        img: np.ndarray, 
-        dst: CustomGdalDataset
+    def image_to_gdal_dataset(
+        self, img: np.ndarray, dst: CustomGdalDataset
     ) -> CustomGdalDataset:
         """
         ## Summary:
@@ -536,27 +534,26 @@ class TopoMapsDialog(
         """
         reply = QMessageBox.question(
             None,
-            'Message ...',
-            'Do you want to open a web page?',
+            "Message ...",
+            "Do you want to open a web page?",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
         if reply == QMessageBox.No:
             return
-        local = QSettings().value('locale/userLocale')[0:2]
-        if local == 'ja':
+        local = QSettings().value("locale/userLocale")[0:2]
+        if local == "ja":
             webbrowser.open(config.doc_jp)
         else:
             webbrowser.open(config.doc_en)
 
 
-
 class GenerateMapTask(QgsTask):
-    MESSAGE_CATEGORY = 'TopoMaps Plugin'
+    MESSAGE_CATEGORY = "TopoMaps Plugin"
     taskCompleted = pyqtSignal(bool)
 
     def __init__(self, topo_maps_dlg: TopoMapsDialog, callback):
-        super().__init__('Generate TopoMaps', QgsTask.CanCancel)
+        super().__init__("Generate TopoMaps", QgsTask.CanCancel)
         self.dlg = topo_maps_dlg
         self.in_crs = False
         self.callback = callback
@@ -564,28 +561,24 @@ class GenerateMapTask(QgsTask):
         self.setProgress(self.progress)
         self.exception = None
         self.new_dst = None
-    
+
     @staticmethod
     def start_to_end(func):
         """
         ## Summary:
             タスクの実行時間をログに出力するデコレータ。
         """
+
         def wrapper(self, *args, **kwargs):
             QgsMessageLog.logMessage(
-                f"Start {MESSAGE_CATEGORY} Task",
-                MESSAGE_CATEGORY, 
-                Qgis.Info
+                f"Start {MESSAGE_CATEGORY} Task", MESSAGE_CATEGORY, Qgis.Info
             )
             result = func(self, *args, **kwargs)
-            QgsMessageLog.logMessage(
-                f"End of task",
-                MESSAGE_CATEGORY, 
-                Qgis.Info
-            )
+            QgsMessageLog.logMessage(f"End of task", MESSAGE_CATEGORY, Qgis.Info)
             return result
+
         return wrapper
-    
+
     @start_to_end
     def run(self):
         """
@@ -607,9 +600,7 @@ class GenerateMapTask(QgsTask):
         if output_spec.sample_only:
             # サンプルを表示する場合は一部の範囲のみを切り抜く
             sampling_raster = SamplingRaster(
-                dst, 
-                output_spec.sampling_max_rows, 
-                output_spec.sampling_max_cols
+                dst, output_spec.sampling_max_rows, output_spec.sampling_max_cols
             )
             dst = sampling_raster.sample_dst
         cmaps = self.dlg.get_cmaps()
@@ -617,34 +608,24 @@ class GenerateMapTask(QgsTask):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # 傾斜の計算
             slope_future = executor.submit(
-                self.start_generating_slope,
-                dst,
-                cmaps.get('slope')
+                self.start_generating_slope, dst, cmaps.get("slope")
             )
             # TPIの計算
             tpi_future = executor.submit(
-                self.start_generating_tpi,
-                dst,
-                cmaps.get('tpi')
+                self.start_generating_tpi, dst, cmaps.get("tpi")
             )
             # 2枚目のTPIの計算
             if self.dlg.get_tpi_options().multiple_tpi:
                 mtpi_future = executor.submit(
-                    self.start_generating_multi_tpi,
-                    dst,
-                    cmaps.get('tpi')
+                    self.start_generating_multi_tpi, dst, cmaps.get("tpi")
                 )
             # TRIの計算
             tri_future = executor.submit(
-                self.start_generating_tri,
-                dst,
-                cmaps.get('tri')
+                self.start_generating_tri, dst, cmaps.get("tri")
             )
             # 陰影起伏図の計算
             hillshade_future = executor.submit(
-                self.start_generating_hillshade,
-                dst,
-                cmaps.get('hillshade')
+                self.start_generating_hillshade, dst, cmaps.get("hillshade")
             )
             slope_img = slope_future.result()
             tpi_img = tpi_future.result()
@@ -679,10 +660,9 @@ class GenerateMapTask(QgsTask):
         if self.isCanceled():
             return False
         return True
-    
-    def start_generating_slope(self, 
-        dst: CustomGdalDataset, 
-        cmap: LinearColorMap
+
+    def start_generating_slope(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap
     ) -> np.ndarray:
         """
         ## Summary:
@@ -698,9 +678,8 @@ class GenerateMapTask(QgsTask):
         self.setProgress(self.progress)
         return slope_img
 
-    def start_generating_tpi(self, 
-        dst: CustomGdalDataset,
-        cmap: LinearColorMap
+    def start_generating_tpi(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap
     ) -> np.ndarray:
         """
         ## Summary:
@@ -716,9 +695,8 @@ class GenerateMapTask(QgsTask):
         self.setProgress(self.progress)
         return tpi_img
 
-    def start_generating_multi_tpi(self, 
-        dst: CustomGdalDataset, 
-        cmap: LinearColorMap
+    def start_generating_multi_tpi(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap
     ) -> np.ndarray:
         """
         ## Summary:
@@ -731,10 +709,9 @@ class GenerateMapTask(QgsTask):
         self.progress += 25
         self.setProgress(self.progress)
         return mtpi_img
-        
-    def start_generating_tri(self, 
-        dst: CustomGdalDataset,
-        cmap: LinearColorMap
+
+    def start_generating_tri(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap
     ) -> np.ndarray:
         """
         ## Summary:
@@ -750,9 +727,8 @@ class GenerateMapTask(QgsTask):
         self.setProgress(self.progress)
         return tri_img
 
-    def start_generating_hillshade(self, 
-        dst: CustomGdalDataset,
-        cmap: LinearColorMap
+    def start_generating_hillshade(
+        self, dst: CustomGdalDataset, cmap: LinearColorMap
     ) -> np.ndarray:
         """
         ## Summary:
@@ -766,8 +742,8 @@ class GenerateMapTask(QgsTask):
         self.progress += 5
         msg.end_hillshade_calculation(MESSAGE_CATEGORY)
         self.setProgress(self.progress)
-        return hillshade_img 
-    
+        return hillshade_img
+
     def finished(self, result):
         """
         ## Summary:
