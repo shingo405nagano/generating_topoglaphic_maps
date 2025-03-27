@@ -19,22 +19,23 @@ from .tabs import TpiOptions
 from .tabs import TriOptions
 
 
-
-
 class Message(object):
     def __init__(self):
-        self._file_extensions = ['.tif', '.tiff']
-        self._file_not_specified = self.tr('入力ファイルが指定されていません。')
-        self._file_not_found = self.tr('入力ファイルが見つかりません。')
+        self._file_extensions = [".tif", ".tiff"]
+        self._file_not_specified = self.tr("入力ファイルが指定されていません。")
+        self._file_not_found = self.tr("入力ファイルが見つかりません。")
         self._input_file_extension_error = self.tr(
-            '入力ファイルの拡張子が.tifまたは.tiffではありません。')
+            "入力ファイルの拡張子が.tifまたは.tiffではありません。"
+        )
         self._output_file_extension_error = self.tr(
-            '出力ファイルの拡張子が.tifまたは.tiffではありません。')
-        self._raster_band_error = self.tr('入力ラスターのバンド数が1よりも多いです。')
-        self._output_folder_does_not_exist = self.tr('出力フォルダが存在しません。')
-        self._finished_msg = self.tr('計算が完了しました。')
-        self._user_cancel_msg = self.tr('ユーザーが操作をキャンセルしたかもしれません。')
-        
+            "出力ファイルの拡張子が.tifまたは.tiffではありません。"
+        )
+        self._raster_band_error = self.tr("入力ラスターのバンド数が1よりも多いです。")
+        self._output_folder_does_not_exist = self.tr("出力フォルダが存在しません。")
+        self._finished_msg = self.tr("計算が完了しました。")
+        self._user_cancel_msg = self.tr(
+            "ユーザーが操作をキャンセルしたかもしれません。"
+        )
 
     def tr(self, message):
         """
@@ -44,7 +45,7 @@ class Message(object):
             str: 翻訳されたメッセージ
         """
         return QCoreApplication.translate(self.__class__.__name__, message)
-    
+
     def err_msg(self, message: str):
         """
         ## Summary
@@ -52,8 +53,8 @@ class Message(object):
         Args:
             message(str): エラーメッセージ
         """
-        QMessageBox.critical(None, self.tr('Error'), message)
-    
+        QMessageBox.critical(None, self.tr("Error"), message)
+
     def check_input_file_path(self, file_path: Path) -> bool:
         """
         ## Summary
@@ -79,7 +80,7 @@ class Message(object):
             self.err_msg(self._raster_band_error)
             return False
         return True
-    
+
     def check_output_file_path(self, file_path: Path, is_sample: bool) -> bool:
         """
         ## Summary
@@ -101,7 +102,7 @@ class Message(object):
             self.err_msg(self._output_file_extension_error)
             return False
         return True
-        
+
     def created_infomation(self, MESSAGE_CATEGORY: str, dst: CustomGdalDataset) -> None:
         """
         ## Summary
@@ -130,12 +131,8 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Reading raster dataset",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
-    
+        QgsMessageLog.logMessage("Reading raster dataset", MESSAGE_CATEGORY, Qgis.Info)
+
     def end_read_raster(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -144,9 +141,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Reading raster is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            "Reading raster is completed.", MESSAGE_CATEGORY, Qgis.Info
         )
 
     def start_resampling_raster(self, MESSAGE_CATEGORY: str) -> None:
@@ -157,14 +152,11 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Resampling raster dataset",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            "Resampling raster dataset", MESSAGE_CATEGORY, Qgis.Info
         )
-    
-    def resampling_spec(self, 
-        MESSAGE_CATEGORY: str, 
-        resampling_spec: FirstResampleSpec
+
+    def resampling_spec(
+        self, MESSAGE_CATEGORY: str, resampling_spec: FirstResampleSpec
     ) -> None:
         """
         ## Summary
@@ -182,11 +174,7 @@ class Message(object):
         else:
             resampling_spec.denominator
             txt += f"'Denominator': {resampling_spec.denominator}, "
-        QgsMessageLog.logMessage(
-            txt + "}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage(txt + "}", MESSAGE_CATEGORY, Qgis.Info)
 
     def end_resampling_raster(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -196,9 +184,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Resampling raster is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "Resampling raster is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
 
     def start_slope_calculation(self, MESSAGE_CATEGORY: str) -> None:
@@ -207,11 +193,9 @@ class Message(object):
             Slopeの計算を開始することをQGISのログコンソールに表示する。
         """
         QgsMessageLog.logMessage(
-            "Start slope calculation.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            "Start slope calculation.", MESSAGE_CATEGORY, Qgis.Info
         )
-    
+
     def slope_spec(self, MESSAGE_CATEGORY: str, slope_spec: SlopeOptions) -> None:
         """
         ## Summary
@@ -229,11 +213,7 @@ class Message(object):
             txt += f"'Gaussian filter sigma': {slope_spec.sigma}, "
         if slope_spec.change_alpha:
             txt += f"'Relative alpha': {slope_spec.alpha}, "
-        QgsMessageLog.logMessage(
-            txt + "}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage(txt + "}", MESSAGE_CATEGORY, Qgis.Info)
 
     def end_slope_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -243,11 +223,9 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Slope calculation is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "Slope calculation is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
-    
+
     def start_tpi_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -255,12 +233,8 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Start TPI calculation.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
-    
+        QgsMessageLog.logMessage("Start TPI calculation.", MESSAGE_CATEGORY, Qgis.Info)
+
     def tpi_spec(self, MESSAGE_CATEGORY: str, tpi_spec: TpiOptions) -> None:
         """
         ## Summary
@@ -269,11 +243,8 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
             tpi_spec (TpiOptions): TPIの仕様
         """
-        txt = (
-            "TPI calculation specification: {"
-            f"'Kernel': {tpi_spec.kernel_spec}, "
-        )
-        if 'gauss' in tpi_spec.kernel_spec.lower():
+        txt = f"TPI calculation specification: {{'Kernel': {tpi_spec.kernel_spec}, "
+        if "gauss" in tpi_spec.kernel_spec.lower():
             txt += (
                 f"'Gaussian filter sigma': {tpi_spec.sigma}, "
                 f"'Gaussian filter coef': {tpi_spec.coef}, "
@@ -289,11 +260,7 @@ class Message(object):
             txt += f"'Relative alpha': {tpi_spec.alpha}, "
         if tpi_spec.multiple_tpi:
             txt += f"'Multiples distance': {tpi_spec.multiples_distance}, "
-        QgsMessageLog.logMessage(
-            txt + "}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage(txt + "}", MESSAGE_CATEGORY, Qgis.Info)
 
     def end_tpi_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -303,9 +270,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "TPI calculation is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "TPI calculation is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
 
     def start_tri_calculation(self, MESSAGE_CATEGORY: str) -> None:
@@ -315,12 +280,8 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Start TRI calculation.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
-    
+        QgsMessageLog.logMessage("Start TRI calculation.", MESSAGE_CATEGORY, Qgis.Info)
+
     def tri_spec(self, MESSAGE_CATEGORY: str, tri_spec: TriOptions) -> None:
         """
         ## Summary
@@ -336,11 +297,7 @@ class Message(object):
             txt += f"'Outlier treatment is IQR x': {tri_spec.iqr}, "
         if tri_spec.change_alpha:
             txt += f"'Relative alpha': {tri_spec.alpha}, "
-        QgsMessageLog.logMessage(
-            txt + "}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage(txt + "}", MESSAGE_CATEGORY, Qgis.Info)
 
     def end_tri_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -350,11 +307,9 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "TRI calculation is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "TRI calculation is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
-    
+
     def start_hillshade_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -363,14 +318,11 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Start hillshade calculation.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            "Start hillshade calculation.", MESSAGE_CATEGORY, Qgis.Info
         )
-    
-    def hillshade_spec(self, 
-        MESSAGE_CATEGORY: str, 
-        hillshade_spec: HillshadeOptions
+
+    def hillshade_spec(
+        self, MESSAGE_CATEGORY: str, hillshade_spec: HillshadeOptions
     ) -> None:
         """
         ## Summary
@@ -383,7 +335,7 @@ class Message(object):
             "Hillshade calculation specification: {"
             f"'Hillshade type': {hillshade_spec.hillshade_type}, "
         )
-        if hillshade_spec.hillshade_type == 'single':
+        if hillshade_spec.hillshade_type == "single":
             txt += f"'Azimuth': {hillshade_spec.azimuth}, "
         txt += (
             f"'Altitude': {hillshade_spec.altitude}, "
@@ -394,11 +346,7 @@ class Message(object):
             txt += f"'Gaussian filter sigma': {hillshade_spec.sigma}, "
         if hillshade_spec.execute_outlier_treatment:
             txt += f"'Outlier treatment is IQR x': {hillshade_spec.iqr}, "
-        QgsMessageLog.logMessage(
-            txt + "}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage(txt + "}", MESSAGE_CATEGORY, Qgis.Info)
 
     def end_hillshade_calculation(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -408,9 +356,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Hillshade calculation is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "Hillshade calculation is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
 
     def start_composite_image(self, MESSAGE_CATEGORY: str) -> None:
@@ -421,11 +367,9 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Start compositing images.",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            "Start compositing images.", MESSAGE_CATEGORY, Qgis.Info
         )
-    
+
     def end_composite_image(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -434,9 +378,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
         QgsMessageLog.logMessage(
-            "Image compositing is completed.",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            "Image compositing is completed.", MESSAGE_CATEGORY, Qgis.Success
         )
 
     def show_raster(self, MESSAGE_CATEGORY: str) -> None:
@@ -446,11 +388,7 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Show raster",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
+        QgsMessageLog.logMessage("Show raster", MESSAGE_CATEGORY, Qgis.Info)
 
     def run_task(self, MESSAGE_CATEGORY: str) -> None:
         """
@@ -459,26 +397,17 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Task added",
-            MESSAGE_CATEGORY,
-            Qgis.Info
-        )
-    
+        QgsMessageLog.logMessage("Task added", MESSAGE_CATEGORY, Qgis.Info)
+
     def finished_msg_on_the_bar(self) -> None:
         """
         ## Summary
             完了メッセージをQGISのメッセージバーに表示する。
         """
-        qgis_iface\
-            .messageBar()\
-            .pushMessage(
-                "Success Message: ",
-                self._finished_msg,
-                level=Qgis.Success,
-                duration=10
-            )
-    
+        qgis_iface.messageBar().pushMessage(
+            "Success Message: ", self._finished_msg, level=Qgis.Success, duration=10
+        )
+
     def finished_msg(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -486,26 +415,17 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            "Finished\n",
-            MESSAGE_CATEGORY,
-            Qgis.Success
-        )
+        QgsMessageLog.logMessage("Finished\n", MESSAGE_CATEGORY, Qgis.Success)
 
     def user_cancel_msg_on_the_bar(self) -> None:
         """
         ## Summary
             キャンセルメッセージをQGISのメッセージバーに表示する。
         """
-        qgis_iface\
-            .messageBar()\
-            .pushMessage(
-                "Canceled Message: ",
-                self._user_cancel_msg,
-                level=Qgis.Warning,
-                duration=10
-            )
-    
+        qgis_iface.messageBar().pushMessage(
+            "Canceled Message: ", self._user_cancel_msg, level=Qgis.Warning, duration=10
+        )
+
     def user_cancel_msg(self, MESSAGE_CATEGORY: str) -> None:
         """
         ## Summary
@@ -513,12 +433,8 @@ class Message(object):
         Args:
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
         """
-        QgsMessageLog.logMessage(
-            self._user_cancel_msg,
-            MESSAGE_CATEGORY,
-            Qgis.Warning
-        )
-    
+        QgsMessageLog.logMessage(self._user_cancel_msg, MESSAGE_CATEGORY, Qgis.Warning)
+
     def exception_msg_on_the_bar(self, exception: Any) -> None:
         """
         ## Summary
@@ -526,15 +442,10 @@ class Message(object):
         Args:
             exception (Any): 例外メッセージ
         """
-        qgis_iface\
-            .messageBar()\
-            .pushMessage(
-                "Error Message: ",
-                exception,
-                level=Qgis.Critical,
-                duration=10
-            )
-    
+        qgis_iface.messageBar().pushMessage(
+            "Error Message: ", exception, level=Qgis.Critical, duration=10
+        )
+
     def exception_msg(self, MESSAGE_CATEGORY: str, exception: Any) -> None:
         """
         ## Summary
@@ -543,11 +454,7 @@ class Message(object):
             MESSAGE_CATEGORY (str): メッセージカテゴリ。QGISのログコンソールタブのタイトルに使用される。
             exception (Any): 例外メッセージ
         """
-        QgsMessageLog.logMessage(
-            exception,
-            MESSAGE_CATEGORY,
-            Qgis.Critical
-        )
+        QgsMessageLog.logMessage(exception, MESSAGE_CATEGORY, Qgis.Critical)
 
     def computing_time(self, MESSAGE_CATEGORY: str, computing_time: float) -> None:
         """
@@ -558,9 +465,7 @@ class Message(object):
             computing_time (float): 計算時間
         """
         QgsMessageLog.logMessage(
-            f"Computing time: {computing_time} sec",
-            MESSAGE_CATEGORY,
-            Qgis.Success
+            f"Computing time: {computing_time} sec", MESSAGE_CATEGORY, Qgis.Success
         )
 
     def delete_file(self, MESSAGE_CATEGORY: str, file_path: Path) -> None:
@@ -572,11 +477,8 @@ class Message(object):
             file_path (Path): 削除するファイルのパス
         """
         QgsMessageLog.logMessage(
-            f"Delete file: {file_path}",
-            MESSAGE_CATEGORY,
-            Qgis.Info
+            f"Delete file: {file_path}", MESSAGE_CATEGORY, Qgis.Info
         )
-        
 
 
 msg = Message()

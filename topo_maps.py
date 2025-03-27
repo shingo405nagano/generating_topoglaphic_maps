@@ -21,6 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from time import time
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QSettings
@@ -39,38 +40,35 @@ import os.path
 
 class TopoMaps:
     """QGIS Plugin Implementation."""
-    MESSAGE_CATEGORY = 'TopoMaps Plugin'
+
+    MESSAGE_CATEGORY = "TopoMaps Plugin"
 
     def __init__(self, iface):
         self.iface = iface
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        if locale == 'ja':
+        locale = QSettings().value("locale/userLocale")[0:2]
+        if locale == "ja":
             locale_path = os.path.join(
-                self.plugin_dir,
-                'i18n',
-                'topo_maps_dlg_ja.qm'.format(locale)
+                self.plugin_dir, "i18n", "topo_maps_dlg_ja.qm".format(locale)
             )
         else:
             locale_path = os.path.join(
-                self.plugin_dir,
-                'i18n',
-                'topo_maps_dlg_en.qm'.format(locale)
+                self.plugin_dir, "i18n", "topo_maps_dlg_en.qm".format(locale)
             )
-        
+
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
 
         self.actions = []
-        self.menu = self.tr(u'&TopoMaps')
+        self.menu = self.tr("&TopoMaps")
 
         self.first_start = None
 
     def tr(self, message):
-        return QCoreApplication.translate('TopoMaps', message)
+        return QCoreApplication.translate("TopoMaps", message)
 
     def add_action(
         self,
@@ -82,7 +80,7 @@ class TopoMaps:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None
+        parent=None,
     ):
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
@@ -100,9 +98,7 @@ class TopoMaps:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -110,13 +106,13 @@ class TopoMaps:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-        DIR_NAME = os.path.join(os.path.dirname(__file__), 'views')
+        DIR_NAME = os.path.join(os.path.dirname(__file__), "views")
         icon_path = os.path.join(DIR_NAME, "icon.png")
         self.add_action(
             icon_path,
-            text=self.tr(u'TopoMaps'),
+            text=self.tr("TopoMaps"),
             callback=self.run,
-            parent=self.iface.mainWindow()
+            parent=self.iface.mainWindow(),
         )
 
         # will be set False in run()
@@ -125,11 +121,8 @@ class TopoMaps:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&TopoMaps'),
-                action)
+            self.iface.removePluginMenu(self.tr("&TopoMaps"), action)
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Run method that performs all the real work"""
@@ -168,7 +161,9 @@ class TopoMaps:
             output_spec.sample_only,
         )
         if all([input_is_ok, output_is_ok]):
-            QgsMessageLog.logMessage("run_generate_topo_map called", "TopoMaps Plugin", Qgis.Warning)
+            QgsMessageLog.logMessage(
+                "run_generate_topo_map called", "TopoMaps Plugin", Qgis.Warning
+            )
             self.dlg.setEnabled(False)
             self.time = time()
             self.task = GenerateMapTask(self.dlg, self.generate_topo_map_completed)
@@ -176,7 +171,7 @@ class TopoMaps:
             msg.run_task(self.MESSAGE_CATEGORY)
             return True
         return False
-    
+
     def generate_topo_map_completed(self, task):
         """
         ## Summary
@@ -197,10 +192,9 @@ class TopoMaps:
                 self.new_dst = None
                 if output_spec.add_project:
                     self.dlg.add_lyr(
-                        output_spec.output_file_path, 
-                        self.dlg.get_style_name()
+                        output_spec.output_file_path, self.dlg.get_style_name()
                     )
-                
+
             computing = round(time() - self.time, 3)
             msg.computing_time(self.MESSAGE_CATEGORY, computing)
             msg.finished_msg(self.MESSAGE_CATEGORY)

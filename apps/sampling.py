@@ -19,16 +19,18 @@ class SamplingRaster(object):
         >>> sampling_raster = SamplingRaster(dst, 100, 100)
         >>> sample_dst = sampling_raster.sample_dst
     """
+
     def __init__(self, dst: CustomGdalDataset, max_rows, max_cols):
         self.sample_dst = None
         if dst.RasterXSize <= max_cols and dst.RasterYSize <= max_rows:
             self.sample_dst = dst
         else:
-            funcs = [self._get_center_raster,
-                     self._get_lower_left_corner_raster,
-                     self._get_lower_right_corner_raster,
-                     self._get_upper_left_corner_raster,
-                     self._get_upper_right_corner_raster
+            funcs = [
+                self._get_center_raster,
+                self._get_lower_left_corner_raster,
+                self._get_lower_right_corner_raster,
+                self._get_upper_left_corner_raster,
+                self._get_upper_right_corner_raster,
             ]
             valid_values = []
             for func in funcs:
@@ -38,12 +40,9 @@ class SamplingRaster(object):
                 valid_values.append((size - np.isnan(_sample_raster).sum()) / size)
             max_index = np.argmax(valid_values)
             self.sample_dst = funcs[max_index](dst, max_rows, max_cols)
-            
 
-    def _get_upper_left_corner_raster(self, 
-        dst: CustomGdalDataset, 
-        max_rows: int, 
-        max_cols: int
+    def _get_upper_left_corner_raster(
+        self, dst: CustomGdalDataset, max_rows: int, max_cols: int
     ) -> CustomGdalDataset:
         """
         ## Summary
@@ -63,10 +62,8 @@ class SamplingRaster(object):
         new_dst = dst.clip_by_bounds(bounds)
         return new_dst
 
-    def _get_upper_right_corner_raster(self, 
-        dst: CustomGdalDataset, 
-        max_rows: int, 
-        max_cols: int
+    def _get_upper_right_corner_raster(
+        self, dst: CustomGdalDataset, max_rows: int, max_cols: int
     ) -> CustomGdalDataset:
         """
         ## Summary
@@ -86,10 +83,8 @@ class SamplingRaster(object):
         new_dst = dst.clip_by_bounds(bounds)
         return new_dst
 
-    def _get_lower_left_corner_raster(self, 
-        dst: CustomGdalDataset, 
-        max_rows: int, 
-        max_cols: int
+    def _get_lower_left_corner_raster(
+        self, dst: CustomGdalDataset, max_rows: int, max_cols: int
     ) -> CustomGdalDataset:
         """
         ## Summary
@@ -109,15 +104,13 @@ class SamplingRaster(object):
         new_dst = dst.clip_by_bounds(bounds)
         return new_dst
 
-    def _get_lower_right_corner_raster(self, 
-        dst: CustomGdalDataset, 
-        max_rows: int, 
-        max_cols: int
+    def _get_lower_right_corner_raster(
+        self, dst: CustomGdalDataset, max_rows: int, max_cols: int
     ) -> CustomGdalDataset:
         """
         ## Summary
             右下のRasterを取得する。
-        Args:   
+        Args:
             dst (CustomGdalDataset): The raster dataset.
             max_rows (int): The maximum number of rows.
             max_cols (int): The maximum number of columns.
@@ -132,10 +125,8 @@ class SamplingRaster(object):
         new_dst = dst.clip_by_bounds(bounds)
         return new_dst
 
-    def _get_center_raster(self, 
-        dst: CustomGdalDataset, 
-        max_rows: int, 
-        max_cols: int
+    def _get_center_raster(
+        self, dst: CustomGdalDataset, max_rows: int, max_cols: int
     ) -> CustomGdalDataset:
         """
         ## Summary
