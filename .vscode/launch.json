@@ -13,10 +13,14 @@
                     "remoteRoot": "${workspaceFolder}"
                 }
             ],
-            "pythonPath": "C:\\PROGRA~1\\QGIS33~1.10\\bin\\python.exe",
+            "pythonPath": "C:\\PROGRA~1\\QGIS 3.40.4\\bin\\qgis-ltr-bin.exe'",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            }
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1"
+            },
+            "args": [
+                "-Xfrozen_modules=off"
+            ]
         }
     ]
 }

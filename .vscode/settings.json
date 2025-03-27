@@ -7,5 +7,112 @@
         "*test.py"
     ],
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true
+    "python.testing.unittestEnabled": true,
+    "editor.fontFamily": "UDEV Gothic",
+    "workbench.colorTheme": "Jupyter Theme",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#ff9500",
+        "editor.selectionBackground": "#66ff00",
+        "editor.background": "#fbfaf5",
+        "editorHint": "#ff0000",
+        "editorLineNumber.foreground": "#999b99",
+        "sideBar.border": "#000000",
+        "sideBar.foreground": "#000000",
+        "sideBar.background": "#ffffff",
+        "terminal.background": "#005243",
+        "titleBar.activeBackground": "#0095d9",
+        "titleBar.activeForeground": "#ffffff",
+        "menu.selectionBackground": "#0095d9",
+        "tab.inactiveBackground": "#fbfaf5",
+        "tab.activeBackground": "#ff9500",
+        "tab.activeForeground": "#110d0d",
+        "notebook.cellEditorBackground": "#fbfaf5",
+        "notebook.outputContainerBackgroundColor": "#ffffff",
+        "editorError.foreground": "#ff0000",
+        "editorWarning.foreground": "#00ff00",
+        "editor.lineHighlightBackground": "#64a8e71a",
+        "editor.lineHighlightBorder": "#0044ff17",
+
+    },
+    "editor.cursorBlinking": "phase",
+    "editor.cursorWidth": 3,
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [  // textMateRules項目で詳細に設定を行う
+            {
+                "scope": [
+                    "keyword.operator.logical.python",
+                    "meta.indexed-name.python",
+                    "keyword.operator.arithmetic.python",
+                    "storage.type.string.python",
+                    "constant.language.python"],
+                "settings": {"foreground": "#ff9900", "fontStyle": ""}},
+            {
+                "scope": [
+                    "keyword.control.import.python",
+                    "storage.type.class.python",
+                    "storage.type.function.python"],
+                "settings": {"foreground": "#eb6101", "fontStyle": "bold"}},
+            {
+                "scope": [
+                    "meta.attribute.python",
+                    "meta.function-call.generic.python",
+                    "entity.name.function.python"],
+                "settings": {"foreground": "#8505af", "fontStyle": ""}},
+            {
+                "scope": [
+                    "entity.name.function.python"],
+                "settings": {"foreground": "#9900cc", "fontStyle": "bold"}},
+            {
+                "scope": [
+                    "keyword.control.flow.python",
+                    "support.function.builtin.python"],
+                "settings": {"foreground": "#660099", "fontStyle": "italic"}},
+            {
+                "scope": "entity.name.type.class.python",
+                "settings": {"foreground": "#0d0015", "fontStyle": "bold", }},
+            {
+                "scope": [
+                    "meta.indexed-name.python",
+                    "keyword.operator.assignment.python",
+                    "keyword.operator.comparison.python"],
+                "settings": {"foreground": "#0d0015"}},
+            {
+                "scope": [
+                    "support.type.python",
+                    "variable.language.special.self.python",
+                    "variable.parameter.function.language.special.self.python",
+                    "entity.name.function.decorator.python"],
+                "settings": {"foreground": "#007bbb",  "fontStyle": "italic"}},
+            {
+                "scope": [
+                    "constant.numeric.dec.python",
+                    "constant.numeric.hex.python",
+                    "constant.numeric.oct.python",
+                    "constant.numeric.float.python"
+                ],
+                "settings": {"foreground": "#0000ff"}},
+            {
+                "scope": [
+                    "string.regexp.quoted.single.python",
+                    "string.quoted.single.python",
+                ],
+                "settings": {"foreground": "#007b43"}},
+            {
+                "scope": [
+                    "punctuation.definition.comment.python",
+                    "comment.line.number-sign.python",
+                    "string.quoted.docstring.multi.python",],
+                "settings": {"foreground": "#949495", "fontStyle": "italic"}},
+            
+        ]   
+    },   
+    "editor.minimap.enabled": false,
+    "editor.rulers": [80],
+    "editor.accessibilitySupport": "off",
+    "terminal.integrated.fontSize": 15,
+    "[python]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    // "python.defaultInterpreterPath": "C:\\Program Files\\QGIS 3.40.4\bin\\python.exe",
 }

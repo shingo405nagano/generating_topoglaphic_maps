@@ -22,24 +22,21 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
+
 import glob
 import os
 import tempfile
 
-# # Debugging in VSCode
-# import debugpy
-# import shutil
-# import sys
+# Debugging in VSCode
+import debugpy
+import shutil
 
-# sys.path.append('C:\\Users\\makis\\.vscode\\extensions\\ms-python.python-2024.14.1-win32-x64\\python_files\\lib\\python')
-
-# debugpy.configure(python=shutil.which("python"))
-# try:
-# 	debugpy.listen(("localhost", 5656))
-# except:
-# 	debugpy.connect(("localhost", 5656))
-# # END Debugging in VSCode
-
+debugpy.configure(python=shutil.which("python"))
+try:
+    debugpy.listen(("localhost", 5656))
+except:
+    debugpy.connect(("localhost", 5656))
+# END Debugging in VSCode
 
 
 # noinspection PyPep8Naming
@@ -51,6 +48,7 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .topo_maps import TopoMaps
+
     return TopoMaps(iface)
 
 
@@ -62,5 +60,6 @@ def clean_temp_topomaps():
             os.remove(file_path)
         except OSError as e:
             print(f"Error deleting file {file_path}: {e}")
+
 
 clean_temp_topomaps()
